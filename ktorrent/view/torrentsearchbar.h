@@ -18,14 +18,14 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #ifndef KT_TORRENTSEARCHBAR_H
 #define KT_TORRENTSEARCHBAR_H
 
-#include <QWidget>
-#include <KSharedConfig>
-#include <QToolButton>
 #include <QLineEdit>
+#include <QToolButton>
+#include <QWidget>
+
+#include <KSharedConfig>
 
 namespace kt
 {
@@ -39,7 +39,7 @@ namespace kt
         Q_OBJECT
     public:
         TorrentSearchBar(View* view, QWidget* parent);
-        virtual ~TorrentSearchBar();
+        ~TorrentSearchBar();
 
         void loadState(KSharedConfigPtr cfg);
         void saveState(KSharedConfigPtr cfg);
@@ -53,7 +53,7 @@ namespace kt
         void filterBarShown(QString str);
 
     protected:
-        virtual bool eventFilter(QObject* obj, QEvent* ev);
+        bool eventFilter(QObject* obj, QEvent* ev) override;
 
     private:
         QToolButton* hide_search_bar;

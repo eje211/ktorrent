@@ -17,11 +17,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ***************************************************************************/
+
 #ifndef KTCOREINTERFACE_H
 #define KTCOREINTERFACE_H
 
+#include <QObject>
 #include <QUrl>
-#include <qobject.h>
+
 #include <util/constants.h>
 #include <ktcore_export.h>
 
@@ -70,7 +72,7 @@ namespace kt
         Q_OBJECT
     public:
         CoreInterface();
-        virtual ~CoreInterface();
+        ~CoreInterface();
 
         /**
          * Set whether or not we should keep seeding after
@@ -249,7 +251,8 @@ namespace kt
 
         /// Create a torrent (Note: hash calculation should be finished, and torrent should have been saved)
         virtual bt::TorrentInterface* createTorrent(bt::TorrentCreator* tc, bool seed) = 0;
-    signals:
+
+    Q_SIGNALS:
         /**
          * A bt::TorrentInterface was added
          * @param tc

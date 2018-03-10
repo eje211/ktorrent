@@ -18,12 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <util/log.h>
 #include <util/sha1hash.h>
 #include <interfaces/torrentinterface.h>
 #include <dbus/dbus.h>
 #include "scriptablegroup.h"
-
 
 using namespace bt;
 
@@ -42,7 +42,7 @@ namespace kt
     {
         QVariantList args;
         args << tor->getInfoHash().toString();
-        QVariant ret = script->callMethod("isMember", args);
+        QVariant ret = script->callMethod(QStringLiteral("isMember"), args);
         return ret.toBool();
     }
 

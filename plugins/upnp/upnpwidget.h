@@ -17,9 +17,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTUPNPPREFPAGE_H
 #define KTUPNPPREFPAGE_H
-
 
 #include <QWidget>
 #include <net/portlist.h>
@@ -47,7 +47,7 @@ namespace kt
         Q_OBJECT
     public:
         UPnPWidget(bt::UPnPMCastSocket* sock, QWidget* parent);
-        virtual ~UPnPWidget();
+        ~UPnPWidget();
 
         void shutdown(bt::WaitJob* job);
 
@@ -66,8 +66,8 @@ namespace kt
         void onCurrentDeviceChanged(const QModelIndex& current, const QModelIndex& previous);
 
     private:
-        virtual void portAdded(const net::Port& port);
-        virtual void portRemoved(const net::Port& port);
+        void portAdded(const net::Port& port) override;
+        void portRemoved(const net::Port& port) override;
 
     private:
         bt::UPnPMCastSocket* sock;

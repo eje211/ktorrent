@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTRECOMMENDEDSETTINGSDLG_H
 #define KTRECOMMENDEDSETTINGSDLG_H
 
@@ -36,7 +37,7 @@ namespace kt
         Q_OBJECT
     public:
         RecommendedSettingsDlg(QWidget* parent);
-        virtual ~RecommendedSettingsDlg();
+        ~RecommendedSettingsDlg();
 
     private slots:
         void calculate();

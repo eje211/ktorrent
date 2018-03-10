@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef DOWNLOADEDCHUNKBAR_H
 #define DOWNLOADEDCHUNKBAR_H
 
@@ -36,11 +37,11 @@ namespace kt
         Q_OBJECT
     public:
         DownloadedChunkBar(QWidget* parent);
-        virtual ~DownloadedChunkBar();
+        ~DownloadedChunkBar();
 
-        virtual const bt::BitSet& getBitSet() const;
-        virtual void updateBar(bool force = false);
-        virtual void drawBarContents(QPainter* p);
+        const bt::BitSet& getBitSet() const override;
+        void updateBar(bool force = false) override;
+        void drawBarContents(QPainter* p) override;
 
         void setTC(bt::TorrentInterface* tc);
     private:

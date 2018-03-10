@@ -18,12 +18,17 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
+#include <ctime>
+
 #include <QCompleter>
-#include <kfilewidget.h>
-#include <krecentdirs.h>
-#include <kmessagebox.h>
-#include <kprogressdialog.h>
+
+#include <KFileWidget>
+#include <KMessageBox>
+#include <KRecentDirs>
+
 #include <dht/dht.h>
+#include <dht/dhtbase.h>
 #include <torrent/globals.h>
 #include <groups/group.h>
 #include <groups/groupmanager.h>
@@ -33,16 +38,17 @@
 #include "gui.h"
 #include "torrentcreatordlg.h"
 #include <util/error.h>
+#include <util/log.h>
 
 
 using namespace bt;
 
 namespace kt
 {
-    TorrentCreatorDlg::TorrentCreatorDlg(Core* core, GUI* gui, QWidget* parent) : QDialog(parent), core(core), gui(gui), mktor(0)
+    TorrentCreatorDlg::TorrentCreatorDlg(Core* core, GUI* gui, QWidget* parent) : QDialog(parent), core(core), gui(gui), mktor(nullptr)
     {
         setAttribute(Qt::WA_DeleteOnClose);
-        tracker_completion = webseeds_completion = nodes_completion = 0;
+        tracker_completion = webseeds_completion = nodes_completion = nullptr;
         setWindowTitle(i18n("Create A Torrent"));
         setupUi(this);
         adjustSize();
@@ -54,16 +60,16 @@ namespace kt
         connect(m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
         connect(m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
-        connect(m_dht, SIGNAL(toggled(bool)), this, SLOT(dhtToggled(bool)));
+        connect(m_dht, &QCheckBox::toggled, this, &TorrentCreatorDlg::dhtToggled);
 
         // tracker box stuff
-        connect(m_add_tracker, SIGNAL(clicked()), this, SLOT(addTrackerPressed()));
-        connect(m_tracker, SIGNAL(returnPressed()), this, SLOT(addTrackerPressed()));
-        connect(m_remove_tracker, SIGNAL(clicked()), this, SLOT(removeTrackerPressed()));
-        connect(m_move_up, SIGNAL(clicked()), this, SLOT(moveUpPressed()));
-        connect(m_move_down, SIGNAL(clicked()), this, SLOT(moveDownPressed()));
-        connect(m_tracker, SIGNAL(textChanged(const QString&)), this, SLOT(trackerTextChanged(const QString&)));
-        connect(m_tracker_list, SIGNAL(itemSelectionChanged()), this, SLOT(trackerSelectionChanged()));
+        connect(m_add_tracker, &QPushButton::clicked, this, &TorrentCreatorDlg::addTrackerPressed);
+        connect(m_tracker, &QLineEdit::returnPressed, this, &TorrentCreatorDlg::addTrackerPressed);
+        connect(m_remove_tracker, &QPushButton::clicked, this, &TorrentCreatorDlg::removeTrackerPressed);
+        connect(m_move_up, &QPushButton::clicked, this, &TorrentCreatorDlg::moveUpPressed);
+        connect(m_move_down, &QPushButton::clicked, this, &TorrentCreatorDlg::moveDownPressed);
+        connect(m_tracker, &QLineEdit::textChanged, this, &TorrentCreatorDlg::trackerTextChanged);
+        connect(m_tracker_list, &QListWidget::itemSelectionChanged, this, &TorrentCreatorDlg::trackerSelectionChanged);
         m_add_tracker->setEnabled(false); // disable until there is text in m_tracker
         m_remove_tracker->setEnabled(false);
         m_move_up->setEnabled(false);
@@ -71,11 +77,11 @@ namespace kt
 
 
         // dht box
-        connect(m_add_node, SIGNAL(clicked()), this, SLOT(addNodePressed()));
-        connect(m_node, SIGNAL(returnPressed()), this, SLOT(addNodePressed()));
-        connect(m_remove_node, SIGNAL(clicked()), this, SLOT(removeNodePressed()));
-        connect(m_node, SIGNAL(textChanged(const QString&)), this, SLOT(nodeTextChanged(const QString&)));
-        connect(m_node_list, SIGNAL(itemSelectionChanged()), this, SLOT(nodeSelectionChanged()));
+        connect(m_add_node, &QPushButton::clicked, this, &TorrentCreatorDlg::addNodePressed);
+        connect(m_node, &QLineEdit::returnPressed, this, &TorrentCreatorDlg::addNodePressed);
+        connect(m_remove_node, &QPushButton::clicked, this, &TorrentCreatorDlg::removeNodePressed);
+        connect(m_node, &QLineEdit::textChanged, this, &TorrentCreatorDlg::nodeTextChanged);
+        connect(m_node_list, &QTreeWidget::itemSelectionChanged, this, &TorrentCreatorDlg::nodeSelectionChanged);
         m_add_node->setEnabled(false);
         m_remove_node->setEnabled(false);
 
@@ -91,14 +97,14 @@ namespace kt
         }
 
         // webseed stuff
-        connect(m_add_webseed, SIGNAL(clicked()), this, SLOT(addWebSeedPressed()));
-        connect(m_remove_webseed, SIGNAL(clicked()), this, SLOT(removeWebSeedPressed()));
-        connect(m_webseed, SIGNAL(textChanged(const QString&)), this, SLOT(webSeedTextChanged(const QString&)));
-        connect(m_webseed_list, SIGNAL(itemSelectionChanged()), this, SLOT(webSeedSelectionChanged()));
+        connect(m_add_webseed, &QPushButton::clicked, this, &TorrentCreatorDlg::addWebSeedPressed);
+        connect(m_remove_webseed, &QPushButton::clicked, this, &TorrentCreatorDlg::removeWebSeedPressed);
+        connect(m_webseed, &QLineEdit::textChanged, this, &TorrentCreatorDlg::webSeedTextChanged);
+        connect(m_webseed_list, &QListWidget::itemSelectionChanged, this, &TorrentCreatorDlg::webSeedSelectionChanged);
         m_add_webseed->setEnabled(false);
         m_remove_webseed->setEnabled(false);
 
-        connect(&update_timer, SIGNAL(timeout()), this, SLOT(updateProgressBar()));
+        connect(&update_timer, &QTimer::timeout, this, &TorrentCreatorDlg::updateProgressBar);
         loadCompleterData();
         m_progress->setValue(0);
     }
@@ -136,17 +142,17 @@ namespace kt
 
     void TorrentCreatorDlg::loadCompleterData()
     {
-        QString file = kt::DataDir() + QLatin1String("torrent_creator_known_trackers");
+        QString file = kt::DataDir() + QStringLiteral("torrent_creator_known_trackers");
         tracker_completion = new StringCompletionModel(file, this);
         tracker_completion->load();
         m_tracker->setCompleter(new QCompleter(tracker_completion, this));
 
-        file = kt::DataDir() + QLatin1String("torrent_creator_known_webseeds");
+        file = kt::DataDir() + QStringLiteral("torrent_creator_known_webseeds");
         webseeds_completion = new StringCompletionModel(file, this);
         webseeds_completion->load();
         m_webseed->setCompleter(new QCompleter(webseeds_completion, this));
 
-        file = kt::DataDir() + QLatin1String("torrent_creator_known_nodes");
+        file = kt::DataDir() + QStringLiteral("torrent_creator_known_nodes");
         nodes_completion = new StringCompletionModel(file, this);
         nodes_completion->load();
         m_node->setCompleter(new QCompleter(nodes_completion, this));
@@ -307,7 +313,8 @@ namespace kt
         };
 
         int chunk_size = chunk_size_table[m_chunk_size->currentIndex()];
-        QString name = url.fileName();
+        QString name = url.toLocalFile();
+        name = QFileInfo(name).isDir() ? QDir(name).dirName() : url.fileName();
 
         QStringList trackers;
 
@@ -316,7 +323,7 @@ namespace kt
             for (int i = 0; i < m_node_list->topLevelItemCount(); ++i)
             {
                 QTreeWidgetItem* item = m_node_list->topLevelItem(i);
-                trackers.append(item->text(0) + ',' +  item->text(1));
+                trackers.append(item->text(0) + QLatin1Char(',') +  item->text(1));
             }
         }
         else
@@ -340,7 +347,7 @@ namespace kt
             mktor = new bt::TorrentCreator(url.toLocalFile(), trackers, webseeds, chunk_size, name,
                                            m_comments->text(), m_private->isChecked(), m_dht->isChecked());
 
-            connect(mktor, SIGNAL(finished()), this, SLOT(hashCalculationDone()), Qt::QueuedConnection);
+            connect(mktor, &bt::TorrentCreator::finished, this, &TorrentCreatorDlg::hashCalculationDone, Qt::QueuedConnection);
             mktor->start();
             setProgressBarEnabled(true);
             update_timer.start(1000);
@@ -362,7 +369,7 @@ namespace kt
 
         QString recentDirClass;
         QString s = QFileDialog::getSaveFileName(this, i18n("Choose a file to save the torrent"),
-                                                 KFileWidget::getStartUrl(QUrl("kfiledialog:///openTorrent"), recentDirClass).toLocalFile(),
+                                                 KFileWidget::getStartUrl(QUrl(QStringLiteral("kfiledialog:///openTorrent")), recentDirClass).toLocalFile(),
                                                  kt::TorrentFileFilter(false));
 
         if (s.isEmpty())
@@ -399,7 +406,7 @@ namespace kt
     {
         if (mktor && mktor->isRunning())
         {
-            disconnect(mktor, SIGNAL(finished()), this, SLOT(hashCalculationDone()));
+            disconnect(mktor, &bt::TorrentCreator::finished, this, &TorrentCreatorDlg::hashCalculationDone);
             mktor->stop();
             mktor->wait();
         }

@@ -21,13 +21,15 @@
 
 #include "scheduleeditor.h"
 
-#include <QVBoxLayout>
-#include <QIcon>
 #include <QFileDialog>
+#include <QIcon>
 #include <QMessageBox>
+#include <QVBoxLayout>
 #include <QWidgetAction>
+
 #include <KActionCollection>
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+
 #include <util/error.h>
 #include "weekview.h"
 #include "schedule.h"
@@ -39,7 +41,7 @@ namespace kt
 
 
     ScheduleEditor::ScheduleEditor(QWidget* parent)
-        : Activity(i18n("Bandwidth Schedule"), "kt-bandwidth-scheduler", 20, parent), schedule(0)
+        : Activity(i18n("Bandwidth Schedule"), QStringLiteral("kt-bandwidth-scheduler"), 20, parent), schedule(nullptr)
     {
         setXMLGUIFile(QStringLiteral("ktorrent_bwschedulerui.rc"));
         setToolTip(i18n("Edit the bandwidth schedule"));
@@ -62,10 +64,9 @@ namespace kt
         menu->addSeparator();
         menu->addAction(clear_action);
 
-        connect(view, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
-        connect(view, SIGNAL(editItem(ScheduleItem*)), this, SLOT(editItem(ScheduleItem*)));
-        connect(view, SIGNAL(itemMoved(ScheduleItem*, const QTime&, const QTime&, int, int)),
-                this, SLOT(itemMoved(ScheduleItem*, const QTime&, const QTime&, int, int)));
+        connect(view, &WeekView::selectionChanged, this, &ScheduleEditor::onSelectionChanged);
+        connect(view, &WeekView::editItem, this, static_cast<void (ScheduleEditor::*)(ScheduleItem*)>(&ScheduleEditor::editItem));
+        connect(view, &WeekView::itemMoved, this, &ScheduleEditor::itemMoved);
     }
 
 
@@ -85,19 +86,19 @@ namespace kt
 
     void ScheduleEditor::setupActions()
     {
-        load_action = addAction("document-open", i18n("Load Schedule"), "schedule_load", this, SLOT(load()));
-        save_action = addAction("document-save", i18n("Save Schedule"), "schedule_save", this, SLOT(save()));
-        new_item_action = addAction("list-add", i18n("New Item"), "new_schedule_item", this, SLOT(addItem()));
-        remove_item_action = addAction("list-remove", i18n("Remove Item"), "remove_schedule_item", this, SLOT(removeItem()));
-        edit_item_action = addAction("edit-select-all", i18n("Edit Item"), "edit_schedule_item", this, SLOT(editItem()));
-        clear_action = addAction("edit-clear", i18n("Clear Schedule"), "schedule_clear", this, SLOT(clear()));
+        load_action = addAction(QStringLiteral("document-open"), i18n("Load Schedule"), QStringLiteral("schedule_load"), this, SLOT(load()));
+        save_action = addAction(QStringLiteral("document-save"), i18n("Save Schedule"), QStringLiteral("schedule_save"), this, SLOT(save()));
+        new_item_action = addAction(QStringLiteral("list-add"), i18n("New Item"), QStringLiteral("new_schedule_item"), this, SLOT(addItem()));
+        remove_item_action = addAction(QStringLiteral("list-remove"), i18n("Remove Item"), QStringLiteral("remove_schedule_item"), this, SLOT(removeItem()));
+        edit_item_action = addAction(QStringLiteral("edit-select-all"), i18n("Edit Item"), QStringLiteral("edit_schedule_item"), this, SLOT(editItem()));
+        clear_action = addAction(QStringLiteral("edit-clear"), i18n("Clear Schedule"), QStringLiteral("schedule_clear"), this, SLOT(clear()));
 
         QWidgetAction* act = new QWidgetAction(this);
         enable_schedule = new QCheckBox(i18n("Scheduler Active"), this);
         enable_schedule->setToolTip(i18n("Activate or deactivate the scheduler"));
         act->setDefaultWidget(enable_schedule);
-        part()->actionCollection()->addAction("schedule_active", act);
-        connect(enable_schedule, SIGNAL(toggled(bool)), this, SLOT(enableChecked(bool)));
+        part()->actionCollection()->addAction(QStringLiteral("schedule_active"), act);
+        connect(enable_schedule, &QCheckBox::toggled, this, &ScheduleEditor::enableChecked);
     }
 
 

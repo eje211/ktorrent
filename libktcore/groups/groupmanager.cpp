@@ -17,9 +17,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "groupmanager.h"
 
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+
 #include <util/log.h>
 #include <util/file.h>
 #include <util/fileops.h>
@@ -101,36 +103,36 @@ namespace kt
 
         QList<Group*> defaults;
         // uploads tree
-        defaults << new FunctionGroup<upload>(i18n("Uploads"), "go-up", Group::UPLOADS_ONLY_GROUP, "/all/uploads");
+        defaults << new FunctionGroup<upload>(i18n("Uploads"), QStringLiteral("go-up"), Group::UPLOADS_ONLY_GROUP, QStringLiteral("/all/uploads"));
         defaults << new FunctionGroup<member<running, upload> >(
-                     i18n("Running Uploads"), "kt-start", Group::UPLOADS_ONLY_GROUP, "/all/uploads/running");
+                     i18n("Running Uploads"), QStringLiteral("kt-start"), Group::UPLOADS_ONLY_GROUP, QStringLiteral("/all/uploads/running"));
         defaults << new FunctionGroup<member<not_running, upload> >(
-                     i18n("Not Running Uploads"), "kt-stop", Group::UPLOADS_ONLY_GROUP, "/all/uploads/not_running");
+                     i18n("Not Running Uploads"), QStringLiteral("kt-stop"), Group::UPLOADS_ONLY_GROUP, QStringLiteral("/all/uploads/not_running"));
 
 
         // downloads tree
-        defaults << new FunctionGroup<download>(i18n("Downloads"), "go-down", Group::DOWNLOADS_ONLY_GROUP, "/all/downloads");
+        defaults << new FunctionGroup<download>(i18n("Downloads"), QStringLiteral("go-down"), Group::DOWNLOADS_ONLY_GROUP, QStringLiteral("/all/downloads"));
         defaults << new FunctionGroup<member<running, download> >(
-                     i18n("Running Downloads"), "kt-start", Group::DOWNLOADS_ONLY_GROUP, "/all/downloads/running");
+                     i18n("Running Downloads"), QStringLiteral("kt-start"), Group::DOWNLOADS_ONLY_GROUP, QStringLiteral("/all/downloads/running"));
         defaults << new FunctionGroup<member<not_running, download> >(
-                     i18n("Not Running Downloads"), "kt-stop", Group::DOWNLOADS_ONLY_GROUP, "/all/downloads/not_running");
+                     i18n("Not Running Downloads"), QStringLiteral("kt-stop"), Group::DOWNLOADS_ONLY_GROUP, QStringLiteral("/all/downloads/not_running"));
 
 
         defaults << new FunctionGroup<active>(
-                     i18n("Active Torrents"), "network-connect", Group::MIXED_GROUP, "/all/active");
+                     i18n("Active Torrents"), QStringLiteral("network-connect"), Group::MIXED_GROUP, QStringLiteral("/all/active"));
         defaults << new FunctionGroup<member<active, download> >(
-                     i18n("Active Downloads"), "go-down", Group::DOWNLOADS_ONLY_GROUP, "/all/active/downloads");
+                     i18n("Active Downloads"), QStringLiteral("go-down"), Group::DOWNLOADS_ONLY_GROUP, QStringLiteral("/all/active/downloads"));
         defaults << new FunctionGroup<member<active, upload> >(
-                     i18n("Active Uploads"), "go-up", Group::UPLOADS_ONLY_GROUP, "/all/active/uploads");
+                     i18n("Active Uploads"), QStringLiteral("go-up"), Group::UPLOADS_ONLY_GROUP, QStringLiteral("/all/active/uploads"));
 
-        defaults << new FunctionGroup<passive>(i18n("Passive Torrents"), "network-disconnect", Group::MIXED_GROUP, "/all/passive");
+        defaults << new FunctionGroup<passive>(i18n("Passive Torrents"), QStringLiteral("network-disconnect"), Group::MIXED_GROUP, QStringLiteral("/all/passive"));
         defaults << new FunctionGroup<member<passive, download> >(
-                     i18n("Passive Downloads"), "go-down", Group::DOWNLOADS_ONLY_GROUP, "/all/passive/downloads");
+                     i18n("Passive Downloads"), QStringLiteral("go-down"), Group::DOWNLOADS_ONLY_GROUP, QStringLiteral("/all/passive/downloads"));
         defaults << new FunctionGroup<member<passive, upload> >(
-                     i18n("Passive Uploads"), "go-up", Group::UPLOADS_ONLY_GROUP, "/all/passive/uploads");
+                     i18n("Passive Uploads"), QStringLiteral("go-up"), Group::UPLOADS_ONLY_GROUP, QStringLiteral("/all/passive/uploads"));
         defaults << new UngroupedGroup(this);
 
-        foreach (Group* g, defaults)
+        for (Group* g : qAsConst(defaults))
             groups.insert(g->groupName(), g);
     }
 
@@ -146,8 +148,8 @@ namespace kt
             return 0;
 
         TorrentGroup* g = new TorrentGroup(name);
-        connect(g, SIGNAL(torrentAdded(Group*)), this, SIGNAL(customGroupChanged()));
-        connect(g, SIGNAL(torrentRemoved(Group*)), this, SIGNAL(customGroupChanged()));
+        connect(g, &TorrentGroup::torrentAdded, this, &GroupManager::customGroupChanged);
+        connect(g, static_cast<void (TorrentGroup::*)(Group*)>(&TorrentGroup::torrentRemoved), this, &GroupManager::customGroupChanged);
         groups.insert(name, g);
         emit groupAdded(g);
         return g;
@@ -192,9 +194,9 @@ namespace kt
 
     void GroupManager::saveGroups()
     {
-        QString fn = kt::DataDir() + "groups";
+        QString fn = kt::DataDir() + QStringLiteral("groups");
         bt::File fptr;
-        if (!fptr.open(fn, "wb"))
+        if (!fptr.open(fn, QStringLiteral("wb")))
         {
             bt::Out(SYS_GEN | LOG_DEBUG) << "Cannot open " << fn << " : " << fptr.errorString() << bt::endl;
             return;
@@ -223,9 +225,9 @@ namespace kt
 
     void GroupManager::loadGroups()
     {
-        QString fn = kt::DataDir() + "groups";
+        QString fn = kt::DataDir() + QStringLiteral("groups");
         bt::File fptr;
-        if (!fptr.open(fn, "rb"))
+        if (!fptr.open(fn, QStringLiteral("rb")))
         {
             bt::Out(SYS_GEN | LOG_DEBUG) << "Cannot open " << fn << " : " << fptr.errorString() << bt::endl;
             return;
@@ -241,7 +243,7 @@ namespace kt
             BDecoder dec(data, false);
             n = dec.decode();
             if (!n || n->getType() != bt::BNode::LIST)
-                throw bt::Error("groups file corrupt");
+                throw bt::Error(QStringLiteral("groups file corrupt"));
 
             BListNode* ln = (BListNode*)n;
             for (Uint32 i = 0; i < ln->getNumChildren(); i++)
@@ -250,9 +252,9 @@ namespace kt
                 if (!dn)
                     continue;
 
-                TorrentGroup* g = new TorrentGroup("dummy");
-                connect(g, SIGNAL(torrentAdded(Group*)), this, SIGNAL(customGroupChanged()));
-                connect(g, SIGNAL(torrentRemoved(Group*)), this, SIGNAL(customGroupChanged()));
+                TorrentGroup* g = new TorrentGroup(QStringLiteral("dummy"));
+                connect(g, &TorrentGroup::torrentAdded, this, &GroupManager::customGroupChanged);
+                connect(g, static_cast<void (TorrentGroup::*)(Group*)>(&TorrentGroup::torrentRemoved), this, &GroupManager::customGroupChanged);
 
                 try
                 {
@@ -345,7 +347,7 @@ namespace kt
                 return i->second;
         }
 
-        return 0;
+        return nullptr;
     }
 
     void GroupManager::updateCount(QueueManager* qman)

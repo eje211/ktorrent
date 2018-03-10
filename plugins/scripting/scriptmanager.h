@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSCRIPTMANAGER_H
 #define KTSCRIPTMANAGER_H
 
@@ -36,6 +37,7 @@ namespace kt
 {
     class Script;
     class ScriptModel;
+    class ScriptDelegate;
 
     /**
         Widget to display all scripts.
@@ -45,7 +47,7 @@ namespace kt
         Q_OBJECT
     public:
         ScriptManager(ScriptModel* model, QWidget* parent);
-        virtual ~ScriptManager();
+        ~ScriptManager();
 
         /// Get all selected scripts
         QModelIndexList selectedScripts();
@@ -53,26 +55,29 @@ namespace kt
         /// Update all actions and make sure they are properly enabled or disabled
         void updateActions(const QModelIndexList& selected);
 
-    private slots:
+
+    private Q_SLOTS:
         void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void showContextMenu(const QPoint& p);
         void dataChanged(const QModelIndex& f, const QModelIndex& to);
         void runScript();
         void stopScript();
         void editScript();
-        void showProperties();
-        void showProperties(Script* script);
         void configureScript();
+        void showProperties();
+    public:
+        void showProperties(Script* script);
 
     private:
         void setupActions();
 
-    signals:
+    Q_SIGNALS:
         void addScript();
         void removeScript();
 
     private:
         ScriptModel* model;
+        ScriptDelegate* delegate;
         QListView* view;
 
         QAction * add_script;

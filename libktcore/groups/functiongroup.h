@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFUNCTIONGROUP_H
 #define KTFUNCTIONGROUP_H
 
@@ -41,9 +42,9 @@ namespace kt
             setIconByName(icon);
         }
 
-        virtual ~FunctionGroup() {}
+        ~FunctionGroup() {}
 
-        virtual bool isMember(TorrentInterface* tor)
+        bool isMember(TorrentInterface* tor) override
         {
             if (!tor)
                 return false;

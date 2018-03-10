@@ -20,17 +20,17 @@
 
 #include "playlistwidget.h"
 
-#include <QVBoxLayout>
-#include <QIcon>
 #include <QFile>
 #include <QFileDialog>
 #include <QHeaderView>
+#include <QIcon>
 #include <QSortFilterProxyModel>
+#include <QVBoxLayout>
 
-#include <ktoolbar.h>
-#include <klocalizedstring.h>
-#include <kfilewidget.h>
-#include <krecentdirs.h>
+#include <KLocalizedString>
+#include <KFileWidget>
+#include <KRecentDirs>
+#include <KToolBar>
 
 #include "mediaplayer.h"
 #include "mediaplayerpluginsettings.h"
@@ -42,7 +42,7 @@ namespace kt
     PlayListWidget::PlayListWidget(kt::MediaFileCollection* collection, kt::MediaPlayer* player, QWidget* parent)
         : QWidget(parent),
           player(player),
-          menu(0),
+          menu(nullptr),
           collection(collection)
     {
         QVBoxLayout* layout = new QVBoxLayout(this);
@@ -50,24 +50,24 @@ namespace kt
         layout->setSpacing(0);
 
 
-        QAction* remove_action = new QAction(QIcon::fromTheme("list-remove"), i18n("Remove"), this);
-        connect(remove_action, SIGNAL(triggered(bool)), this, SLOT(removeFiles()));
-        QAction* add_action = new QAction(QIcon::fromTheme("document-open"), i18n("Add Media"), this);
-        connect(add_action, SIGNAL(triggered(bool)), this, SLOT(addMedia()));
-        QAction* clear_action = new QAction(QIcon::fromTheme("edit-clear-list"), i18n("Clear Playlist"), this);
-        connect(clear_action, SIGNAL(triggered(bool)), this, SLOT(clearPlayList()));
+        QAction* remove_action = new QAction(QIcon::fromTheme(QStringLiteral("list-remove")), i18n("Remove"), this);
+        connect(remove_action, &QAction::triggered, this, &PlayListWidget::removeFiles);
+        QAction* add_action = new QAction(QIcon::fromTheme(QStringLiteral("document-open")), i18n("Add Media"), this);
+        connect(add_action, &QAction::triggered, this, &PlayListWidget::addMedia);
+        QAction* clear_action = new QAction(QIcon::fromTheme(QStringLiteral("edit-clear-list")), i18n("Clear Playlist"), this);
+        connect(clear_action, &QAction::triggered, this, &PlayListWidget::clearPlayList);
 
         tool_bar = new QToolBar(this);
         tool_bar->addAction(add_action);
         tool_bar->addAction(remove_action);
         tool_bar->addAction(clear_action);
         random_mode = new QCheckBox(i18n("Random play order"), tool_bar);
-        connect(random_mode, SIGNAL(toggled(bool)), this, SIGNAL(randomModeActivated(bool)));
+        connect(random_mode, &QCheckBox::toggled, this, &PlayListWidget::randomModeActivated);
         tool_bar->addWidget(random_mode);
         layout->addWidget(tool_bar);
 
         play_list = new PlayList(collection, player, this);
-        connect(play_list, SIGNAL(itemsDropped()), this, SLOT(onItemsDropped()));
+        connect(play_list, &PlayList::itemsDropped, this, &PlayListWidget::onItemsDropped);
         proxy_model = new QSortFilterProxyModel(this);
         proxy_model->setSourceModel(play_list);
         proxy_model->setSortRole(Qt::UserRole);
@@ -83,11 +83,11 @@ namespace kt
         view->setSelectionMode(QAbstractItemView::ExtendedSelection);
         view->setSortingEnabled(true);
         layout->addWidget(view);
-        connect(view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
+        connect(view, &QTreeView::customContextMenuRequested, this, &PlayListWidget::showContextMenu);
 
         connect(view->selectionModel(), SIGNAL(selectionChanged(const QItemSelection& , const QItemSelection&)),
                 this, SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection&)));
-        connect(view, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClicked(QModelIndex)));
+        connect(view, &QTreeView::doubleClicked, this, static_cast<void (PlayListWidget::*)(const QModelIndex&)>(&PlayListWidget::doubleClicked));
 
         menu = new QMenu(this);
         menu->addAction(remove_action);
@@ -173,7 +173,7 @@ namespace kt
     {
         QString recentDirClass;
         QStringList files = QFileDialog::getOpenFileNames(this, QString(),
-                                                         KFileWidget::getStartUrl(QUrl("kfiledialog:///add_media"), recentDirClass).toLocalFile());
+                                                         KFileWidget::getStartUrl(QUrl(QStringLiteral("kfiledialog:///add_media")), recentDirClass).toLocalFile());
 
         if (files.isEmpty())
             return;

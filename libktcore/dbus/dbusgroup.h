@@ -18,11 +18,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTDBUSGROUP_H
 #define KTDBUSGROUP_H
 
 #include <QObject>
-
 
 namespace kt
 {
@@ -38,7 +38,7 @@ namespace kt
         Q_CLASSINFO("D-Bus Interface", "org.ktorrent.group")
     public:
         DBusGroup(Group* g, GroupManager* gman, QObject* parent);
-        virtual ~DBusGroup();
+        ~DBusGroup();
 
     public Q_SLOTS:
         Q_SCRIPTABLE QString name() const;

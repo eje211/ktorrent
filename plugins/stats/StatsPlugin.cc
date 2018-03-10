@@ -20,7 +20,7 @@
 
 #include <StatsPlugin.h>
 #include <interfaces/torrentactivityinterface.h>
-#include <kpluginfactory.h>
+#include <KPluginFactory>
 
 K_PLUGIN_FACTORY_WITH_JSON(ktorrent_stats, "ktorrent_stats.json", registerPlugin<kt::StatsPlugin>();)
 
@@ -29,8 +29,8 @@ namespace kt
 
     StatsPlugin::StatsPlugin(QObject* p, const QVariantList&) : Plugin(p), mUpdCtr(1)
     {
-        pmUiSett = 0;
-        pmDispSett = 0;
+        pmUiSett = nullptr;
+        pmDispSett = nullptr;
     }
 
     StatsPlugin::~StatsPlugin()
@@ -39,14 +39,14 @@ namespace kt
 
     void StatsPlugin::load()
     {
-        pmUiSpd = new SpdTabPage(0);
-        pmUiConns = new ConnsTabPage(0);
-        pmUiSett = new SettingsPage(0);
-        pmDispSett = new DisplaySettingsPage(0);
+        pmUiSpd = new SpdTabPage(nullptr);
+        pmUiConns = new ConnsTabPage(nullptr);
+        pmUiSett = new SettingsPage(nullptr);
+        pmDispSett = new DisplaySettingsPage(nullptr);
 
         TorrentActivityInterface* ta = getGUI()->getTorrentActivity();
-        ta->addToolWidget(pmUiSpd, i18n("Speed charts"), "view-statistics", i18n("Displays charts about download and upload speed"));
-        ta->addToolWidget(pmUiConns, i18n("Connections charts"), "view-statistics", i18n("Displays charts about connections"));
+        ta->addToolWidget(pmUiSpd, i18n("Speed charts"), QStringLiteral("view-statistics"), i18n("Displays charts about download and upload speed"));
+        ta->addToolWidget(pmUiConns, i18n("Connections charts"), QStringLiteral("view-statistics"), i18n("Displays charts about connections"));
 
         getGUI()->addPrefPage(pmUiSett);
         getGUI()->addPrefPage(pmDispSett);
@@ -75,7 +75,7 @@ namespace kt
 
     bool StatsPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 
     void StatsPlugin::guiUpdate()

@@ -18,9 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <QSpinBox>
+
 #include <QModelIndex>
-#include <klocalizedstring.h>
+#include <QSpinBox>
+
+#include <KLocalizedString>
+
 #include "spinboxdelegate.h"
 
 namespace kt
@@ -72,8 +75,9 @@ namespace kt
 
     QSize SpinBoxDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        QSpinBox tmp;
-        return tmp.sizeHint();
+        Q_UNUSED(option)
+        Q_UNUSED(index)
+        return QSpinBox().sizeHint();
     }
 }
 

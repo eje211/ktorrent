@@ -21,14 +21,17 @@
 
 #include "magnetview.h"
 #include "magnetmodel.h"
-#include <QMenu>
-#include <QBoxLayout>
-#include <KLocalizedString>
-#include <QIcon>
+
 #include <KConfigGroup>
+#include <KLocalizedString>
+
+#include <QBoxLayout>
+#include <QIcon>
 #include <QHeaderView>
-#include <QTreeView>
 #include <QKeyEvent>
+#include <QMenu>
+#include <QTreeView>
+
 #include <torrent/magnetmanager.h>
 
 namespace kt
@@ -55,16 +58,15 @@ namespace kt
         view->setAllColumnsShowFocus(true);
         view->setSelectionMode(QAbstractItemView::ContiguousSelection);
         view->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(view, SIGNAL(customContextMenuRequested(QPoint)),
-                this, SLOT(showContextMenu(QPoint)));
+        connect(view, &QTreeView::customContextMenuRequested, this, &MagnetView::showContextMenu);
         layout->addWidget(view);
 
         // context menu
         menu = new QMenu(this);
-        start = menu->addAction(QIcon::fromTheme("kt-start"), i18n("Start Magnet"), this, SLOT(startMagnetDownload()));
-        stop = menu->addAction(QIcon::fromTheme("kt-stop"), i18n("Stop Magnet"), this, SLOT(stopMagnetDownload()));
+        start = menu->addAction(QIcon::fromTheme(QStringLiteral("kt-start")), i18n("Start Magnet"), this, SLOT(startMagnetDownload()));
+        stop = menu->addAction(QIcon::fromTheme(QStringLiteral("kt-stop")), i18n("Stop Magnet"), this, SLOT(stopMagnetDownload()));
         menu->addSeparator();
-        remove = menu->addAction(QIcon::fromTheme("kt-remove"), i18n("Remove Magnet"), this, SLOT(removeMagnetDownload()));
+        remove = menu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove")), i18n("Remove Magnet"), this, SLOT(removeMagnetDownload()));
     }
 
     MagnetView::~MagnetView()
@@ -90,13 +92,13 @@ namespace kt
 
     void MagnetView::showContextMenu(QPoint p)
     {
-        QModelIndexList idx_list = view->selectionModel()->selectedRows();
+        const QModelIndexList idx_list = view->selectionModel()->selectedRows();
 
         start->setEnabled(false);
         stop->setEnabled(false);
         remove->setEnabled(idx_list.count() > 0);
 
-        foreach (const QModelIndex& idx, idx_list)
+        for (const QModelIndex& idx : idx_list)
         {
             if (!mman->isStopped(idx.row()))
                 stop->setEnabled(true);

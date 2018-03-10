@@ -17,11 +17,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <math.h>
-#include <QDateTime>
+
+#include <cmath>
+
 #include <QCheckBox>
-#include <klocalizedstring.h>
-#include <krun.h>
+#include <QDateTime>
+
+#include <KLocalizedString>
+#include <KRun>
+
 #include <util/functions.h>
 #include <util/log.h>
 #include <util/sha1hash.h>
@@ -58,23 +62,23 @@ namespace kt
         ratio_limit->setMaximum(100.0f);
         ratio_limit->setSingleStep(0.1f);
         ratio_limit->setKeyboardTracking(false);
-        connect(ratio_limit, SIGNAL(valueChanged(double)), this, SLOT(maxRatioChanged(double)));
-        connect(use_ratio_limit, SIGNAL(toggled(bool)), this, SLOT(useRatioLimitToggled(bool)));
+        connect(ratio_limit, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &StatusTab::maxRatioChanged);
+        connect(use_ratio_limit, &QCheckBox::toggled, this, &StatusTab::useRatioLimitToggled);
 
         time_limit->setMinimum(0.0f);
         time_limit->setMaximum(10000000.0f);
         time_limit->setSingleStep(0.05f);
         time_limit->setSpecialValueText(i18n("No limit"));
         time_limit->setKeyboardTracking(false);
-        connect(use_time_limit, SIGNAL(toggled(bool)), this, SLOT(useTimeLimitToggled(bool)));
-        connect(time_limit, SIGNAL(valueChanged(double)), this, SLOT(maxTimeChanged(double)));
+        connect(use_time_limit, &QCheckBox::toggled, this, &StatusTab::useTimeLimitToggled);
+        connect(time_limit, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &StatusTab::maxTimeChanged);
 
         int h = (int)ceil(fontMetrics().height() * 1.25);
         downloaded_bar->setFixedHeight(h);
         availability_bar->setFixedHeight(h);
 
         comments->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard | Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
-        connect(comments, SIGNAL(linkActivated(QString)), SLOT(linkActivated(QString)));
+        connect(comments, &KSqueezedTextLabel::linkActivated, this, &StatusTab::linkActivated);
 
         // initialize everything with curr_tc == 0
         setEnabled(false);
@@ -108,19 +112,19 @@ namespace kt
 
             // Don't allow multiple lines in the comments field
             QString text = tc->getComments();
-            if (text.contains("\n"))
-                text = text.replace("\n", " ");
+            if (text.contains(QLatin1String("\n")))
+                text = text.replace(QLatin1Char('\n'), QLatin1Char(' '));
 
             // Make links clickable
-            QStringList words = text.split(" ", QString::KeepEmptyParts);
+            QStringList words = text.split(QLatin1Char(' '), QString::KeepEmptyParts);
             for (QStringList::iterator i = words.begin(); i != words.end(); i++)
             {
                 QString& w = *i;
-                if (w.startsWith("http://") || w.startsWith("https://") || w.startsWith("ftp://"))
-                    w = "<a href=\"" + w + "\">" + w + "</a>";
+                if (w.startsWith(QLatin1String("http://")) || w.startsWith(QLatin1String("https://")) || w.startsWith(QLatin1String("ftp://")))
+                    w = QStringLiteral("<a href=\"") + w + QStringLiteral("\">") + w + QStringLiteral("</a>");
             }
 
-            comments->setText(words.join(" "));
+            comments->setText(words.join(QStringLiteral(" ")));
 
 
             float ratio = tc->getMaxShareRatio();
@@ -185,7 +189,7 @@ namespace kt
             maxSeedTimeUpdate();
 
         static QLocale locale;
-        share_ratio->setText(QString("<font color=\"%1\">%2</font>").arg(ratio <= Settings::greenRatio() ? "#ff0000" : "#1c9a1c").arg(locale.toString(ratio, 'g', 2)));
+        share_ratio->setText(QStringLiteral("<font color=\"%1\">%2</font>").arg(ratio <= Settings::greenRatio() ? QStringLiteral("#ff0000") : QStringLiteral("#1c9a1c")).arg(locale.toString(ratio, 'g', 2)));
 
         Uint32 secs = tc->getRunningTimeUL();
         if (secs == 0)

@@ -18,10 +18,16 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
+#include <QApplication>
+#include <QColor>
 #include <QHeaderView>
 #include <QInputDialog>
 #include <QLocale>
+#include <QPalette>
+
 #include <KRun>
+
 #include <util/log.h>
 #include "ktfeed.h"
 #include "feedwidget.h"
@@ -36,8 +42,8 @@ namespace kt
 {
     QString FeedWidget::item_template = i18n("\
     <html>\
-    <body>\
-    <div style=\"border-style:solid; border-width:1px; margin:5px; padding:5px\">\
+    <body style=\"color:%4\">\
+    <div style=\"border-style:solid; border-width:1px; border-color:%4; margin:5px; padding:5px\">\
     <b>Title:</b> %1<br/>\
     <b>Date:</b> %2<br/>\
     </div>\
@@ -48,7 +54,7 @@ namespace kt
 
     FeedWidget::FeedWidget(FilterList* filters, SyndicationActivity* act, QWidget* parent)
         : QWidget(parent),
-          feed(0),
+          feed(nullptr),
           filters(filters),
           act(act)
     {
@@ -56,16 +62,16 @@ namespace kt
         m_splitter->setStretchFactor(0, 3);
         m_splitter->setStretchFactor(1, 1);
 
-        connect(m_download, SIGNAL(clicked()), this, SLOT(downloadClicked()));
-        connect(m_refresh, SIGNAL(clicked()), this, SLOT(refreshClicked()));
-        connect(m_filters, SIGNAL(clicked()), this, SLOT(filtersClicked()));
-        connect(m_refresh_rate, SIGNAL(valueChanged(int)), this, SLOT(refreshRateChanged(int)));
-        connect(m_cookies, SIGNAL(clicked()), this, SLOT(cookiesClicked()));
+        connect(m_download, &QPushButton::clicked, this, &FeedWidget::downloadClicked);
+        connect(m_refresh, &QPushButton::clicked, this, &FeedWidget::refreshClicked);
+        connect(m_filters, &QPushButton::clicked, this, &FeedWidget::filtersClicked);
+        connect(m_refresh_rate, static_cast<void(QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &FeedWidget::refreshRateChanged);
+        connect(m_cookies, &QPushButton::clicked, this, &FeedWidget::cookiesClicked);
 
-        m_refresh->setIcon(QIcon::fromTheme("view-refresh"));
-        m_filters->setIcon(QIcon::fromTheme("view-filter"));
-        m_cookies->setIcon(QIcon::fromTheme("preferences-web-browser-cookies"));
-        m_download->setIcon(QIcon::fromTheme("ktorrent"));
+        m_refresh->setIcon(QIcon::fromTheme(QStringLiteral("view-refresh")));
+        m_filters->setIcon(QIcon::fromTheme(QStringLiteral("view-filter")));
+        m_cookies->setIcon(QIcon::fromTheme(QStringLiteral("preferences-web-browser-cookies")));
+        m_download->setIcon(QIcon::fromTheme(QStringLiteral("ktorrent")));
 
         model = new FeedWidgetModel(this);
         m_item_list->setModel(model);
@@ -74,9 +80,8 @@ namespace kt
 
 
         QHeaderView* hv = m_item_list->header();
-        hv->setResizeMode(QHeaderView::Interactive);
-        connect(m_item_list->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
-                this, SLOT(selectionChanged(const QItemSelection&, const QItemSelection&)));
+        hv->setSectionResizeMode(QHeaderView::Interactive);
+        connect(m_item_list->selectionModel(), &QItemSelectionModel::selectionChanged, this, &FeedWidget::selectionChanged);
 
         m_download->setEnabled(false);
         m_url->clear();
@@ -85,7 +90,7 @@ namespace kt
 
         m_item_view->setEnabled(false);
         m_item_view->page()->setLinkDelegationPolicy(QWebPage::DelegateExternalLinks);
-        connect(m_item_view, SIGNAL(linkClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
+        connect(m_item_view, &KWebView::linkClicked, this, &FeedWidget::linkClicked);
 
         setEnabled(false);
     }
@@ -103,7 +108,7 @@ namespace kt
         if (!state.isEmpty())
             hv->restoreState(state);
         else
-            QTimer::singleShot(3000, this, SLOT(resizeColumns()));
+            QTimer::singleShot(3000, this, &FeedWidget::resizeColumns);
     }
 
     void FeedWidget::saveState(KConfigGroup& g)
@@ -123,8 +128,8 @@ namespace kt
     {
         if (feed)
         {
-            disconnect(feed, SIGNAL(updated()), this, SLOT(updated()));
-            disconnect(feed, SIGNAL(feedRenamed(Feed*)), this, SLOT(onFeedRenamed(Feed*)));
+            disconnect(feed, &Feed::updated, this, &FeedWidget::updated);
+            disconnect(feed, &Feed::feedRenamed, this, &FeedWidget::onFeedRenamed);
             feed = 0;
         }
 
@@ -133,10 +138,10 @@ namespace kt
         model->setCurrentFeed(f);
         if (feed)
         {
-            connect(feed, SIGNAL(updated()), this, SLOT(updated()));
-            connect(feed, SIGNAL(feedRenamed(Feed*)), this, SLOT(onFeedRenamed(Feed*)));
+            connect(feed, &Feed::updated, this, &FeedWidget::updated);
+            connect(feed, &Feed::feedRenamed, this, &FeedWidget::onFeedRenamed);
 
-            m_url->setText(QString("<b>%1</b>").arg(feed->feedUrl().toDisplayString()));
+            m_url->setText(QStringLiteral("<b>%1</b>").arg(feed->feedUrl().toDisplayString()));
             m_refresh_rate->setValue(feed->refreshRate());
             updated();
             selectionChanged(m_item_list->selectionModel()->selection(), QItemSelection());
@@ -211,7 +216,9 @@ namespace kt
                 m_item_view->setHtml(item_template
                                      .arg(item->title())
                                      .arg(QLocale().toString(QDateTime::fromTime_t(item->datePublished()), QLocale::ShortFormat))
-                                     .arg(item->description()), QUrl(feed->feedData()->link()));
+                                     .arg(item->description())
+                                     .arg(QApplication::palette().text().color().name(QColor::NameFormat::HexRgb))
+                                    , QUrl(feed->feedData()->link()));
             }
         }
     }
@@ -237,7 +244,7 @@ namespace kt
             break;
         }
         updateCaption(this, feed->title());
-        m_active_filters->setText("<b>" + feed->filterNamesString() + "</b>");
+        m_active_filters->setText(QStringLiteral("<b>") + feed->filterNamesString() + QStringLiteral("</b>"));
     }
 
 

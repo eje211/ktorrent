@@ -18,19 +18,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <kpluginfactory.h>
-#include <kactioncollection.h>
-#include <kfiledialog.h>
-#include <klocalizedstring.h>
-#include <kmainwindow.h>
-#include <kstandarddirs.h>
-#include <kmessagebox.h>
-#include <kglobal.h>
-#include <kconfiggroup.h>
-#include <kio/copyjob.h>
-#include <kross/core/manager.h>
-#include <kross/core/interpreter.h>
-#include <kross/core/actioncollection.h>
+
+#include <QFileDialog>
+
+#include <KActionCollection>
+#include <KConfigGroup>
+#include <KIO/CopyJob>
+#include <KLocalizedString>
+#include <KMainWindow>
+#include <KMessageBox>
+#include <KPluginFactory>
+#include <Kross/Core/Manager>
+#include <Kross/Core/Interpreter>
+#include <Kross/Core/ActionCollection>
 
 #include <interfaces/guiinterface.h>
 #include <interfaces/coreinterface.h>
@@ -71,15 +71,15 @@ namespace kt
     void ScriptingPlugin::load()
     {
         // make sure script dir exists
-        QString script_dir = kt::DataDir() + "scripts" + bt::DirSeparator();
+        QString script_dir = kt::DataDir() + QStringLiteral("scripts") + bt::DirSeparator();
         if (!bt::Exists(script_dir))
             bt::MakeDir(script_dir, true);
 
         LogSystemManager::instance().registerSystem(i18n("Scripting"), SYS_SCR);
         model = new ScriptModel(this);
         // add the KTorrent object
-        Kross::Manager::self().addObject(getCore()->getExternalInterface(), "KTorrent");
-        Kross::Manager::self().addObject(new ScriptingModule(getGUI(), getCore(), this), "KTScriptingPlugin");
+        Kross::Manager::self().addObject(getCore()->getExternalInterface(), QStringLiteral("KTorrent"));
+        Kross::Manager::self().addObject(new ScriptingModule(getGUI(), getCore(), this), QStringLiteral("KTScriptingPlugin"));
         loadScripts();
 
         Out(SYS_SCR | LOG_DEBUG) << "Supported interpreters : " << endl;
@@ -87,10 +87,10 @@ namespace kt
         foreach (const QString& s, interpreters)
             Out(SYS_SCR | LOG_DEBUG) << s << endl;
 
-        sman = new ScriptManager(model, 0);
-        connect(sman, SIGNAL(addScript()), this, SLOT(addScript()));
-        connect(sman, SIGNAL(removeScript()), this, SLOT(removeScript()));
-        connect(model, SIGNAL(showPropertiesDialog(Script*)), sman, SLOT(showProperties(Script*)));
+        sman = new ScriptManager(model, nullptr);
+        connect(sman, &ScriptManager::addScript, this, &ScriptingPlugin::addScript);
+        connect(sman, &ScriptManager::removeScript, this, &ScriptingPlugin::removeScript);
+        connect(model, &ScriptModel::showPropertiesDialog, sman, static_cast<void (ScriptManager::*)(Script*)>(&ScriptManager::showProperties));
         getGUI()->addActivity(sman);
     }
 
@@ -101,21 +101,21 @@ namespace kt
         saveScripts();
         getGUI()->removeActivity(sman);
         delete sman;
-        sman = 0;
+        sman = nullptr;
         delete model;
-        model = 0;
+        model = nullptr;
     }
 
     void ScriptingPlugin::loadScripts()
     {
-        QStringList dir_list = KGlobal::dirs()->findDirs("data", "ktorrent/scripts");
-        foreach (const QString& dir, dir_list)
+        const QStringList dir_list = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QStringLiteral("ktorrent/scripts"), QStandardPaths::LocateDirectory);
+        for (const QString& dir : dir_list)
         {
             QDir d(dir);
-            QStringList subdirs = d.entryList(QDir::Dirs);
-            foreach (const QString& sdir, subdirs)
+            const QStringList subdirs = d.entryList(QDir::Dirs);
+            for (const QString& sdir : subdirs)
             {
-                if (sdir != ".." && sdir != ".")
+                if (sdir != QStringLiteral("..") && sdir != QStringLiteral("."))
                 {
                     QString absolute_path = d.absoluteFilePath(sdir);
                     Script* s = loadScriptDir(absolute_path);
@@ -129,9 +129,9 @@ namespace kt
         }
 
         //
-        KConfigGroup g = KSharedConfig::openConfig()->group("Scripting");
-        QStringList scripts = g.readEntry("scripts", QStringList());
-        foreach (const QString& s, scripts)
+        KConfigGroup g = KSharedConfig::openConfig()->group(QLatin1String("Scripting"));
+        const QStringList scripts = g.readEntry(QLatin1String("scripts"), QStringList());
+        for (const QString& s : scripts)
         {
             Out(SYS_SCR | LOG_DEBUG) << "Loading script " << s << endl;
             if (bt::Exists(s))
@@ -165,7 +165,7 @@ namespace kt
         // look for desktop files
         foreach (const QString& file, files)
         {
-            if (file.endsWith(".desktop"))
+            if (file.endsWith(QStringLiteral(".desktop")))
             {
                 return model->addScriptFromDesktopFile(dir_path, file);
             }
@@ -184,11 +184,11 @@ namespace kt
 
     void ScriptingPlugin::addScript()
     {
-        QString filter = "*.tar.gz *.tar.bz2 *.zip | " + i18n("KTorrent Script Packages") +
-                         "\n *.rb *.py *.js | " + i18n("Scripts") +
-                         "\n* |" + i18n("All files");
+        QString filter = QStringLiteral("*.tar.gz *.tar.bz2 *.zip | ") + i18n("KTorrent Script Packages") +
+                         QStringLiteral("\n *.rb *.py *.js | ") + i18n("Scripts") +
+                         QStringLiteral("\n* |") + i18n("All files");
 
-        QUrl url = KFileDialog::getOpenUrl(QUrl("kfiledialog:///addScript"), filter, getGUI()->getMainWindow());
+        QUrl url = QFileDialog::getOpenFileUrl(getGUI()->getMainWindow(), QString(), QUrl(QStringLiteral("kfiledialog:///addScript")), filter);
         if (!url.isValid())
             return;
 
@@ -200,9 +200,9 @@ namespace kt
             }
             else
             {
-                QString script_dir = kt::DataDir() + "scripts" + bt::DirSeparator();
+                QString script_dir = kt::DataDir() + QStringLiteral("scripts") + bt::DirSeparator();
                 KIO::CopyJob* j = KIO::copy(url, QUrl::fromLocalFile(script_dir + url.fileName()));
-                connect(j, SIGNAL(result(KJob*)), this, SLOT(scriptDownloadFinished(KJob*)));
+                connect(j, &KIO::CopyJob::result, this, &ScriptingPlugin::scriptDownloadFinished);
             }
         }
         catch (bt::Error& err)
@@ -222,7 +222,7 @@ namespace kt
         {
             try
             {
-                QString script_dir = kt::DataDir() + "scripts" + bt::DirSeparator();
+                QString script_dir = kt::DataDir() + QStringLiteral("scripts") + bt::DirSeparator();
                 model->addScript(script_dir + j->destUrl().fileName());
             }
             catch (bt::Error& err)
@@ -258,7 +258,7 @@ namespace kt
 
     bool ScriptingPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 }
 

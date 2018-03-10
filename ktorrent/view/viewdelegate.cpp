@@ -17,14 +17,17 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "viewdelegate.h"
 #include "viewmodel.h"
 #include "core.h"
 #include "view.h"
+
 #include <QApplication>
-#include <QRect>
 #include <QLocale>
+#include <QRect>
 #include <QVBoxLayout>
+
 #include <gui/extender.h>
 
 
@@ -367,7 +370,7 @@ namespace kt
         progressBarOption.minimum = 0;
         progressBarOption.maximum = 100;
         progressBarOption.progress = progress;
-        progressBarOption.text = QLocale().toString(progress) + '%';
+        progressBarOption.text = QLocale().toString(progress) + QLatin1Char('%');
         progressBarOption.textVisible = true;
         progressBarOption.direction = option.direction;
 

@@ -21,10 +21,11 @@
 #ifndef KT_CENTRALWIDGET_H
 #define KT_CENTRALWIDGET_H
 
-#include <QStackedWidget>
 #include <QActionGroup>
 #include <QAction>
+#include <QStackedWidget>
 #include <KSharedConfig>
+
 #include <ktcore_export.h>
 
 
@@ -40,7 +41,7 @@ namespace kt
         Q_OBJECT
     public:
         CentralWidget(QWidget* parent);
-        virtual ~CentralWidget();
+        ~CentralWidget();
 
         /// Add an Activity
         QAction * addActivity(Activity* act);

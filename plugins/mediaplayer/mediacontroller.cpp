@@ -18,11 +18,13 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #include "mediacontroller.h"
+
 #include <QBoxLayout>
 #include <QFile>
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+
 #include <taglib/tag.h>
 #include <taglib/fileref.h>
 #include "mediaplayer.h"
@@ -47,15 +49,15 @@ namespace kt
         connect(player, SIGNAL(stopped()), this, SLOT(stopped()));
         connect(player, SIGNAL(playing(MediaFileRef)), this, SLOT(playing(MediaFileRef)));
 
-        play->setDefaultAction(ac->action("media_play"));
+        play->setDefaultAction(ac->action(QStringLiteral("media_play")));
         play->setAutoRaise(true);
-        pause->setDefaultAction(ac->action("media_pause"));
+        pause->setDefaultAction(ac->action(QStringLiteral("media_pause")));
         pause->setAutoRaise(true);
-        stop->setDefaultAction(ac->action("media_stop"));
+        stop->setDefaultAction(ac->action(QStringLiteral("media_stop")));
         stop->setAutoRaise(true);
-        prev->setDefaultAction(ac->action("media_prev"));
+        prev->setDefaultAction(ac->action(QStringLiteral("media_prev")));
         prev->setAutoRaise(true);
-        next->setDefaultAction(ac->action("media_next"));
+        next->setDefaultAction(ac->action(QStringLiteral("media_next")));
         next->setAutoRaise(true);
 
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);

@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTUNGROUPEDGROUP_H
 #define KTUNGROUPEDGROUP_H
 
@@ -34,9 +35,9 @@ namespace kt
     {
     public:
         UngroupedGroup(GroupManager* gman);
-        virtual ~UngroupedGroup();
+        ~UngroupedGroup();
 
-        virtual bool isMember(TorrentInterface* tor);
+        bool isMember(TorrentInterface* tor) override;
 
     private:
         GroupManager* gman;

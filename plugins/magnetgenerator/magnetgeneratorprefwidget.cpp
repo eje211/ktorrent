@@ -30,11 +30,11 @@ namespace kt
 {
 
     MagnetGeneratorPrefWidget::MagnetGeneratorPrefWidget(QWidget* parent)
-        : PrefPageInterface(MagnetGeneratorPluginSettings::self(), i18n("Magnet Generator"), "kt-magnet", parent)
+        : PrefPageInterface(MagnetGeneratorPluginSettings::self(), i18n("Magnet Generator"), QStringLiteral("kt-magnet"), parent)
     {
         setupUi(this);
-        connect(kcfg_customtracker, SIGNAL(toggled(bool)), this, SLOT(customTrackerToggled(bool)));
-        connect(kcfg_torrenttracker, SIGNAL(toggled(bool)), this, SLOT(torrentTrackerToggled(bool)));
+        connect(kcfg_customtracker, &QCheckBox::toggled, this, &MagnetGeneratorPrefWidget::customTrackerToggled);
+        connect(kcfg_torrenttracker, &QCheckBox::toggled, this, &MagnetGeneratorPrefWidget::torrentTrackerToggled);
         kcfg_tr->setEnabled(MagnetGeneratorPluginSettings::customtracker());
     }
 

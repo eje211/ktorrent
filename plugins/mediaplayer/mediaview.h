@@ -18,14 +18,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTMEDIAVIEW_H
 #define KTMEDIAVIEW_H
-
 
 #include <QListView>
 #include <QCheckBox>
 #include <QSortFilterProxyModel>
 #include <KSharedConfig>
+
 #include "mediafile.h"
 
 
@@ -44,9 +45,9 @@ namespace kt
         Q_OBJECT
     public:
         MediaViewFilter(QObject* parent = 0);
-        virtual ~MediaViewFilter();
+        ~MediaViewFilter();
 
-        virtual bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
+        bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 
         /// Enable or disable showing of incomplete files
         void setShowIncomplete(bool on);
@@ -66,7 +67,7 @@ namespace kt
         Q_OBJECT
     public:
         MediaView(MediaModel* model, QWidget* parent);
-        virtual ~MediaView();
+        ~MediaView();
 
         void saveState(KSharedConfig::Ptr cfg);
         void loadState(KSharedConfig::Ptr cfg);

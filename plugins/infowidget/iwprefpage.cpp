@@ -18,13 +18,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #include "iwprefpage.h"
 #include "infowidgetpluginsettings.h"
 
 namespace kt
 {
-    IWPrefPage::IWPrefPage(QWidget* parent) : PrefPageInterface(InfoWidgetPluginSettings::self(), i18n("Info Widget"), "kt-info-widget", parent)
+    IWPrefPage::IWPrefPage(QWidget* parent) : PrefPageInterface(InfoWidgetPluginSettings::self(), i18n("Info Widget"), QStringLiteral("kt-info-widget"), parent)
     {
         setupUi(this);
     }

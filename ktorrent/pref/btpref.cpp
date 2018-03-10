@@ -17,14 +17,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <kdeversion.h>
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+
 #include "btpref.h"
 #include "settings.h"
 
 namespace kt
 {
-    BTPref::BTPref(QWidget* parent): PrefPageInterface(Settings::self(), i18n("BitTorrent"), "application-x-bittorrent", parent)
+    BTPref::BTPref(QWidget* parent): PrefPageInterface(Settings::self(), i18n("BitTorrent"), QStringLiteral("application-x-bittorrent"), parent)
     {
         setupUi(this);
     }

@@ -17,23 +17,22 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
+
 #include "shutdownplugin.h"
 
-#include <solid/powermanagement.h>
-
+#include <KActionCollection>
+#include <KJob>
+#include <KMessageBox>
+#include <KPluginFactory>
+#include <KToggleAction>
 #include <kworkspace.h>
-
-#include <kjob.h>
-#include <kpluginfactory.h>
-#include <ktoggleaction.h>
-#include <kactioncollection.h>
-#include <kmessagebox.h>
 
 #include <util/log.h>
 #include <interfaces/functions.h>
 #include "screensaver_interface.h"
 #include "shutdowndlg.h"
 #include "shutdownruleset.h"
+#include "powermanagement_interface.h"
 
 K_PLUGIN_FACTORY_WITH_JSON(ktorrent_shutdown, "ktorrent_shutdown.json", registerPlugin<kt::ShutdownPlugin>();)
 
@@ -47,11 +46,11 @@ namespace kt
 
         KActionCollection* ac = actionCollection();
         shutdown_enabled = new KToggleAction(QIcon::fromTheme(QStringLiteral("system-shutdown")), i18n("Shutdown Enabled"), this);
-        connect(shutdown_enabled, SIGNAL(toggled(bool)), this, SLOT(shutdownToggled(bool)));
+        connect(shutdown_enabled, &KToggleAction::toggled, this, &ShutdownPlugin::shutdownToggled);
         ac->addAction(QStringLiteral("shutdown_enabled"), shutdown_enabled);
 
         configure_shutdown = new QAction(QIcon::fromTheme(QStringLiteral("preferences-other")), i18n("Configure Shutdown"), this);
-        connect(configure_shutdown, SIGNAL(triggered()), this, SLOT(configureShutdown()));
+        connect(configure_shutdown, &QAction::triggered, this, &ShutdownPlugin::configureShutdown);
         ac->addAction(QStringLiteral("shutdown_settings"), configure_shutdown);
 
         setXMLFile(QStringLiteral("ktorrent_shutdownui.rc"));
@@ -63,27 +62,26 @@ namespace kt
 
     bool ShutdownPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 
     void ShutdownPlugin::unload()
     {
-        rules->save(kt::DataDir() + QLatin1String("shutdown_rules"));
+        rules->save(kt::DataDir() + QStringLiteral("shutdown_rules"));
         delete rules;
-        rules = 0;
+        rules = nullptr;
     }
 
     void ShutdownPlugin::load()
     {
         rules = new ShutdownRuleSet(getCore(), this);
-        rules->load(kt::DataDir() + QLatin1String("shutdown_rules"));
+        rules->load(kt::DataDir() + QStringLiteral("shutdown_rules"));
         if (rules->enabled())
             shutdown_enabled->setChecked(true);
-        connect(rules, SIGNAL(shutdown()), this, SLOT(shutdownComputer()));
-        connect(rules, SIGNAL(lock()), this, SLOT(lock()));
-        connect(rules, SIGNAL(standby()), this, SLOT(standby()));
-        connect(rules, SIGNAL(suspendToDisk()), this, SLOT(suspendToDisk()));
-        connect(rules, SIGNAL(suspendToRAM()), this, SLOT(suspendToRam()));
+        connect(rules, &ShutdownRuleSet::shutdown, this, &ShutdownPlugin::shutdownComputer);
+        connect(rules, &ShutdownRuleSet::lock, this, &ShutdownPlugin::lock);
+        connect(rules, &ShutdownRuleSet::suspendToDisk, this, &ShutdownPlugin::suspendToDisk);
+        connect(rules, &ShutdownRuleSet::suspendToRAM, this, &ShutdownPlugin::suspendToRam);
         updateAction();
     }
 
@@ -96,28 +94,23 @@ namespace kt
     void ShutdownPlugin::lock()
     {
         Out(SYS_GEN | LOG_NOTICE) << "Locking screen ..." << endl;
-        QString interface("org.freedesktop.ScreenSaver");
-        org::freedesktop::ScreenSaver screensaver(interface, "/ScreenSaver", QDBusConnection::sessionBus());
+        QString interface(QStringLiteral("org.freedesktop.ScreenSaver"));
+        org::freedesktop::ScreenSaver screensaver(interface, QStringLiteral("/ScreenSaver"), QDBusConnection::sessionBus());
         screensaver.Lock();
     }
 
     void ShutdownPlugin::suspendToDisk()
     {
+        org::freedesktop::PowerManagement powerManagement(QStringLiteral("org.freedesktop.PowerManagement"), QStringLiteral("/org/freedesktop/PowerManagement"), QDBusConnection::sessionBus());
         Out(SYS_GEN | LOG_NOTICE) << "Suspending to disk ..." << endl;
-        Solid::PowerManagement::requestSleep(Solid::PowerManagement::HibernateState, 0, 0);
+        powerManagement.Hibernate();
    }
 
     void ShutdownPlugin::suspendToRam()
     {
+        org::freedesktop::PowerManagement powerManagement(QStringLiteral("org.freedesktop.PowerManagement"), QStringLiteral("/org/freedesktop/PowerManagement"), QDBusConnection::sessionBus());
         Out(SYS_GEN | LOG_NOTICE) << "Suspending to RAM ..." << endl;
-        Solid::PowerManagement::requestSleep(Solid::PowerManagement::SuspendState, 0, 0);
-    }
-
-    void ShutdownPlugin::standby()
-    {
-        Out(SYS_GEN | LOG_NOTICE) << "Suspending to standby ..." << endl;
-        Solid::PowerManagement::requestSleep(Solid::PowerManagement::StandbyState, 0, 0);
-
+        powerManagement.Suspend();
     }
 
     void ShutdownPlugin::shutdownToggled(bool on)
@@ -136,7 +129,7 @@ namespace kt
 
     void ShutdownPlugin::configureShutdown()
     {
-        ShutdownDlg dlg(rules, getCore(), 0);
+        ShutdownDlg dlg(rules, getCore(), nullptr);
         if (dlg.exec() == QDialog::Accepted)
         {
             rules->save(kt::DataDir() + QLatin1String("shutdown_rules"));
@@ -155,10 +148,6 @@ namespace kt
         case LOCK:
             shutdown_enabled->setIcon(QIcon::fromTheme(QLatin1String("system-lock-screen")));
             shutdown_enabled->setText(i18n("Lock"));
-            break;
-        case STANDBY:
-            shutdown_enabled->setIcon(QIcon::fromTheme(QLatin1String("system-suspend")));
-            shutdown_enabled->setText(i18n("Standby"));
             break;
         case SUSPEND_TO_RAM:
             shutdown_enabled->setIcon(QIcon::fromTheme(QLatin1String("system-suspend")));

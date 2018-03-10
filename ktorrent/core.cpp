@@ -18,17 +18,18 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "core.h"
 
-#include <QNetworkInterface>
 #include <QDir>
+#include <QNetworkInterface>
 #include <QProgressBar>
-#include <klocalizedstring.h>
-#include <kio/job.h>
-#include <kio/copyjob.h>
-#include <kmessagebox.h>
-#include <kstandardguiitem.h>
-#include <solid/powermanagement.h>
+
+#include <KLocalizedString>
+#include <KIO/Job>
+#include <KIO/CopyJob>
+#include <KMessageBox>
+#include <KStandardGuiItem>
 
 #include <dbus/dbus.h>
 #include <interfaces/guiinterface.h>
@@ -51,6 +52,7 @@
 #include <groups/groupmanager.h>
 #include <groups/group.h>
 #include <dht/dht.h>
+#include <dht/dhtbase.h>
 #include <utp/utpserver.h>
 #include <net/socketmonitor.h>
 #include <torrent/jobqueue.h>
@@ -58,6 +60,7 @@
 #include "dialogs/fileselectdlg.h"
 #include "dialogs/missingfilesdlg.h"
 #include "gui.h"
+#include "powermanagementinhibit_interface.h"
 
 
 using namespace bt;
@@ -69,7 +72,7 @@ namespace kt
     Core::Core(kt::GUI* gui)
         : gui(gui),
           keep_seeding(true),
-          sleep_suppression_cookie(-1),
+          sleep_suppression_cookie(0),
           exiting(false),
           reordering_queue(false)
     {
@@ -124,7 +127,7 @@ namespace kt
 
         mman->loadMagnets(kt::DataDir() + QLatin1String("magnets"));
 
-        connect(QCoreApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(onExit()));
+        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &Core::onExit);
     }
 
     Core::~Core()
@@ -282,7 +285,7 @@ namespace kt
         if (qman->checkFileConflicts(tc, conflicting))
         {
             Out(SYS_GEN | LOG_IMPORTANT) << "Torrent " << tc->getDisplayName() << " conflicts with the following torrents: " << endl;
-            Out(SYS_GEN | LOG_IMPORTANT) << conflicting.join(", ") << endl;
+            Out(SYS_GEN | LOG_IMPORTANT) << conflicting.join(QStringLiteral(", ")) << endl;
             if (!silently)
             {
                 QString err = i18n("Opening the torrent <b>%1</b>, "
@@ -627,7 +630,7 @@ namespace kt
 
     void Core::pause(QList<bt::TorrentInterface*>& todo)
     {
-        foreach (bt::TorrentInterface* tc, todo)
+        for (bt::TorrentInterface* tc : qAsConst(todo))
         {
             tc->pause();
         }
@@ -841,6 +844,7 @@ namespace kt
 
     void Core::onExit()
     {
+        emit aboutToQuit();
         // stop timer to prevent updates during wait
         exiting = true;
         update_timer.stop();
@@ -965,17 +969,20 @@ namespace kt
         {
             Out(SYS_GEN | LOG_DEBUG) << "Started update timer" << endl;
             update_timer.start(CORE_UPDATE_INTERVAL);
-            if (Settings::suppressSleep() && sleep_suppression_cookie == -1)
+            if (Settings::suppressSleep() && sleep_suppression_cookie == 0)
             {
-                sleep_suppression_cookie = Solid::PowerManagement::beginSuppressingSleep(i18n("KTorrent is running one or more torrents"));
-                if (sleep_suppression_cookie == -1)
-                {
-                    Out(SYS_GEN | LOG_IMPORTANT) << "Failed to suppress sleeping" << endl;
-                }
-                else
-                {
-                    Out(SYS_GEN | LOG_DEBUG) << "Suppressing sleep" << endl;
-                }
+                org::freedesktop::PowerManagement::Inhibit powerManagement(QStringLiteral("org.freedesktop.PowerManagement.Inhibit"), QStringLiteral("/org/freedesktop/PowerManagement/Inhibit"), QDBusConnection::sessionBus());
+                QDBusPendingReply<quint32> pendingReply = powerManagement.Inhibit(QStringLiteral("ktorrent"), i18n("KTorrent is running one or more torrents"));
+                auto pendingCallWatcher = new QDBusPendingCallWatcher(pendingReply, this);
+                connect(pendingCallWatcher, &QDBusPendingCallWatcher::finished, this, [=](QDBusPendingCallWatcher *callWatcher) {
+                    QDBusPendingReply<quint32> reply = *callWatcher;
+                    if (reply.isValid()) {
+                        sleep_suppression_cookie = reply.value();
+                        Out(SYS_GEN | LOG_DEBUG) << "Suppressing sleep" << endl;
+                    }
+                    else
+                        Out(SYS_GEN | LOG_IMPORTANT) << "Failed to suppress sleeping" << endl;
+                });
             }
         }
     }
@@ -1007,11 +1014,21 @@ namespace kt
             {
                 Out(SYS_GEN | LOG_DEBUG) << "Stopped update timer" << endl;
                 update_timer.stop(); // stop timer when not necessary
-                if (sleep_suppression_cookie != -1)
+
+                if (sleep_suppression_cookie)
                 {
-                    Solid::PowerManagement::stopSuppressingSleep(sleep_suppression_cookie);
-                    Out(SYS_GEN | LOG_DEBUG) << "Stopped suppressing sleep" << endl;
-                    sleep_suppression_cookie = -1;
+                    org::freedesktop::PowerManagement::Inhibit powerManagement(QStringLiteral("org.freedesktop.PowerManagement.Inhibit"), QStringLiteral("/org/freedesktop/PowerManagement/Inhibit"), QDBusConnection::sessionBus());
+                    auto pendingReply = powerManagement.UnInhibit(sleep_suppression_cookie);
+                    auto pendingCallWatcher = new QDBusPendingCallWatcher(pendingReply, this);
+                    connect(pendingCallWatcher, &QDBusPendingCallWatcher::finished, this, [=](QDBusPendingCallWatcher *callWatcher) {
+                        QDBusPendingReply<void> reply = *callWatcher;
+                        if (reply.isValid()) {
+                            sleep_suppression_cookie = 0;
+                            Out(SYS_GEN | LOG_DEBUG) << "Stopped suppressing sleep" << endl;
+                        }
+                        else
+                            Out(SYS_GEN | LOG_IMPORTANT) << "Failed to stop suppressing sleep" << endl;
+                    });
                 }
             }
             else
@@ -1158,7 +1175,7 @@ namespace kt
         while (!tc->isStorageMounted(not_mounted))
         {
             QString msg = i18n("One or more storage volumes are not mounted. In order to start this torrent, they need to be mounted.");
-            KGuiItem retry(i18n("Retry"), "emblem-mounted");
+            KGuiItem retry(i18n("Retry"), QStringLiteral("emblem-mounted"));
             if (KMessageBox::warningContinueCancelList(gui, msg, not_mounted, QString(), retry) == KMessageBox::Continue)
             {
                 not_mounted.clear();
@@ -1169,7 +1186,7 @@ namespace kt
                 if (not_mounted.size() == 1)
                     tc->handleError(i18n("Storage volume %1 is not mounted", not_mounted.first()));
                 else
-                    tc->handleError(i18n("Storage volumes %1 are not mounted", not_mounted.join(", ")));
+                    tc->handleError(i18n("Storage volumes %1 are not mounted", not_mounted.join(QStringLiteral(", "))));
                 return false;
             }
         }

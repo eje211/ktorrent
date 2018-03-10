@@ -18,18 +18,20 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <algorithm>
-#include <QMimeData>
-#include <QDataStream>
+
 #include <QApplication>
+#include <QDataStream>
 #include <QFont>
 #include <QIcon>
+#include <QMimeData>
+#include <QMimeDatabase>
+#include <QMimeType>
 
 #include <util/log.h>
 #include <interfaces/torrentinterface.h>
 #include <interfaces/torrentfileinterface.h>
-#include <QMimeDatabase>
-#include <QMimeType>
 #include "downloadordermodel.h"
 
 using namespace bt;
@@ -88,24 +90,26 @@ namespace kt
 
     QModelIndex DownloadOrderModel::find(const QString& text)
     {
+        beginResetModel();
         current_search_text = text;
         for (Uint32 i = 0; i < tor->getNumFiles(); i++)
         {
             if (tor->getTorrentFile(i).getUserModifiedPath().contains(current_search_text, Qt::CaseInsensitive))
             {
-                reset();
+                endResetModel();
                 return index(i);
             }
         }
 
-        reset();
+        endResetModel();
         return QModelIndex();
     }
 
     void DownloadOrderModel::clearHighLights()
     {
+        beginResetModel();
         current_search_text.clear();
-        reset();
+        endResetModel();
     }
 
     Qt::ItemFlags DownloadOrderModel::flags(const QModelIndex& index) const
@@ -126,7 +130,7 @@ namespace kt
     QStringList DownloadOrderModel::mimeTypes() const
     {
         QStringList types;
-        types << "application/octet-stream";
+        types << QStringLiteral("application/octet-stream");
         return types;
     }
 
@@ -145,7 +149,7 @@ namespace kt
             }
         }
         out << files;
-        mimeData->setData("application/octet-stream", data);
+        mimeData->setData(QStringLiteral("application/octet-stream"), data);
         return mimeData;
     }
 
@@ -155,7 +159,7 @@ namespace kt
         if (action == Qt::IgnoreAction)
             return true;
 
-        if (!data->hasFormat("application/octet-stream"))
+        if (!data->hasFormat(QStringLiteral("application/octet-stream")))
             return false;
 
         int begin_row;
@@ -166,7 +170,7 @@ namespace kt
         else
             begin_row = rowCount(QModelIndex());
 
-        QByteArray file_data = data->data("application/octet-stream");
+        QByteArray file_data = data->data(QStringLiteral("application/octet-stream"));
         QDataStream in(&file_data, QIODevice::ReadOnly);
         QList<Uint32> files;
         in >> files;
@@ -222,8 +226,9 @@ namespace kt
             tmp.append(order.takeAt(row));
         }
 
+        beginResetModel();
         order = tmp + order;
-        reset();
+        endResetModel();
     }
 
     void DownloadOrderModel::moveDown(int row, int count)
@@ -250,8 +255,9 @@ namespace kt
             tmp.append(order.takeAt(row));
         }
 
+        beginResetModel();
         order = order + tmp;
-        reset();
+        endResetModel();
     }
 
     struct NameCompare
@@ -269,8 +275,9 @@ namespace kt
 
     void DownloadOrderModel::sortByName()
     {
-        qSort(order.begin(), order.end(), NameCompare(tor));
-        reset();
+        beginResetModel();
+        std::sort(order.begin(), order.end(), NameCompare(tor));
+        endResetModel();
     }
 
     struct AlbumTrackCompare
@@ -280,7 +287,7 @@ namespace kt
 
         int getTrack(const QString& title)
         {
-            QRegExp exp(".*(\\d+)\\s.*\\.\\w*", Qt::CaseInsensitive);
+            QRegExp exp(QLatin1String(".*(\\d+)\\s.*\\.\\w*"), Qt::CaseInsensitive);
             int pos = exp.indexIn(title);
             if (pos > -1)
             {
@@ -316,8 +323,9 @@ namespace kt
 
     void DownloadOrderModel::sortByAlbumTrackOrder()
     {
-        qSort(order.begin(), order.end(), AlbumTrackCompare(tor));
-        reset();
+        beginResetModel();
+        std::sort(order.begin(), order.end(), AlbumTrackCompare(tor));
+        endResetModel();
     }
 
     struct SeasonEpisodeCompare
@@ -328,11 +336,11 @@ namespace kt
         bool getSeasonAndEpisode(const QString& title, int& season, int& episode)
         {
             QStringList se_formats;
-            se_formats << "(\\d+)x(\\d+)"
-                       << "S(\\d+)E(\\d+)"
-                       << "(\\d+)\\.(\\d+)"
-                       << "S(\\d+)\\.E(\\d+)"
-                       << "Season\\s(\\d+).*Episode\\s(\\d+)";
+            se_formats << QStringLiteral("(\\d+)x(\\d+)")
+                       << QStringLiteral("S(\\d+)E(\\d+)")
+                       << QStringLiteral("(\\d+)\\.(\\d+)")
+                       << QStringLiteral("S(\\d+)\\.E(\\d+)")
+                       << QStringLiteral("Season\\s(\\d+).*Episode\\s(\\d+)");
 
             foreach (const QString& format, se_formats)
             {
@@ -392,7 +400,8 @@ namespace kt
 
     void DownloadOrderModel::sortBySeasonsAndEpisodes()
     {
-        qSort(order.begin(), order.end(), SeasonEpisodeCompare(tor));
-        reset();
+        beginResetModel();
+        std::sort(order.begin(), order.end(), SeasonEpisodeCompare(tor));
+        endResetModel();
     }
 }

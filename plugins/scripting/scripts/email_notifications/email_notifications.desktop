@@ -1,10 +1,11 @@
 [Desktop Entry]
 Name=E-Mail Notifications
 Name[ar]=إخطارات البريد الإلكترونيّ
+Name[ast]=Avisos per corréu
 Name[bg]=Уведомления по е-поща
 Name[bs]=Obavještenja E-poštom
-Name[ca]=Notificacions de correu electrònic
-Name[ca@valencia]=Notificacions de correu electrònic
+Name[ca]=Notificacions per correu electrònic
+Name[ca@valencia]=Notificacions per correu electrònic
 Name[cs]=Upozornění e-mailem
 Name[da]=E-mail-bekendtgørelser
 Name[de]=E-Mail-Benachrichtigungen
@@ -66,7 +67,7 @@ Comment[et]=Skript sündmustest teavitamiseks e-postitsi
 Comment[fi]=Sähköpostitse tapahtumista tiedottava skripti
 Comment[fr]=Script pour vous avertir d'évènements par courrier électronique
 Comment[ga]=Script a chuireann teagmhais in iúl duit trí ríomhphost
-Comment[gl]=Un script para notificarlle por correo os sucesos.
+Comment[gl]=Un script para notificarlle por correo os eventos.
 Comment[hu]=Értesítés az eseményekről e-mailen keresztül
 Comment[is]=Skrifta til að láta þig vita að uppákomum með tölvupósti
 Comment[it]=Script per notificare gli eventi usando messaggi di posta
@@ -103,7 +104,7 @@ Type=KTorrentScript
 Icon=mail-send
 X-KTorrent-Script-Author=Joris Guisson
 X-KTorrent-Script-Email=joris.guisson@gmail.com
-X-KTorrent-Script-Website=http://ktorrent.org/
+X-KTorrent-Script-Website=http://kde.org/applications/internet/ktorrent/
 X-KTorrent-Script-License=GPL
 X-KTorrent-Script-File=email_notifications.py
 

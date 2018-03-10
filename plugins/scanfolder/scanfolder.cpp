@@ -17,14 +17,17 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "scanfolder.h"
 
 #include <QDir>
-#include <klocalizedstring.h>
-#include <KFileItem>
+
 #include <KConfigGroup>
+#include <KFileItem>
+#include <KLocalizedString>
 #include <KSharedConfig>
-#include <kio/job.h>
+#include <KIO/Job>
+
 #include <util/log.h>
 #include <util/functions.h>
 #include <util/fileops.h>
@@ -41,7 +44,7 @@ namespace kt
     ScanFolder::ScanFolder(ScanThread* scanner, const QUrl &dir, bool recursive)
         : scanner(scanner),
           scan_directory(dir),
-          watch(0),
+          watch(nullptr),
           recursive(recursive)
     {
         bt::Out(SYS_SNF | LOG_NOTICE) << "ScanFolder: scanning " << dir << endl;
@@ -52,8 +55,8 @@ namespace kt
         config.sync();
 
         watch = new KDirWatch(this);
-        connect(watch, SIGNAL(dirty(QString)), this, SLOT(scanDir(QString)));
-        connect(watch, SIGNAL(created(QString)), this, SLOT(scanDir(QString)));
+        connect(watch, &KDirWatch::dirty, this, &ScanFolder::scanDir);
+        connect(watch, &KDirWatch::created, this, &ScanFolder::scanDir);
 
         watch->addDir(dir.toLocalFile(), recursive ? KDirWatch::WatchSubDirs : KDirWatch::WatchDirOnly);
 

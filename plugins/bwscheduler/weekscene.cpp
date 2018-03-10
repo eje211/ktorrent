@@ -18,17 +18,20 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "weekscene.h"
 
-#include <math.h>
-#include <kformat.h>
-#include <klocalizedstring.h>
-#include <QPalette>
+#include <cmath>
+
+#include <KFormat>
+#include <KLocalizedString>
+
 #include <QFontMetricsF>
-#include <QGraphicsRectItem>
 #include <QGraphicsLineItem>
-#include <QGraphicsTextItem>
+#include <QGraphicsRectItem>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsTextItem>
+#include <QPalette>
 
 #include <util/functions.h>
 #include <util/log.h>
@@ -45,7 +48,7 @@ namespace kt
 
     WeekScene::WeekScene(QObject* parent)
         : QGraphicsScene(parent),
-          schedule(0)
+          schedule(nullptr)
     {
         addCalendar();
     }
@@ -90,14 +93,14 @@ namespace kt
 
     void WeekScene::addCalendar()
     {
-        QGraphicsTextItem* tmp = addText("Dinges");
+        QGraphicsTextItem* tmp = addText(QStringLiteral("Dinges"));
         QFontMetricsF fm(tmp->font());
         removeItem(tmp);
         delete tmp;
 
 
         // first add 7 rectangles for each day of the week
-        xoff = fm.width("00:00") + 10;
+        xoff = fm.width(QStringLiteral("00:00")) + 10;
         yoff = 2 * fm.height() + 10;
         day_width = LongestDayWidth(fm) * 1.5;
         hour_height = fm.height() * 1.5;
@@ -174,8 +177,8 @@ namespace kt
 
     void WeekScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
     {
-        QList<QGraphicsItem*> gis = items(ev->scenePos());
-        foreach (QGraphicsItem* gi, gis)
+        const QList<QGraphicsItem*> gis = items(ev->scenePos());
+        for (QGraphicsItem* gi : gis)
         {
             if (gi->zValue() == 3)
             {
@@ -297,10 +300,10 @@ namespace kt
         QPen pen(SchedulerPluginSettings::scheduleLineColor());
         QBrush brush(SchedulerPluginSettings::scheduleBackgroundColor());
 
-        foreach (QGraphicsLineItem* line, lines)
+        for (QGraphicsLineItem* line : qAsConst(lines))
             line->setPen(pen);
 
-        foreach (QGraphicsRectItem* rect, rects)
+        for (QGraphicsRectItem* rect : qAsConst(rects))
         {
             rect->setPen(pen);
             rect->setBrush(brush);

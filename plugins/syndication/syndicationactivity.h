@@ -22,8 +22,9 @@
 #define SYNDICATIONACTIVITY_H
 
 #include <QSplitter>
+#include <Syndication/Loader>
+
 #include <interfaces/activity.h>
-#include <syndication/loader.h>
 
 namespace kt
 {
@@ -38,19 +39,18 @@ namespace kt
 
     class SyndicationActivity : public kt::Activity
     {
-        Q_OBJECT
+    Q_OBJECT
+
     public:
         SyndicationActivity(SyndicationPlugin* sp, QWidget* parent);
-        virtual ~SyndicationActivity();
+        ~SyndicationActivity();
 
         void loadState(KSharedConfigPtr cfg);
         void saveState(KSharedConfigPtr cfg);
         Filter* addNewFilter();
 
-    private slots:
         void addFeed();
         void removeFeed();
-        void loadingComplete(Syndication::Loader* loader, Syndication::FeedPtr feed, Syndication::ErrorCode status);
         void showFeed(Feed* f);
         void downloadLink(const QUrl& url, const QString& group, const QString& location, const QString& move_on_completion, bool silently);
         void addFilter();
@@ -59,6 +59,9 @@ namespace kt
         void editFilter(Filter* f);
         void manageFilters();
         void editFeedName();
+
+    public Q_SLOTS:
+        void loadingComplete(Syndication::Loader* loader, Syndication::FeedPtr feed, Syndication::ErrorCode status);
 
     private:
         FeedList* feed_list;

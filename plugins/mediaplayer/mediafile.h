@@ -21,10 +21,11 @@
 #ifndef KT_MEDIAFILE_H
 #define KT_MEDIAFILE_H
 
+#include <QSharedPointer>
 #include <QString>
 #include <QWeakPointer>
-#include <QSharedPointer>
 #include <Phonon/MediaSource>
+
 #include <util/constants.h>
 #include <torrent/torrentfilestream.h>
 
@@ -68,7 +69,7 @@ namespace kt
             @param mf The MediaFile to copy
         */
         MediaFile(const MediaFile& mf);
-        virtual ~MediaFile();
+        ~MediaFile();
 
         /// Get the path of the MediaFile
         QString path() const;

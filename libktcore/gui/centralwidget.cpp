@@ -17,9 +17,11 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
+
 #include <QAction>
 #include <QIcon>
 #include <KConfigGroup>
+
 #include "centralwidget.h"
 #include <interfaces/activity.h>
 
@@ -30,7 +32,7 @@ namespace kt
     CentralWidget::CentralWidget(QWidget* parent) : QStackedWidget(parent)
     {
         activity_switching_group = new QActionGroup(this);
-        connect(activity_switching_group, SIGNAL(triggered(QAction*)), this, SLOT(switchActivity(QAction*)));
+        connect(activity_switching_group, &QActionGroup::triggered, this, &CentralWidget::switchActivity);
     }
 
     CentralWidget::~CentralWidget()
@@ -45,8 +47,8 @@ namespace kt
         if (act)
             setCurrentActivity(act);
 
-        QList<QAction*> actions = activity_switching_group->actions();
-        foreach (QAction* a, actions)
+        const QList<QAction*> actions = activity_switching_group->actions();
+        for (QAction* a : actions)
         {
             if (a->data().value<QObject*>() == act || act == 0)
             {
@@ -54,17 +56,29 @@ namespace kt
                 break;
             }
         }
+
+        for (QAction* a : actions)
+        {
+            a->setPriority( (QAction::Priority) g.readEntry(QLatin1String("Priority_") + a->objectName(), (int)QAction::NormalPriority) );
+        }
     }
 
     void CentralWidget::saveState(KSharedConfigPtr cfg)
     {
         KConfigGroup g = cfg->group("MainWindow");
         g.writeEntry("current_activity", currentIndex());
+
+        for (QAction* a : activity_switching_group->actions())
+        {
+            g.writeEntry(QLatin1String("Priority_") + a->objectName(), (int)a->priority());
+        }
     }
 
     QAction * CentralWidget::addActivity(Activity* act)
     {
         QAction * a = new QAction(QIcon::fromTheme(act->icon()), act->name(), this);
+        // act->name() is i18n'ed, use <icon name, weight> as uniq id
+        a->setObjectName(act->icon() + QLatin1String("_wght_") + QString::number(act->weight()));
         activity_switching_group->addAction(a);
         a->setCheckable(true);
         a->setToolTip(act->toolTip());
@@ -76,7 +90,7 @@ namespace kt
     void CentralWidget::removeActivity(Activity* act)
     {
         QList<QAction*> actions = activity_switching_group->actions();
-        foreach (QAction* a, actions)
+        for (QAction* a : actions)
         {
             if (a->data().value<QObject*>() == act)
             {

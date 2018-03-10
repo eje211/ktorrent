@@ -20,9 +20,10 @@
 
 #include "stringcompletionmodel.h"
 
-#include <QSet>
 #include <QFile>
+#include <QSet>
 #include <QTextStream>
+
 #include <util/log.h>
 
 using namespace bt;
@@ -51,7 +52,7 @@ namespace kt
         QSet<QString> strings;
         while (!fptr.atEnd())
         {
-            QString line = fptr.readLine().trimmed();
+            QString line = QString::fromUtf8(fptr.readLine().trimmed());
             if (line.length() > 0)
                 strings.insert(line);
         }
@@ -69,8 +70,8 @@ namespace kt
         }
 
         QTextStream out(&fptr);
-        QStringList sl = stringList();
-        foreach (const QString& s, sl)
+        const QStringList sl = stringList();
+        for (const QString& s : sl)
             out << s << endl;
     }
 

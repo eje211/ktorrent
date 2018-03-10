@@ -15,13 +15,16 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <QVBoxLayout>
-#include <klocalizedstring.h>
+
 #include <QPushButton>
-#include <qtreewidget.h>
-#include <kpluginselector.h>
+#include <QTreeWidget>
+#include <QVBoxLayout>
+
+#include <KLocalizedString>
+#include <KPluginSelector>
+
 #include <util/constants.h>
 #include <util/log.h>
 #include "pluginmanager.h"
@@ -33,13 +36,13 @@ using namespace bt;
 namespace kt
 {
     PluginActivity::PluginActivity(PluginManager* pman)
-        : Activity(i18n("Plugins"), "preferences-plugin", 5, 0), pman(pman)
+        : Activity(i18n("Plugins"), QStringLiteral("plugins"), 5, 0), pman(pman)
     {
         QVBoxLayout* layout = new QVBoxLayout(this);
         layout->setMargin(0);
         pmw = new KPluginSelector(this);
-        connect(pmw, SIGNAL(changed(bool)), this, SLOT(changed()));
-        connect(pmw, SIGNAL(configCommitted(const QByteArray&)), this, SLOT(changed()));
+        connect(pmw, &KPluginSelector::changed, this, &PluginActivity::changed);
+        connect(pmw, &KPluginSelector::configCommitted, this, &PluginActivity::changed);
         layout->addWidget(pmw);
     }
 

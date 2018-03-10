@@ -18,7 +18,6 @@
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
 
-
 #ifndef KT_SHUTDOWNPLUGIN_H
 #define KT_SHUTDOWNPLUGIN_H
 
@@ -35,16 +34,15 @@ namespace kt
         Q_OBJECT
     public:
         ShutdownPlugin(QObject* parent, const QVariantList& args);
-        virtual ~ShutdownPlugin();
+        ~ShutdownPlugin();
 
-        virtual bool versionCheck(const QString& version) const;
-        virtual void unload();
-        virtual void load();
+        bool versionCheck(const QString& version) const override;
+        void unload() override;
+        void load() override;
 
     public slots:
         void shutdownComputer();
         void lock();
-        void standby();
         void suspendToDisk();
         void suspendToRam();
 

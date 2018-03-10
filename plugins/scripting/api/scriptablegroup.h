@@ -18,11 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTAPISCRIPTABLEGROUP_H
 #define KTAPISCRIPTABLEGROUP_H
 
 #include <groups/group.h>
-#include <kross/core/object.h>
+#include <Kross/Core/Object>
 
 namespace kt
 {
@@ -37,9 +38,9 @@ namespace kt
         DBus* api;
     public:
         ScriptableGroup(const QString& name, const QString& icon, const QString& path, Kross::Object::Ptr script, DBus* api);
-        virtual ~ScriptableGroup();
+        ~ScriptableGroup();
 
-        virtual bool isMember(bt::TorrentInterface* tor);
+        bool isMember(bt::TorrentInterface* tor) override;
     };
 
 }

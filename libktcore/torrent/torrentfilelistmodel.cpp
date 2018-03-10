@@ -18,17 +18,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "torrentfilelistmodel.h"
 
-#include <klocalizedstring.h>
-#include <QIcon>
+#include <KLocalizedString>
 
+#include <QIcon>
+#include <QMimeDatabase>
+#include <QMimeType>
 #include <QTreeView>
+
 #include <interfaces/torrentinterface.h>
 #include <interfaces/torrentfileinterface.h>
 #include <util/functions.h>
-#include <QMimeDatabase>
-#include <QMimeType>
 
 using namespace bt;
 
@@ -308,7 +310,7 @@ namespace kt
 
     void TorrentFileListModel::changePriority(const QModelIndexList& indexes, bt::Priority newpriority)
     {
-        foreach (const QModelIndex& idx, indexes)
+        for (const QModelIndex& idx : indexes)
         {
             setData(idx, newpriority, Qt::UserRole);
         }

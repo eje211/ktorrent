@@ -18,18 +18,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "viewmodel.h"
 
-#include <math.h>
+#include <cmath>
 
 #include <QBrush>
 #include <QColor>
-#include <QPalette>
-#include <QMimeData>
-#include <QLocale>
 #include <QIcon>
+#include <QLocale>
+#include <QMimeData>
+#include <QPalette>
 
-#include <klocalizedstring.h>
+#include <KLocalizedString>
 
 #include <util/log.h>
 #include <util/sha1hash.h>
@@ -357,31 +358,31 @@ namespace kt
         {
         case NOT_STARTED:
         case STOPPED:
-            return QIcon::fromTheme("kt-stop");
+            return QIcon::fromTheme(QStringLiteral("kt-stop"));
         case SEEDING_COMPLETE:
         case DOWNLOAD_COMPLETE:
-            return QIcon::fromTheme("task-complete");
+            return QIcon::fromTheme(QStringLiteral("task-complete"));
         case SEEDING:
         case SUPERSEEDING:
-            return QIcon::fromTheme("go-up");
+            return QIcon::fromTheme(QStringLiteral("go-up"));
         case DOWNLOADING:
-            return QIcon::fromTheme("go-down");
+            return QIcon::fromTheme(QStringLiteral("go-down"));
         case STALLED:
             if (tc->getStats().completed)
-                return QIcon::fromTheme("go-up");
+                return QIcon::fromTheme(QStringLiteral("go-up"));
             else
-                return QIcon::fromTheme("go-down");
+                return QIcon::fromTheme(QStringLiteral("go-down"));
         case ALLOCATING_DISKSPACE:
-            return QIcon::fromTheme("drive-harddisk");
+            return QIcon::fromTheme(QStringLiteral("drive-harddisk"));
         case ERROR:
         case NO_SPACE_LEFT:
-            return QIcon::fromTheme("dialog-error");
+            return QIcon::fromTheme(QStringLiteral("dialog-error"));
         case QUEUED:
-            return QIcon::fromTheme("download-later");
+            return QIcon::fromTheme(QStringLiteral("download-later"));
         case CHECKING_DATA:
-            return QIcon::fromTheme("kt-check-data");
+            return QIcon::fromTheme(QStringLiteral("kt-check-data"));
         case PAUSED:
-            return QIcon::fromTheme("kt-pause");
+            return QIcon::fromTheme(QStringLiteral("kt-pause"));
         default:
             return QVariant();
         }
@@ -391,6 +392,7 @@ namespace kt
 
     ViewModel::ViewModel(Core* core, View* parent) : QAbstractTableModel(parent), core(core), view(parent)
     {
+        connect(core, &Core::aboutToQuit, this, &ViewModel::onExit); // model must be in core's thread to be notified in time
         connect(core, &Core::torrentAdded, this, &ViewModel::addTorrent);
         connect(core, &Core::torrentRemoved, this, &ViewModel::removeTorrent);
         sort_column = 0;
@@ -425,7 +427,7 @@ namespace kt
             i->highlight = true;
 
             // Turn off highlight for previously highlighted torrents
-            foreach (Item* item, torrents)
+            for (Item* item : qAsConst(torrents))
                 if (item->highlight)
                     item->highlight = false;
         }
@@ -435,7 +437,7 @@ namespace kt
 
         // Scroll to new torrent
         int idx = 0;
-        foreach (Item* item, torrents)
+        for (Item* item : qAsConst(torrents))
         {
             if (item->tc == ti)
             {
@@ -449,7 +451,7 @@ namespace kt
     void ViewModel::removeTorrent(bt::TorrentInterface* ti)
     {
         int idx = 0;
-        foreach (Item* item, torrents)
+        for (Item* item : qAsConst(torrents))
         {
             if (item->tc == ti)
             {
@@ -475,7 +477,7 @@ namespace kt
         num_visible = 0;
 
         int row = 0;
-        foreach (Item* i, torrents)
+        for (Item* i : qAsConst(torrents))
         {
             bool hidden = !i->visible(group, filter_string);
             if (!hidden && i->update(row, sort_column, update_list, this))
@@ -724,8 +726,8 @@ namespace kt
     QStringList ViewModel::mimeTypes() const
     {
         QStringList types;
-        types << "application/x-ktorrent-drag-object";
-        types << "text/uri-list";
+        types << QStringLiteral("application/x-ktorrent-drag-object");
+        types << QStringLiteral("text/uri-list");
         return types;
     }
 
@@ -736,7 +738,7 @@ namespace kt
 
         QDataStream stream(&encoded_data, QIODevice::WriteOnly);
         QStringList hashes;
-        foreach (const QModelIndex& index, indexes)
+        for (const QModelIndex& index : indexes)
         {
             if (!index.isValid())
                 continue;
@@ -752,10 +754,10 @@ namespace kt
             }
         }
 
-        foreach (const QString& s, hashes)
+        for (const QString& s : qAsConst(hashes))
             stream << s;
 
-        mime_data->setData("application/x-ktorrent-drag-object", encoded_data);
+        mime_data->setData(QStringLiteral("application/x-ktorrent-drag-object"), encoded_data);
         return mime_data;
     }
 
@@ -770,8 +772,8 @@ namespace kt
         if (!data->hasUrls())
             return false;
 
-        QList<QUrl> files = data->urls();
-        foreach (QUrl file, files)
+        const QList<QUrl> files = data->urls();
+        for (const QUrl &file : files)
         {
             core->load(file, QString());
         }
@@ -786,7 +788,7 @@ namespace kt
 
     void ViewModel::torrentsFromIndexList(const QModelIndexList& idx, QList<bt::TorrentInterface*> & tlist)
     {
-        foreach (const QModelIndex& i, idx)
+        for (const QModelIndex& i : idx)
         {
             bt::TorrentInterface* tc = torrentFromIndex(i);
             if (tc)
@@ -820,7 +822,7 @@ namespace kt
 
     void ViewModel::allTorrents(QList<bt::TorrentInterface*> & tlist) const
     {
-        foreach (Item* item, torrents)
+        for (Item* item : qAsConst(torrents))
         {
             if (item->visible(group, filter_string))
                 tlist.append(item->tc);
@@ -847,6 +849,15 @@ namespace kt
         torrents.remove(row, count);
         endRemoveRows();
         return true;
+    }
+
+    void ViewModel::onExit()
+    {
+        // items should be removed before Core delete their tc data.
+        for (Item* item : qAsConst(torrents))
+        {
+            removeTorrent(item->tc);
+        }
     }
 
     class ViewModelItemCmp

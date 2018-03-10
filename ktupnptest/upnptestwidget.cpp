@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <util/log.h>
 #include <upnp/upnpmcastsocket.h>
 #include <upnp/upnprouter.h>
@@ -29,10 +30,10 @@ using namespace bt;
 UPnPTestWidget::UPnPTestWidget(QWidget* parent) : QWidget(parent)
 {
     setupUi(this);
-    connect(m_find_routers, SIGNAL(clicked()), this, SLOT(findRouters()));
-    connect(m_forward, SIGNAL(clicked()), this, SLOT(doForward()));
-    connect(m_undo_forward, SIGNAL(clicked()), this, SLOT(undoForward()));
-    connect(m_verbose, SIGNAL(toggled(bool)), this, SLOT(verboseModeChecked(bool)));
+    connect(m_find_routers, &QPushButton::clicked, this, &UPnPTestWidget::findRouters);
+    connect(m_forward, &QPushButton::clicked, this, &UPnPTestWidget::doForward);
+    connect(m_undo_forward, &QPushButton::clicked, this, &UPnPTestWidget::undoForward);
+    connect(m_verbose, &QCheckBox::toggled, this, &UPnPTestWidget::verboseModeChecked);
     mcast_socket = 0;
     router = 0;
 
@@ -54,7 +55,7 @@ void UPnPTestWidget::doForward()
     QString proto = m_protocol->currentText();
     bt::Uint16 port = m_port->value();
     Out(SYS_GEN | LOG_DEBUG) << "Forwarding port " << port << " (" << proto << ")" << endl;
-    net::Port p(port, proto == "UDP" ? net::UDP : net::TCP, true);
+    net::Port p(port, proto == QStringLiteral("UDP") ? net::UDP : net::TCP, true);
     router->forward(p);
 }
 
@@ -63,7 +64,7 @@ void UPnPTestWidget::undoForward()
     QString proto = m_protocol->currentText();
     bt::Uint16 port = m_port->value();
     Out(SYS_GEN | LOG_DEBUG) << "Unforwarding port " << port << " (" << proto << ")" << endl;
-    net::Port p(port, proto == "UDP" ? net::UDP : net::TCP, true);
+    net::Port p(port, proto == QStringLiteral("UDP") ? net::UDP : net::TCP, true);
     router->undoForward(p);
 }
 
@@ -73,7 +74,7 @@ void UPnPTestWidget::findRouters()
     if (!mcast_socket)
     {
         mcast_socket = new UPnPMCastSocket(m_verbose->isChecked());
-        connect(mcast_socket, SIGNAL(discovered(bt::UPnPRouter*)), this, SLOT(discovered(bt::UPnPRouter*)));
+        connect(mcast_socket, &UPnPMCastSocket::discovered, this, &UPnPTestWidget::discovered);
     }
 
     mcast_socket->discover();
@@ -101,5 +102,3 @@ void UPnPTestWidget::verboseModeChecked(bool on)
     if (mcast_socket)
         mcast_socket->setVerbose(on);
 }
-
-#include "upnptestwidget.moc"

@@ -20,23 +20,25 @@
 #include "searchtoolbar.h"
 
 #include <QAction>
-#include <QPushButton>
-#include <QFile>
-#include <QTextStream>
-#include <qapplication.h>
+#include <QApplication>
 #include <QCheckBox>
-#include <QLineEdit>
-#include <QLabel>
+#include <QFile>
 #include <QIcon>
-#include <kguiitem.h>
-#include <kiconloader.h>
-#include <kcombobox.h>
-#include <kcompletion.h>
-#include <kmainwindow.h>
-#include <klocalizedstring.h>
-#include <kstandardguiitem.h>
-#include <kactioncollection.h>
-#include <ktoolbarlabelaction.h>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QTextStream>
+
+#include <KActionCollection>
+#include <KComboBox>
+#include <KCompletion>
+#include <KGuiItem>
+#include <KIconLoader>
+#include <KLocalizedString>
+#include <KMainWindow>
+#include <KStandardGuiItem>
+#include <KToolBarLabelAction>
+
 #include <interfaces/functions.h>
 #include <util/fileops.h>
 #include <util/log.h>
@@ -72,7 +74,7 @@ namespace kt
         ac->addAction(QLatin1String("search_text"), search_text_action);
 
         m_search_new_tab = new QAction(QIcon::fromTheme(QLatin1String("edit-find")), i18n("Search"), this);
-        connect(m_search_new_tab, SIGNAL(triggered()), this, SLOT(searchNewTabPressed()));
+        connect(m_search_new_tab, &QAction::triggered, this, &SearchToolBar::searchNewTabPressed);
         m_search_new_tab->setEnabled(false);
         ac->addAction(QLatin1String("search"), m_search_new_tab);
 
@@ -81,7 +83,7 @@ namespace kt
         m_search_engine = new KComboBox((QWidget*)0);
         search_engine_action->setDefaultWidget(m_search_engine);
         ac->addAction(QLatin1String("search_engine"), search_engine_action);
-        connect(m_search_engine, SIGNAL(currentIndexChanged(int)), this, SLOT(selectedEngineChanged(int)));
+        connect(m_search_engine, static_cast<void (KComboBox::*)(int)>(&KComboBox::currentIndexChanged), this, &SearchToolBar::selectedEngineChanged);
 
         QWidgetAction * search_engine_label_action = new QWidgetAction(this);
         search_engine_label_action->setText(i18n("Search Engine Label"));

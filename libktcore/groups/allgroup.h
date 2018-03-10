@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTALLGROUP_H
 #define KTALLGROUP_H
 
@@ -32,9 +33,9 @@ namespace kt
     {
     public:
         AllGroup();
-        virtual ~AllGroup();
+        ~AllGroup();
 
-        virtual bool isMember(TorrentInterface* tor);
+        bool isMember(TorrentInterface* tor) override;
 
     };
 

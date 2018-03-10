@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTLINKDOWNLOADER_H
 #define KTLINKDOWNLOADER_H
 
@@ -40,12 +41,11 @@ namespace kt
         Q_OBJECT
     public:
         LinkDownloader(const QUrl& url, CoreInterface* core, bool verbose, const QString& group, const QString& location, const QString& move_on_completion);
-        virtual ~LinkDownloader();
+        ~LinkDownloader();
 
         /// Start the download proces
         void start();
 
-    private slots:
         void downloadFinished(KJob* j);
         void torrentDownloadFinished(KJob* j);
 
@@ -55,7 +55,7 @@ namespace kt
         void tryNextLink();
         void tryTorrentLinks();
 
-    signals:
+    Q_SIGNALS:
         void finished(bool ok);
 
     private:

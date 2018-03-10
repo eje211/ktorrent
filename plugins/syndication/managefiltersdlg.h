@@ -18,10 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTMANAGEFILTERSDLG_H
 #define KTMANAGEFILTERSDLG_H
 
-#include <kdialog.h>
+#include <QDialog>
+
 #include "ui_managefiltersdlg.h"
 
 namespace kt
@@ -34,14 +36,12 @@ namespace kt
     /**
         Dialog to manage filters for a feed
     */
-    class ManageFiltersDlg : public KDialog, public Ui_ManageFiltersDlg
+    class ManageFiltersDlg : public QDialog, public Ui_ManageFiltersDlg
     {
-        Q_OBJECT
     public:
         ManageFiltersDlg(Feed* feed, FilterList* filters, SyndicationActivity* act, QWidget* parent);
-        virtual ~ManageFiltersDlg();
+        ~ManageFiltersDlg();
 
-    private slots:
         void add();
         void remove();
         void removeAll();
@@ -50,7 +50,7 @@ namespace kt
         void availableSelectionChanged(const QItemSelection& sel, const QItemSelection& desel);
 
     private:
-        virtual void accept();
+        void accept() override;
 
     private:
         Feed* feed;

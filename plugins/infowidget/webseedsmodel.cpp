@@ -18,8 +18,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "webseedsmodel.h"
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+
 #include <interfaces/webseedinterface.h>
 #include <util/functions.h>
 
@@ -41,6 +44,7 @@ namespace kt
     void WebSeedsModel::changeTC(bt::TorrentInterface* tc)
     {
         curr_tc = tc;
+        beginResetModel();
         items.clear();
         if (tc)
         {
@@ -54,7 +58,7 @@ namespace kt
                 items.append(item);
             }
         }
-        reset();
+        endResetModel();
     }
 
     bool WebSeedsModel::update()

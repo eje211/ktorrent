@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTPROXYPREF_H
 #define KTPROXYPREF_H
 
@@ -35,11 +36,11 @@ namespace kt
         Q_OBJECT
     public:
         ProxyPref(QWidget* parent);
-        virtual ~ProxyPref();
+        ~ProxyPref();
 
-        virtual void loadDefaults();
-        virtual void loadSettings();
-        virtual void updateSettings();
+        void loadDefaults() override;
+        void loadSettings() override;
+        void updateSettings() override;
     private slots:
         void socksEnabledToggled(bool on);
         void usernamePasswordToggled(bool on);

@@ -1,0 +1,51 @@
+From 653c37099a953d24631b5a4a202703ffed3a5b0f Mon Sep 17 00:00:00 2001
+From: Emmanuel Eytan <list@regularoddity.com>
+Date: Mon, 5 Mar 2018 11:59:39 -0800
+Subject: [PATCH] First working version.
+
+---
+ plugins/CMakeLists.txt               | 5 +++++
+ plugins/htmlinterface/CMakeLists.txt | 5 -----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/plugins/CMakeLists.txt b/plugins/CMakeLists.txt
+index 43c55448..27b7fd2c 100644
+--- a/plugins/CMakeLists.txt
++++ b/plugins/CMakeLists.txt
+@@ -29,6 +29,7 @@ if (KF5_WebKit_FOUND AND KF5_IconThemes_FOUND)
+ #  macro_kt_plugin(ENABLE_SEARCH_PLUGIN search search)
+ endif()
+ #macro_kt_plugin(ENABLE_WEBINTERFACE_PLUGIN webinterface webinterface)
++macro_kt_plugin(ENABLE_HTMLINTERFACE_PLUGIN htmlinterface htmlinterface)
+ macro_kt_plugin(ENABLE_SCANFOLDER_PLUGIN scanfolder scanfolder)
+ macro_kt_plugin(ENABLE_IPFILTER_PLUGIN ipfilter ipfilter)
+ macro_kt_plugin(ENABLE_STATS_PLUGIN stats stats)
+@@ -47,6 +48,10 @@ endif()
+ if (KF5_DNSSD_FOUND)
+   macro_kt_plugin(ENABLE_ZEROCONF_PLUGIN zeroconf zeroconf)
+ endif()
++if (HAVE_HTMLINTERFACE)
++  macro_kt_plugin(ENABLE_HTMLINTERFACE_PLUGIN htmlinterface htmlinterface)
++endif()
++
+ macro_kt_plugin(ENABLE_MAGNETGENERATOR_PLUGIN magnetgenerator magnetgenerator)
+ 
+ #macro_kt_plugin(ENABLE_STREAMING_PLUGIN streaming streaming)
+diff --git a/plugins/htmlinterface/CMakeLists.txt b/plugins/htmlinterface/CMakeLists.txt
+index 944b342d..2b997ebe 100644
+--- a/plugins/htmlinterface/CMakeLists.txt
++++ b/plugins/htmlinterface/CMakeLists.txt
+@@ -18,10 +18,5 @@ target_link_libraries(
+     KF5::XmlGui
+ )
+ 
+-target_link_libraries(ktorrent_htmlinterface ${Boost_SYSTEM_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_DATE_TIME_LIBRARY})
+-target_link_libraries(ktorrent_htmlinterface z)
+-target_link_libraries(ktorrent_htmlinterface ${CMAKE_THREAD_LIBS_INIT})
+-target_link_libraries(ktorrent_htmlinterface ${CMAKE_CURRENT_BINARY_DIR}/libhttpserver/liblibhttpserver.a)
+-
+ install(TARGETS ktorrent_htmlinterface  DESTINATION ${KTORRENT_PLUGIN_INSTALL_DIR} )
+ install(FILES ktorrent_htmlinterface.rc DESTINATION ${KXMLGUI_INSTALL_DIR}/ktorrent )
+-- 
+2.14.1
+

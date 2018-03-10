@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "ipfilterwidget.h"
 
 #include <peer/accessmanager.h>
@@ -26,11 +27,13 @@
 #include <util/constants.h>
 #include <interfaces/functions.h>
 
-#include <QUrl>
-#include <QFileDialog>
+#include <regex>
 
-#include <KMessageBox>
+#include <QFileDialog>
+#include <QUrl>
+
 #include <KGuiItem>
+#include <KMessageBox>
 #include <KStandardGuiItem>
 
 #include "ipfilterlist.h"
@@ -94,18 +97,15 @@ namespace kt
 
     void IPFilterWidget::add()
     {
-        int var = 0;
-
         try
         {
-            QRegExp rx("(([*]|[0-9]{1,3}).([*]|[0-9]{1,3}).([*]|[0-9]{1,3}).([*]|[0-9]{1,3}))"
+            std::regex rx("(([*]|[0-9]{1,3}).([*]|[0-9]{1,3}).([*]|[0-9]{1,3}).([*]|[0-9]{1,3}))"
                        "|(([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})-"
                        "([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}))");
-            QRegExpValidator v(rx, 0);
 
             QString ip = m_ip_to_add->text();
 
-            if (v.validate(ip, var) != QValidator::Acceptable || !filter_list->add(ip))
+            if (!regex_match(ip.toStdString(),rx) || !filter_list->add(ip))
             {
                 KMessageBox::sorry(this, i18n("Invalid IP address <b>%1</b>. IP addresses must be in the format 'XXX.XXX.XXX.XXX'."
                                               "<br/><br/>You can also use wildcards like '127.0.0.*' or specify ranges like '200.10.10.0-200.10.10.40'.").arg(ip));
@@ -149,7 +149,7 @@ namespace kt
     void IPFilterWidget::save()
     {
         QString sf = QFileDialog::getSaveFileName(this, i18n("Choose a filename to save under"),
-                                                 i18n("Text files") + QLatin1String(" (*.txt)"));
+                                                 i18n("Text files") + QStringLiteral(" (*.txt)"));
 
         if (sf.isEmpty())
             return;
@@ -159,7 +159,7 @@ namespace kt
 
     void IPFilterWidget::accept()
     {
-        saveFilter(kt::DataDir() + QLatin1String("ip_filter"));
+        saveFilter(kt::DataDir() + QStringLiteral("ip_filter"));
         QDialog::accept();
     }
 
@@ -169,7 +169,7 @@ namespace kt
 
         if (!fptr.open(QIODevice::WriteOnly))
         {
-            Out(SYS_GEN | LOG_NOTICE) << QString("Could not open file %1 for writing.").arg(fn) << endl;
+            Out(SYS_GEN | LOG_NOTICE) << QStringLiteral("Could not open file %1 for writing.").arg(fn) << endl;
             return;
         }
 
@@ -190,17 +190,16 @@ namespace kt
 
         QTextStream stream(&dat);
         QString line;
-        QRegExpValidator v(QRegExp(QStringLiteral("(([*]|[0-9]{1,3}).([*]|[0-9]{1,3}).([*]|[0-9]{1,3}).([*]|[0-9]{1,3}))"
+        std::regex rx("(([*]|[0-9]{1,3}).([*]|[0-9]{1,3}).([*]|[0-9]{1,3}).([*]|[0-9]{1,3}))"
                                                   "|(([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})-"
-                                                  "([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}))")), 0);
+                                                  "([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3}))");
 
         bool err = false;
-        int pos = 0;
 
         while (!stream.atEnd())
         {
             line = stream.readLine();
-            if (v.validate(line, pos) != QValidator::Acceptable)
+            if (!regex_match(line.toStdString(), rx))
             {
                 err = true;
             }

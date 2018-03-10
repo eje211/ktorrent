@@ -18,12 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ***************************************************************************/
+
 #ifndef IPBLOCKINGPREFPAGE_H
 #define IPBLOCKINGPREFPAGE_H
 
 #include <interfaces/prefpageinterface.h>
 #include <interfaces/coreinterface.h>
-#include <qthread.h>
+#include <QThread>
 #include "ui_ipblockingprefpage.h"
 #include "ipfilterplugin.h"
 

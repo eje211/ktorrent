@@ -18,7 +18,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QDBusConnection>
+
 #include <groups/group.h>
 #include <groups/groupmanager.h>
 #include "dbusgroup.h"
@@ -63,12 +65,12 @@ namespace kt
             static int invalid_groups = 0;
             while (true)
             {
-                name = "group_" + QString::number(invalid_groups++);
+                name = QStringLiteral("group_") + QString::number(invalid_groups++);
                 if (!gman->find(name))
                     break;
             }
         }
-        QString path = "/group/" + name;
+        QString path = QStringLiteral("/group/") + name;
         QDBusConnection::sessionBus().registerObject(path, this,
                 QDBusConnection::ExportScriptableSlots | QDBusConnection::ExportScriptableSignals);
     }

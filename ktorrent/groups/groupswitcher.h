@@ -21,9 +21,11 @@
 #ifndef KT_GROUPSWITCHER_H
 #define KT_GROUPSWITCHER_H
 
-#include <KToolBar>
-#include <KSharedConfig>
 #include <QActionGroup>
+
+#include <KSharedConfig>
+#include <KToolBar>
+
 #include <groups/groupmanager.h>
 
 class QToolButton;
@@ -41,7 +43,7 @@ namespace kt
         Q_OBJECT
     public:
         GroupSwitcher(View* view, GroupManager* gman, QWidget* parent);
-        virtual ~GroupSwitcher();
+        ~GroupSwitcher();
 
         /**
          * Load state of widget from config

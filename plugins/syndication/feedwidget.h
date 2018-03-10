@@ -18,11 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFEEDWIDGET_H
 #define KTFEEDWIDGET_H
 
 #include <QWidget>
-#include <kconfiggroup.h>
+#include <KConfigGroup>
+
 #include "ui_feedwidget.h"
 
 namespace kt
@@ -40,7 +42,7 @@ namespace kt
         Q_OBJECT
     public:
         FeedWidget(FilterList* filters, SyndicationActivity* act, QWidget* parent);
-        virtual ~FeedWidget();
+        ~FeedWidget();
 
         /// Set the Feed to show, can be 0
         void setFeed(Feed* feed);
@@ -50,7 +52,6 @@ namespace kt
         void loadState(KConfigGroup& g);
         void saveState(KConfigGroup& g);
 
-    private slots:
         void downloadClicked();
         void refreshClicked();
         void filtersClicked();
@@ -62,7 +63,7 @@ namespace kt
         void linkClicked(const QUrl& url);
         void resizeColumns();
 
-    signals:
+    Q_SIGNALS:
         void updateCaption(QWidget* w, const QString& text);
 
     private:

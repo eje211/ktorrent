@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QIcon>
 #include "filterlistmodel.h"
 #include "filter.h"
@@ -44,11 +45,11 @@ namespace kt
     void FilterListModel::removeFilter(Filter* f)
     {
         int idx = filters.indexOf(f);
+        beginResetModel();
         filters.removeAll(f);
         if (idx >= 0)
             removeRow(idx);
-        else
-            reset();
+        endResetModel();
     }
 
     Filter* FilterListModel::filterForIndex(const QModelIndex& idx)
@@ -107,7 +108,7 @@ namespace kt
         case Qt::DisplayRole:
             return f->filterName();
         case Qt::DecorationRole:
-            return QIcon::fromTheme("view-filter");
+            return QIcon::fromTheme(QStringLiteral("view-filter"));
         }
 
         return QVariant();
@@ -131,7 +132,8 @@ namespace kt
 
     void FilterListModel::clear()
     {
+        beginResetModel();
         filters.clear();
-        reset();
+        endResetModel();
     }
 }

@@ -20,8 +20,9 @@
 #ifndef KTLOGVIEWER_H
 #define KTLOGVIEWER_H
 
-#include <QTextBrowser>
 #include <QMutex>
+#include <QTextBrowser>
+
 #include <interfaces/activity.h>
 #include <interfaces/logmonitorinterface.h>
 #include "logflags.h"
@@ -37,9 +38,9 @@ namespace kt
         Q_OBJECT
     public:
         LogViewer(LogFlags* flags, QWidget* parent = 0);
-        virtual ~LogViewer();
+        ~LogViewer();
 
-        virtual void message(const QString& line, unsigned int arg);
+        void message(const QString& line, unsigned int arg) override;
 
         void setRichText(bool val);
         void setMaxBlockCount(int max);

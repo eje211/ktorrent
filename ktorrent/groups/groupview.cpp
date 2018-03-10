@@ -17,18 +17,21 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "groupview.h"
 
-#include <QDropEvent>
-#include <QDragEnterEvent>
-#include <QTreeWidgetItemIterator>
-#include <QInputDialog>
-#include <klocalizedstring.h>
-#include <QMenu>
 #include <QAction>
-#include <kmessagebox.h>
-#include <kactioncollection.h>
-#include <kconfiggroup.h>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QInputDialog>
+#include <QMenu>
+#include <QTreeWidgetItemIterator>
+
+#include <KActionCollection>
+#include <KConfigGroup>
+#include <KLocalizedString>
+#include <KMessageBox>
+
 #include <util/log.h>
 #include <interfaces/torrentinterface.h>
 #include <interfaces/torrentactivityinterface.h>
@@ -59,10 +62,10 @@ namespace kt
         setModel(model);
         header()->hide();
 
-        connect(this, SIGNAL(clicked(QModelIndex)), this, SLOT(onItemClicked(QModelIndex)));
-        connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
-        connect(this, SIGNAL(currentGroupChanged(kt::Group*)), view, SLOT(onCurrentGroupChanged(kt::Group*)));
-        connect(gman, SIGNAL(customGroupChanged()), this, SLOT(updateGroupCount()));
+        connect(this, &GroupView::clicked, this, &GroupView::onItemClicked);
+        connect(this, &GroupView::customContextMenuRequested, this, &GroupView::showContextMenu);
+        connect(this, &GroupView::currentGroupChanged, view, &View::onCurrentGroupChanged);
+        connect(gman, &GroupManager::customGroupChanged, this, &GroupView::updateGroupCount);
 
         setAcceptDrops(true);
         setDropIndicatorShown(true);
@@ -77,23 +80,23 @@ namespace kt
     void GroupView::setupActions(KActionCollection* col)
     {
         open_in_new_tab = new QAction(QIcon::fromTheme(QStringLiteral("list-add")), i18n("Open In New Tab"), this);
-        connect(open_in_new_tab, SIGNAL(triggered()), this, SLOT(openInNewTab()));
+        connect(open_in_new_tab, &QAction::triggered, this, &GroupView::openInNewTab);
         col->addAction(QStringLiteral("open_in_new_tab"), open_in_new_tab);
 
         new_group = new QAction(QIcon::fromTheme(QStringLiteral("document-new")), i18n("New Group"), this);
-        connect(new_group, SIGNAL(triggered()), this, SLOT(addGroup()));
+        connect(new_group, &QAction::triggered, this, &GroupView::addGroup);
         col->addAction(QStringLiteral("new_group"), new_group);
 
         edit_group = new QAction(QIcon::fromTheme(QStringLiteral("insert-text")), i18n("Edit Name"), this);
-        connect(edit_group, SIGNAL(triggered()), this, SLOT(editGroupName()));
+        connect(edit_group, &QAction::triggered, this, &GroupView::editGroupName);
         col->addAction(QStringLiteral("edit_group_name"), edit_group);
 
         remove_group = new QAction(QIcon::fromTheme(QStringLiteral("edit-delete")), i18n("Remove Group"), this);
-        connect(remove_group, SIGNAL(triggered()), this, SLOT(removeGroup()));
+        connect(remove_group, &QAction::triggered, this, &GroupView::removeGroup);
         col->addAction(QStringLiteral("remove_group"), remove_group);
 
         edit_group_policy = new QAction(QIcon::fromTheme(QStringLiteral("preferences-other")), i18n("Group Policy"), this);
-        connect(edit_group_policy, SIGNAL(triggered()), this, SLOT(editGroupPolicy()));
+        connect(edit_group_policy, &QAction::triggered, this, &GroupView::editGroupPolicy);
         col->addAction(QStringLiteral("edit_group_policy"), edit_group_policy);
     }
 
@@ -108,12 +111,12 @@ namespace kt
         QString name = QInputDialog::getText(this, QString(), i18n("Please enter the group name."), QLineEdit::Normal, QString(), &ok);
 
         if (name.isEmpty() || name.length() == 0 || !ok)
-            return 0;
+            return nullptr;
 
         if (gman->find(name))
         {
             KMessageBox::error(this, i18n("The group %1 already exists.", name));
-            return 0;
+            return nullptr;
         }
 
         Group* g = gman->newGroup(name);
@@ -147,7 +150,7 @@ namespace kt
 
         open_in_new_tab->setEnabled(g != 0);
 
-        QMenu* menu = gui->getTorrentActivity()->part()->menu("GroupsMenu");
+        QMenu* menu = gui->getTorrentActivity()->part()->menu(QStringLiteral("GroupsMenu"));
         if (menu)
             menu->popup(viewport()->mapToGlobal(p));
     }

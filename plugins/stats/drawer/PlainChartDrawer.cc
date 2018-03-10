@@ -20,7 +20,7 @@
 
 #include <PlainChartDrawer.h>
 
-#include <klocalizedstring.h>
+#include <KLocalizedString>
 #include <QFileDialog>
 
 namespace kt
@@ -28,7 +28,7 @@ namespace kt
 
     PlainChartDrawer::PlainChartDrawer(QWidget* p) :  QFrame(p), ChartDrawer(), pmCtxMenu(new QMenu(this))
     {
-        setStyleSheet(" background-color: " % QPalette().color(QPalette::Active, QPalette::Base).name() % ';');
+        setStyleSheet(QStringLiteral(" background-color: ") % QPalette().color(QPalette::Active, QPalette::Base).name() % QLatin1Char(';'));
 
         setContextMenuPolicy(Qt::CustomContextMenu);
         MakeCtxMenu();
@@ -337,7 +337,7 @@ namespace kt
     void PlainChartDrawer::MakeCtxMenu()
     {
 
-        connect(pmCtxMenu->addAction(i18nc("@action:inmenu", "Save as image…")), SIGNAL(triggered(bool)), this, SLOT(RenderToImage()));
+        connect(pmCtxMenu->addAction(i18nc("@action:inmenu", "Save as image…")), SIGNAL(triggered()), this, SLOT(renderToImage()));
 
         pmCtxMenu->addSeparator();
 
@@ -552,7 +552,7 @@ namespace kt
                         );
         }
 
-        return lgnd + "</ul>";
+        return lgnd + QStringLiteral("</ul>");
     }
 
     void PlainChartDrawer::setLegend(const QString& rL)

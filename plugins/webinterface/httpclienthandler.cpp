@@ -17,8 +17,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QSocketNotifier>
 #include <qhttp.h>
+
 #include <util/log.h>
 #include <util/mmapfile.h>
 #include <klocalizedstring.h>
@@ -32,12 +34,12 @@ using namespace bt;
 namespace kt
 {
 
-    HttpClientHandler::HttpClientHandler(HttpServer* srv, int sock) : srv(srv), client(0), read_notifier(0), write_notifier(0), php_response_hdr(200)
+    HttpClientHandler::HttpClientHandler(HttpServer* srv, int sock) : srv(srv), client(nullptr), read_notifier(nullptr), write_notifier(nullptr), php_response_hdr(200)
     {
         client = new net::Socket(sock, 4);
         client->setBlocking(false);
         read_notifier = new QSocketNotifier(sock, QSocketNotifier::Read, this);
-        connect(read_notifier, SIGNAL(activated(int)), this, SLOT(readyToRead(int)));
+        connect(read_notifier, &QSocketNotifier::activated, this, &HttpClientHandler::readyToRead);
         write_notifier = new QSocketNotifier(sock, QSocketNotifier::Write, this);
         connect(write_notifier, SIGNAL(activated(int)), this, SLOT(sendOutputBuffer(int)));
         write_notifier->setEnabled(false);

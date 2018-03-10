@@ -17,11 +17,14 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "upnpplugin.h"
 
 #include <QStandardPaths>
-#include <kpluginfactory.h>
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+#include <KPluginFactory>
+
 #include <interfaces/guiinterface.h>
 #include <util/fileops.h>
 #include <util/log.h>
@@ -38,7 +41,7 @@ using namespace bt;
 namespace kt
 {
 
-    UPnPPlugin::UPnPPlugin(QObject* parent, const QVariantList& /*args*/) : Plugin(parent), sock(0), upnp_tab(0)
+    UPnPPlugin::UPnPPlugin(QObject* parent, const QVariantList& /*args*/) : Plugin(parent), sock(nullptr), upnp_tab(nullptr)
     {
     }
 
@@ -52,9 +55,9 @@ namespace kt
     {
         LogSystemManager::instance().registerSystem(i18n("UPnP"), SYS_PNP);
         sock = new UPnPMCastSocket();
-        upnp_tab = new UPnPWidget(sock, 0);
+        upnp_tab = new UPnPWidget(sock, nullptr);
         GUIInterface* gui = getGUI();
-        gui->getTorrentActivity()->addToolWidget(upnp_tab, i18n("UPnP"), QLatin1String("kt-upnp"),
+        gui->getTorrentActivity()->addToolWidget(upnp_tab, i18n("UPnP"), QStringLiteral("kt-upnp"),
                 i18n("Shows the status of the UPnP plugin"));
         // load the routers list
         QString routers_file = QStandardPaths::locate(QStandardPaths::AppDataLocation, QStringLiteral("routers"));
@@ -66,14 +69,14 @@ namespace kt
     void UPnPPlugin::unload()
     {
         LogSystemManager::instance().unregisterSystem(i18n("UPnP"));
-        QString routers_file = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QLatin1String("/routers");
+        QString routers_file = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral("/routers");
         sock->saveRouters(routers_file);
         getGUI()->getTorrentActivity()->removeToolWidget(upnp_tab);
         sock->close();
         delete upnp_tab;
-        upnp_tab = 0;
+        upnp_tab = nullptr;
         delete sock;
-        sock = 0;
+        sock = nullptr;
     }
 
     void UPnPPlugin::shutdown(bt::WaitJob* job)
@@ -83,7 +86,7 @@ namespace kt
 
     bool UPnPPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 }
 #include "upnpplugin.moc"

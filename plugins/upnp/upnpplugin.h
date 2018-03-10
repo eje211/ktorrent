@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSEARCHPLUGIN_H
 #define KTSEARCHPLUGIN_H
 
@@ -39,12 +40,12 @@ namespace kt
         Q_OBJECT
     public:
         UPnPPlugin(QObject* parent, const QVariantList& args);
-        virtual ~UPnPPlugin();
+        ~UPnPPlugin();
 
-        virtual void load();
-        virtual void unload();
-        virtual void shutdown(bt::WaitJob* job);
-        virtual bool versionCheck(const QString& version) const;
+        void load() override;
+        void unload() override;
+        void shutdown(bt::WaitJob* job) override;
+        bool versionCheck(const QString& version) const override;
     private:
         bt::UPnPMCastSocket* sock;
         UPnPWidget* upnp_tab;

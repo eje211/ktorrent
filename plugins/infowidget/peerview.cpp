@@ -18,14 +18,17 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "peerview.h"
 
 #include <QHeaderView>
 #include <QIcon>
 #include <QMenu>
 #include <QSortFilterProxyModel>
-#include <klocalizedstring.h>
-#include <kconfiggroup.h>
+
+#include <KConfigGroup>
+#include <KLocalizedString>
+
 #include <interfaces/peerinterface.h>
 #include <peer/accessmanager.h>
 #include <util/functions.h>
@@ -53,10 +56,9 @@ namespace kt
         setModel(pm);
 
         context_menu = new QMenu(this);
-        context_menu->addAction(QIcon::fromTheme("list-remove-user"), i18n("Kick Peer"), this, SLOT(kickPeer()));
-        context_menu->addAction(QIcon::fromTheme("view-filter"), i18n("Ban Peer"), this, SLOT(banPeer()));
-        connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
-                this, SLOT(showContextMenu(const QPoint&)));
+        context_menu->addAction(QIcon::fromTheme(QStringLiteral("list-remove-user")), i18n("Kick Peer"), this, SLOT(kickPeer()));
+        context_menu->addAction(QIcon::fromTheme(QStringLiteral("view-filter")), i18n("Ban Peer"), this, SLOT(banPeer()));
+        connect(this, &PeerView::customContextMenuRequested, this, &PeerView::showContextMenu);
     }
 
     PeerView::~PeerView()

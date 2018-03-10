@@ -46,7 +46,6 @@ namespace kt
     {
         SHUTDOWN,
         LOCK,
-        STANDBY,
         SUSPEND_TO_DISK,
         SUSPEND_TO_RAM
     };
@@ -73,7 +72,7 @@ namespace kt
         Q_OBJECT
     public:
         ShutdownRuleSet(CoreInterface* core, QObject* parent);
-        virtual ~ShutdownRuleSet();
+        ~ShutdownRuleSet();
 
         /// Set if all rules must be hit, before actions are undertaken
         void setAllRulesMustBeHit(bool on) {all_rules_must_be_hit = on;}

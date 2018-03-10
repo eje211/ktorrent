@@ -18,17 +18,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+
 #include "advancedpref.h"
 #include "settings.h"
 
 namespace kt
 {
-    AdvancedPref::AdvancedPref(QWidget* parent) : PrefPageInterface(Settings::self(), i18n("Advanced"), "configure", parent)
+    AdvancedPref::AdvancedPref(QWidget* parent) : PrefPageInterface(Settings::self(), i18n("Advanced"), QStringLiteral("configure"), parent)
     {
         setupUi(this);
-        connect(kcfg_diskPrealloc, SIGNAL(toggled(bool)), this, SLOT(onDiskPreallocToggled(bool)));
-        connect(kcfg_requeueMagnets, SIGNAL(toggled(bool)), kcfg_requeueMagnetsTime, SLOT(setEnabled(bool)));
+        connect(kcfg_diskPrealloc, &QGroupBox::toggled, this, &AdvancedPref::onDiskPreallocToggled);
+        connect(kcfg_requeueMagnets, &QCheckBox::toggled, kcfg_requeueMagnetsTime, &QSpinBox::setEnabled);
     }
 
     AdvancedPref::~AdvancedPref()

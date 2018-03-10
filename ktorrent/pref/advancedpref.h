@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KT_ADVNACEDPREF_HH
 #define KT_ADVNACEDPREF_HH
 
@@ -32,10 +33,10 @@ namespace kt
         Q_OBJECT
     public:
         AdvancedPref(QWidget* parent);
-        /*virtual */~AdvancedPref();
+        ~AdvancedPref();
 
-        void loadSettings();
-        void loadDefaults();
+        void loadSettings() override;
+        void loadDefaults() override;
 
     public slots:
         void onDiskPreallocToggled(bool on);

@@ -18,14 +18,17 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "trackerview.h"
 
-#include <QHeaderView>
 #include <QClipboard>
+#include <QHeaderView>
 #include <QUrl>
-#include <kconfiggroup.h>
-#include <klocalizedstring.h>
-#include <kmessagebox.h>
+
+#include <KConfigGroup>
+#include <KLocalizedString>
+#include <KMessageBox>
+
 #include <torrent/globals.h>
 #include <interfaces/trackerinterface.h>
 #include <interfaces/torrentinterface.h>
@@ -56,13 +59,13 @@ namespace kt
         m_tracker_list->setAlternatingRowColors(true);
         m_tracker_list->setSortingEnabled(true);
         m_tracker_list->setUniformRowHeights(true);
-        connect(m_add_tracker, SIGNAL(clicked()), this, SLOT(addClicked()));
-        connect(m_remove_tracker, SIGNAL(clicked()), this, SLOT(removeClicked()));
-        connect(m_change_tracker, SIGNAL(clicked()), this, SLOT(changeClicked()));
-        connect(m_restore_defaults, SIGNAL(clicked()), this, SLOT(restoreClicked()));
+        connect(m_add_tracker, &QPushButton::clicked, this, &TrackerView::addClicked);
+        connect(m_remove_tracker, &QPushButton::clicked, this, &TrackerView::removeClicked);
+        connect(m_change_tracker, &QPushButton::clicked, this, &TrackerView::changeClicked);
+        connect(m_restore_defaults, &QPushButton::clicked, this, &TrackerView::restoreClicked);
         connect(m_tracker_list->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)),
                 this, SLOT(currentChanged(const QModelIndex&, const QModelIndex&)));
-        connect(m_scrape, SIGNAL(clicked()), this, SLOT(scrapeClicked()));
+        connect(m_scrape, &QPushButton::clicked, this, &TrackerView::scrapeClicked);
 
         m_add_tracker->setIcon(QIcon::fromTheme(QLatin1String("list-add")));
         m_remove_tracker->setIcon(QIcon::fromTheme(QLatin1String("list-remove")));

@@ -17,6 +17,7 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
+
 #ifndef KT_SHUTDOWNDLG_H
 #define KT_SHUTDOWNDLG_H
 
@@ -35,10 +36,10 @@ namespace kt
         Q_OBJECT
     public:
         ShutdownDlg(ShutdownRuleSet* rules, CoreInterface* core, QWidget* parent);
-        virtual ~ShutdownDlg();
+        ~ShutdownDlg();
 
-        virtual void accept();
-        virtual void reject();
+        void accept() override;
+        void reject() override;
 
     private slots:
         void timeToExecuteChanged(int idx);

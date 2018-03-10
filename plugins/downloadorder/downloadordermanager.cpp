@@ -18,8 +18,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QFile>
 #include <QTextStream>
+
 #include <util/log.h>
 #include <util/fileops.h>
 #include <interfaces/torrentinterface.h>
@@ -45,7 +47,7 @@ namespace kt
         if (!enabled())
             return;
 
-        QFile fptr(tor->getTorDir() + "download_order");
+        QFile fptr(tor->getTorDir() + QStringLiteral("download_order"));
         if (!fptr.open(QIODevice::WriteOnly))
         {
             Out(SYS_DIO | LOG_IMPORTANT) << "Cannot open download_order file of " << tor->getDisplayName() << " : " << fptr.errorString() <<  endl;
@@ -59,10 +61,10 @@ namespace kt
 
     void DownloadOrderManager::load()
     {
-        if (!bt::Exists(tor->getTorDir() + "download_order"))
+        if (!bt::Exists(tor->getTorDir() + QStringLiteral("download_order")))
             return;
 
-        QFile fptr(tor->getTorDir() + "download_order");
+        QFile fptr(tor->getTorDir() + QStringLiteral("download_order"));
         if (!fptr.open(QIODevice::ReadOnly))
         {
             Out(SYS_DIO | LOG_NOTICE) << "Cannot open download_order file of " << tor->getDisplayName() << " : " << fptr.errorString() << endl;
@@ -178,8 +180,8 @@ namespace kt
     void DownloadOrderManager::disable()
     {
         order.clear();
-        if (bt::Exists(tor->getTorDir() + "download_order"))
-            bt::Delete(tor->getTorDir() + "download_order", true);
+        if (bt::Exists(tor->getTorDir() + QStringLiteral("download_order")))
+            bt::Delete(tor->getTorDir() + QStringLiteral("download_order"), true);
     }
 
 }

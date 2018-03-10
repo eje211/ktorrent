@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFEEDLISTDELEGATE_H
 #define KTFEEDLISTDELEGATE_H
 
@@ -33,10 +34,10 @@ namespace kt
     {
     public:
         FeedListDelegate(QObject* parent);
-        virtual ~FeedListDelegate();
+        ~FeedListDelegate();
 
-        virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-        virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     };
 
 }

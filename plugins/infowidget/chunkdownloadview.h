@@ -17,13 +17,16 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KT_CHUNKDOWNLOADVIEW_HH
 #define KT_CHUNKDOWNLOADVIEW_HH
 
 
-#include <QTreeView>
 #include <QSortFilterProxyModel>
-#include <ksharedconfig.h>
+#include <QTreeView>
+
+#include <KSharedConfig>
+
 #include <interfaces/chunkdownloadinterface.h>
 #include <interfaces/torrentinterface.h>
 #include "ui_chunkdownloadview.h"
@@ -42,7 +45,7 @@ namespace kt
         Q_OBJECT
     public:
         ChunkDownloadView(QWidget* parent);
-        virtual ~ChunkDownloadView();
+        ~ChunkDownloadView();
 
         /// A peer has been added
         void downloadAdded(bt::ChunkDownloadInterface* cd);

@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTCONVERTTHREAD_H
 #define KTCONVERTTHREAD_H
 
@@ -35,12 +36,11 @@ namespace kt
     */
     class ConvertThread : public QThread
     {
-        Q_OBJECT
     public:
         ConvertThread(ConvertDialog* dlg);
-        virtual ~ConvertThread();
+        ~ConvertThread();
 
-        virtual void run();
+        void run() override;
 
         QString getFailureReason() const {return failure_reason;}
 

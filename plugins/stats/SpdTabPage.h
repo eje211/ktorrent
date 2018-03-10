@@ -21,10 +21,10 @@
 #ifndef SpdTabPage_H_
 #define SpdTabPage_H_
 
-#include <QWidget>
+#include <QList>
 #include <QString>
 #include <QPen>
-#include <QList>
+#include <QWidget>
 
 #include <interfaces/plugin.h>
 #include <interfaces/coreinterface.h>
@@ -37,7 +37,7 @@
 #include <settings.h>
 
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 
 #include <PluginPage.h>
 #include <drawer/ChartDrawer.h>
@@ -67,10 +67,10 @@ namespace kt
         ~SpdTabPage();
 
     public slots:
-        void applySettings();
-        void updateAllCharts();
-        void gatherData(Plugin*);
-        void resetAvg(ChartDrawer*);
+        void applySettings() override;
+        void updateAllCharts() override;
+        void gatherData(Plugin*) override;
+        void resetAvg(ChartDrawer*) override;
 
     private:
         /** \brief Gathers dl speeds data
@@ -86,7 +86,7 @@ namespace kt
          */
         void gatherUploadSpeed(Plugin* pP);
 
-        void setupUi();
+        void setupUi() override;
 
     private:
         ///Page's UI

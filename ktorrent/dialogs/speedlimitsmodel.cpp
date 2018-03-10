@@ -18,7 +18,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+
 #include <interfaces/torrentinterface.h>
 #include <torrent/queuemanager.h>
 #include <util/functions.h>
@@ -47,8 +49,8 @@ namespace kt
             itr++;
         }
 
-        connect(core, SIGNAL(torrentAdded(bt::TorrentInterface*)), this, SLOT(onTorrentAdded(bt::TorrentInterface*)));
-        connect(core, SIGNAL(torrentRemoved(bt::TorrentInterface*)), this, SLOT(onTorrentRemoved(bt::TorrentInterface*)));
+        connect(core, &Core::torrentAdded, this, &SpeedLimitsModel::onTorrentAdded);
+        connect(core, &Core::torrentRemoved, this, &SpeedLimitsModel::onTorrentRemoved);
     }
 
     SpeedLimitsModel::~SpeedLimitsModel()

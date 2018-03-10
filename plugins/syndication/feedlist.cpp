@@ -18,12 +18,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <QFile>
+
 #include <QDir>
-#include <QTime>
-#include <QTextStream>
+#include <QFile>
 #include <QIcon>
-#include <klocalizedstring.h>
+#include <QTextStream>
+#include <QTime>
+
+#include <KLocalizedString>
+
 #include <util/log.h>
 #include <util/fileops.h>
 #include <util/functions.h>
@@ -52,7 +55,7 @@ namespace kt
     {
         QDir dir(data_dir);
         QStringList filters;
-        filters << "feed*";
+        filters << QStringLiteral("feed*");
         QStringList sl = dir.entryList(filters, QDir::Dirs);
         for (int i = 0; i < sl.count(); i++)
         {
@@ -65,8 +68,7 @@ namespace kt
             try
             {
                 feed = new Feed(idir);
-                connect(feed, SIGNAL(downloadLink(const QUrl&, const QString&, const QString&, const QString&, bool)),
-                        activity, SLOT(downloadLink(const QUrl&, const QString&, const QString&, const QString&, bool)));
+                connect(feed, &Feed::downloadLink, activity, &SyndicationActivity::downloadLink);
                 feed->load(filter_list);
                 addFeed(feed);
 
@@ -80,7 +82,7 @@ namespace kt
 
     void FeedList::importOldFeeds()
     {
-        QFile fptr(kt::DataDir() + "rssfeeds.ktr");
+        QFile fptr(kt::DataDir() + QStringLiteral("rssfeeds.ktr"));
         if (!fptr.open(QIODevice::ReadOnly))
             return;
 
@@ -142,13 +144,13 @@ namespace kt
         fptr.close();
         // move the rssfeeds.ktr file to a backup location
         // so that it doesn't get immorted twice
-        bt::Move(kt::DataDir() + "rssfeeds.ktr", kt::DataDir() + "imported-rssfeeds.ktr", true, true);
+        bt::Move(kt::DataDir() + QStringLiteral("rssfeeds.ktr"), kt::DataDir() + QStringLiteral("imported-rssfeeds.ktr"), true, true);
     }
 
     void FeedList::addFeed(Feed* f)
     {
         feeds.append(f);
-        connect(f, SIGNAL(updated()), this, SLOT(feedUpdated()));
+        connect(f, &Feed::updated, this, &FeedList::feedUpdated);
         insertRow(feeds.count() - 1);
     }
 
@@ -175,9 +177,9 @@ namespace kt
             return i18np("%2\n1 active filter", "%2\n%1 active filters", f->numFilters(), f->displayName());
         case Qt::DecorationRole:
             if (f->feedStatus() == Feed::FAILED_TO_DOWNLOAD)
-                return QIcon::fromTheme("dialog-error");
+                return QIcon::fromTheme(QStringLiteral("dialog-error"));
             else
-                return QIcon::fromTheme("application-rss+xml");
+                return QIcon::fromTheme(QStringLiteral("application-rss+xml"));
         case Qt::ToolTipRole:
             if (f->feedStatus() == Feed::FAILED_TO_DOWNLOAD)
                 return i18n("<b>%1</b><br/><br/>Download failed: <b>%2</b>", f->feedData()->link(), f->errorString());
@@ -251,14 +253,14 @@ namespace kt
                 to_remove.append(f);
         }
 
+        beginResetModel();
         foreach (Feed* f, to_remove)
         {
             bt::Delete(f->directory(), true);
             feeds.removeAll(f);
             delete f;
         }
-
-        reset();
+        endResetModel();
     }
 
     void FeedList::feedUpdated()

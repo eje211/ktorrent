@@ -18,9 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <math.h>
-#include <kformat.h>
-#include <ksharedconfig.h>
+
+#include <cmath>
+
+#include <KFormat>
+#include <KSharedConfig>
+
 #include <util/constants.h>
 #include <util/functions.h>
 #include "recommendedsettingsdlg.h"
@@ -37,14 +40,13 @@ namespace kt
         setWindowTitle(i18n("Calculate Recommended Settings"));
         setupUi(this);
         connect(m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-        connect(m_buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked,
-                this, &RecommendedSettingsDlg::apply);
-        connect(m_calculate, SIGNAL(clicked()), this, SLOT(calculate()));
-        connect(m_chk_avg_speed_slot, SIGNAL(toggled(bool)), this, SLOT(avgSpeedSlotToggled(bool)));
-        connect(m_chk_sim_torrents, SIGNAL(toggled(bool)), this, SLOT(simTorrentsToggled(bool)));
-        connect(m_chk_slots, SIGNAL(toggled(bool)), this, SLOT(slotsToggled(bool)));
-        connect(m_upload_bw, SIGNAL(valueChanged(int)), this, SLOT(uploadBWChanged(int)));
-        connect(m_download_bw, SIGNAL(valueChanged(int)), this, SLOT(downloadBWChanged(int)));
+        connect(m_buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &RecommendedSettingsDlg::apply);
+        connect(m_calculate, &QPushButton::clicked, this, &RecommendedSettingsDlg::calculate);
+        connect(m_chk_avg_speed_slot, &QCheckBox::toggled, this, &RecommendedSettingsDlg::avgSpeedSlotToggled);
+        connect(m_chk_sim_torrents, &QCheckBox::toggled, this, &RecommendedSettingsDlg::simTorrentsToggled);
+        connect(m_chk_slots, &QCheckBox::toggled, this, &RecommendedSettingsDlg::slotsToggled);
+        connect(m_upload_bw, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &RecommendedSettingsDlg::uploadBWChanged);
+        connect(m_download_bw, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &RecommendedSettingsDlg::downloadBWChanged);
 
         m_avg_speed_slot->setEnabled(false);
         m_slots->setEnabled(false);
@@ -162,13 +164,13 @@ namespace kt
         max_conn_glob = qRound(qMin((double)pow((int)(upload_rate * 8), 0.8) + 50, 900.0));
         max_conn_tor = qRound(qMin((qreal)(max_conn_glob * 1.2 / max_torrents), (qreal)max_conn_glob));
 
-        m_max_upload->setText(QString("<b>%1</b>").arg(BytesPerSecToString(max_upload_speed * 1024)));
-        m_max_download->setText(QString("<b>%1</b>").arg(BytesPerSecToString(max_download_speed * 1024)));
-        m_max_conn_per_torrent->setText(QString("<b>%1</b>").arg(max_conn_tor));
-        m_max_conn_global->setText(QString("<b>%1</b>").arg(max_conn_glob));
-        m_max_downloads->setText(QString("<b>%1</b>").arg(max_downloads));
-        m_max_seeds->setText(QString("<b>%1</b>").arg(max_seeds));
-        m_upload_slots->setText(QString("<b>%1</b>").arg(max_slots));
+        m_max_upload->setText(QStringLiteral("<b>%1</b>").arg(BytesPerSecToString(max_upload_speed * 1024)));
+        m_max_download->setText(QStringLiteral("<b>%1</b>").arg(BytesPerSecToString(max_download_speed * 1024)));
+        m_max_conn_per_torrent->setText(QStringLiteral("<b>%1</b>").arg(max_conn_tor));
+        m_max_conn_global->setText(QStringLiteral("<b>%1</b>").arg(max_conn_glob));
+        m_max_downloads->setText(QStringLiteral("<b>%1</b>").arg(max_downloads));
+        m_max_seeds->setText(QStringLiteral("<b>%1</b>").arg(max_seeds));
+        m_upload_slots->setText(QStringLiteral("<b>%1</b>").arg(max_slots));
     }
 
     void RecommendedSettingsDlg::avgSpeedSlotToggled(bool on)

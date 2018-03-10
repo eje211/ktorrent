@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTGENERALPREF_H
 #define KTGENERALPREF_H
 
@@ -31,10 +32,10 @@ namespace kt
         Q_OBJECT
     public:
         GeneralPref(QWidget* parent);
-        virtual ~GeneralPref();
+        ~GeneralPref();
 
-        void loadSettings();
-        void loadDefaults();
+        void loadSettings() override;
+        void loadDefaults() override;
     };
 }
 

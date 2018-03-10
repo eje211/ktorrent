@@ -18,18 +18,18 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "missingfilesdlg.h"
 
 #include <QIcon>
 #include <QFileDialog>
-
-#include <kfilewidget.h>
-#include <krecentdirs.h>
-#include <kiconloader.h>
 #include <QMimeDatabase>
-#include <kstandardguiitem.h>
-#include <kmessagebox.h>
+
+#include <KFileWidget>
 #include <KGuiItem>
+#include <KIconLoader>
+#include <KMessageBox>
+#include <KRecentDirs>
 #include <KStandardGuiItem>
 
 #include <interfaces/torrentinterface.h>
@@ -43,15 +43,15 @@ namespace kt
         setupUi(this);
 
         m_text->setText(text);
-        connect(m_cancel, SIGNAL(clicked()), this, SLOT(cancelPressed()));
-        connect(m_recreate, SIGNAL(clicked()), this, SLOT(recreatePressed()));
-        connect(m_dnd, SIGNAL(clicked()), this, SLOT(dndPressed()));
-        connect(m_select_new, SIGNAL(clicked()), this, SLOT(selectNewPressed()));
+        connect(m_cancel, &QPushButton::clicked, this, &MissingFilesDlg::cancelPressed);
+        connect(m_recreate, &QPushButton::clicked, this, &MissingFilesDlg::recreatePressed);
+        connect(m_dnd, &QPushButton::clicked, this, &MissingFilesDlg::dndPressed);
+        connect(m_select_new, &QPushButton::clicked, this, &MissingFilesDlg::selectNewPressed);
 
         KGuiItem::assign(m_cancel, KStandardGuiItem::cancel());
 
         QMimeDatabase mimeDatabase;
-        foreach (const QString& s, missing)
+        for (const QString& s : missing)
         {
             QListWidgetItem* lwi = new QListWidgetItem(m_file_list);
             lwi->setText(s);
@@ -83,7 +83,7 @@ namespace kt
         {
             QString recentDirClass;
             QString dir = QFileDialog::getExistingDirectory(this, i18n("Select the directory where the data now is."),
-                                                            KFileWidget::getStartUrl(QUrl("kfiledialog:///saveTorrentData"), recentDirClass).toLocalFile());
+                                                            KFileWidget::getStartUrl(QUrl(QStringLiteral("kfiledialog:///saveTorrentData")), recentDirClass).toLocalFile());
 
             if (dir.isEmpty())
                 return;
@@ -121,7 +121,7 @@ namespace kt
         {
             QString recentDirClass;
             QString dir = QFileDialog::getExistingDirectory(this, i18n("Select the directory where the data now is."),
-                                                            KFileWidget::getStartUrl(QUrl("kfiledialog:///saveTorrentData"), recentDirClass).toLocalFile());
+                                                            KFileWidget::getStartUrl(QUrl(QStringLiteral("kfiledialog:///saveTorrentData")), recentDirClass).toLocalFile());
 
             if (dir.isEmpty())
                 return;

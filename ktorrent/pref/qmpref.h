@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTQMPREF_H
 #define KTQMPREF_H
 
@@ -34,10 +35,10 @@ namespace kt
         Q_OBJECT
     public:
         QMPref(QWidget* parent);
-        virtual ~QMPref();
+        ~QMPref();
 
-        void loadSettings();
-        void loadDefaults();
+        void loadSettings() override;
+        void loadDefaults() override;
     private slots:
         void onControlTorrentsManuallyToggled(bool on);
     };

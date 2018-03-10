@@ -18,12 +18,14 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KT_PREFDIALOG_HH
 #define KT_PREFDIALOG_HH
 
 #include <QList>
 #include <QScrollArea>
-#include <kconfigdialog.h>
+
+#include <KConfigDialog>
 
 namespace kt
 {
@@ -44,7 +46,7 @@ namespace kt
         Q_OBJECT
     public:
         PrefDialog(QWidget* parent, Core* core);
-        virtual ~PrefDialog();
+        ~PrefDialog();
 
         /**
          * Add a pref page to the dialog.
@@ -74,10 +76,10 @@ namespace kt
         void saveState(KSharedConfigPtr cfg);
 
     protected:
-        virtual void updateWidgets();
-        virtual void updateWidgetsDefault();
-        virtual void updateSettings();
-        virtual bool hasChanged();
+        void updateWidgets() override;
+        void updateWidgetsDefault() override;
+        void updateSettings() override;
+        bool hasChanged() override;
 
     private slots:
         void calculateRecommendedSettings();
@@ -92,7 +94,7 @@ namespace kt
     {
     public:
         PrefPageScrollArea(PrefPageInterface* page, QWidget* parent = 0);
-        virtual ~PrefPageScrollArea();
+        ~PrefPageScrollArea();
 
         PrefPageInterface* page;
         KPageWidgetItem* page_widget_item;

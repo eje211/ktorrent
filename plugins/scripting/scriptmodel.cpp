@@ -18,17 +18,22 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QIcon>
-#include <klocalizedstring.h>
-#include <kmimetype.h>
-#include <ktar.h>
-#include <kzip.h>
+#include <QMimeDatabase>
+#include <QMimeType>
+
+#include <KLocalizedString>
+#include <KTar>
+#include <KZip>
+
 #include <util/error.h>
+#include <util/fileops.h>
 #include <util/log.h>
 #include <interfaces/functions.h>
+
 #include "scriptmodel.h"
 #include "script.h"
-#include <util/fileops.h>
 
 using namespace bt;
 
@@ -48,12 +53,11 @@ namespace kt
     void ScriptModel::addScript(const QString& file)
     {
         Out(SYS_SCR | LOG_NOTICE) << "Adding script from " << file << endl;
-        KMimeType::Ptr ptr = KMimeType::findByPath(file);
-        if (!ptr)
-            return;
+        QMimeDatabase db;
+        QMimeType ptr = db.mimeTypeForFile(file);
 
-        bool is_tar = ptr->name() == "application/x-compressed-tar" || ptr->name() == "application/x-bzip-compressed-tar";
-        bool is_zip = ptr->name() == "application/zip";
+        bool is_tar = ptr.name() == QStringLiteral("application/x-compressed-tar") || ptr.name() == QStringLiteral("application/x-bzip-compressed-tar");
+        bool is_zip = ptr.name() == QStringLiteral("application/zip");
         if (is_tar || is_zip)
         {
             // It's a package
@@ -132,11 +136,11 @@ namespace kt
         foreach (const QString& file, files)
         {
             // look for the desktop file
-            if (!file.endsWith(".desktop") && !file.endsWith(".DESKTOP"))
+            if (!file.endsWith(QStringLiteral(".desktop")) && !file.endsWith(QStringLiteral(".DESKTOP")))
                 continue;
 
             // check for duplicate packages
-            QString dest_dir = kt::DataDir() + "scripts/" + dir->name() + "/";
+            QString dest_dir = kt::DataDir() + QStringLiteral("scripts/") + dir->name() + QLatin1Char('/');
             foreach (Script* s, scripts)
             {
                 if (s->packageDirectory() == dest_dir)
@@ -302,13 +306,14 @@ namespace kt
     {
         QList<Script*> to_remove;
 
-        foreach (const QModelIndex& idx, indices)
+        for (const QModelIndex& idx : indices)
         {
             Script* s = scriptForIndex(idx);
             if (s && s->removeable())
                 to_remove << s;
         }
 
+        beginResetModel();
         foreach (Script* s, to_remove)
         {
             if (!s->packageDirectory().isEmpty())
@@ -318,6 +323,6 @@ namespace kt
             s->deleteLater();
         }
 
-        reset();
+        endResetModel();
     }
 }

@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ***************************************************************************/
+
 #ifndef KTLOGPREFPAGE_H
 #define KTLOGPREFPAGE_H
 
@@ -32,11 +33,11 @@ namespace kt
         Q_OBJECT
     public:
         LogPrefPage(LogFlags* flags, QWidget* parent);
-        virtual ~LogPrefPage();
+        ~LogPrefPage();
 
-        virtual void loadDefaults();
-        virtual void loadSettings();
-        virtual void updateSettings();
+        void loadDefaults() override;
+        void loadSettings() override;
+        void updateSettings() override;
 
         void saveState();
         void loadState();

@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFEEDLISTVIEW_H
 #define KTFEEDLISTVIEW_H
 
@@ -37,16 +38,15 @@ namespace kt
         Q_OBJECT
     public:
         FeedListView(FeedList* feeds, QWidget* parent);
-        virtual ~FeedListView();
+        ~FeedListView();
 
         /// Get all the selected feeds
         QModelIndexList selectedFeeds();
 
-    private slots:
         void itemActivated(const QModelIndex& idx);
         void selectionChanged(const QItemSelection& sel, const QItemSelection& desel);
 
-    signals:
+    Q_SIGNALS:
         void feedActivated(Feed* feed);
         void enableRemove(bool on);
 

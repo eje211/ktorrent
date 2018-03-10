@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSCRIPT_H
 #define KTSCRIPT_H
 
@@ -40,7 +41,7 @@ namespace kt
     public:
         Script(QObject* parent);
         Script(const QString& file, QObject* parent);
-        virtual ~Script();
+        ~Script();
 
         struct MetaInfo
         {

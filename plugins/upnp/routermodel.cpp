@@ -18,8 +18,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
 #include <QIcon>
+
 #include <util/log.h>
 #include <util/error.h>
 #include <upnp/upnprouter.h>
@@ -103,9 +105,9 @@ namespace kt
         else if (role == Qt::DecorationRole)
         {
             if (index.column() == 0)
-                return QIcon::fromTheme("modem");
+                return QIcon::fromTheme(QStringLiteral("modem"));
             else if (index.column() == 1 && !r->getError().isEmpty())
-                return QIcon::fromTheme("dialog-error");
+                return QIcon::fromTheme(QStringLiteral("dialog-error"));
         }
         else if (role == Qt::ToolTipRole)
         {
@@ -143,23 +145,23 @@ namespace kt
     class PortsVisitor : public bt::UPnPRouter::Visitor
     {
     public:
-        virtual ~PortsVisitor() {}
+        ~PortsVisitor() {}
 
-        virtual void forwarding(const net::Port& port, bool pending, const bt::UPnPService* service)
+        void forwarding(const net::Port& port, bool pending, const bt::UPnPService* service) override
         {
             Q_UNUSED(service);
             if (!pending)
             {
-                QString ret = QString::number(port.number) + " (";
-                QString prot = (port.proto == net::UDP ? "UDP" : "TCP");
-                ret +=  prot + ")";
+                QString ret = QString::number(port.number) + QStringLiteral(" (");
+                QString prot = (port.proto == net::UDP ? QStringLiteral("UDP") : QStringLiteral("TCP"));
+                ret +=  prot + QStringLiteral(")");
                 ports.append(ret);
             }
         }
 
         QString result()
         {
-            return ports.join(", ");
+            return ports.join(QStringLiteral(", "));
         }
 
         QStringList ports;
@@ -181,7 +183,7 @@ namespace kt
     {
         try
         {
-            foreach (bt::UPnPRouter* r, routers)
+            for (bt::UPnPRouter* r : qAsConst(routers))
                 r->forward(port);
         }
         catch (bt::Error& e)
@@ -194,7 +196,7 @@ namespace kt
     {
         try
         {
-            foreach (bt::UPnPRouter* r, routers)
+            for (bt::UPnPRouter* r : qAsConst(routers))
                 r->undoForward(port, wjob);
         }
         catch (Error& e)

@@ -18,13 +18,17 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QDateTime>
 #include <QDomElement>
 #include <QIcon>
 #include <QLocale>
-#include <klocalizedstring.h>
-#include <syndication/item.h>
-#include <syndication/enclosure.h>
+
+#include <KLocalizedString>
+
+#include <Syndication/Item>
+#include <Syndication/Enclosure>
+
 #include <util/log.h>
 #include "feedwidgetmodel.h"
 #include "ktfeed.h"
@@ -36,7 +40,7 @@ namespace kt
 
     FeedWidgetModel::FeedWidgetModel(QObject* parent)
         : QAbstractTableModel(parent),
-          feed(0)
+          feed(nullptr)
     {
     }
 
@@ -47,9 +51,10 @@ namespace kt
 
     void FeedWidgetModel::setCurrentFeed(Feed* f)
     {
+        beginResetModel();
         items.clear();
         if (feed)
-            disconnect(feed, SIGNAL(updated()), this, SLOT(updated()));
+            disconnect(feed, &Feed::updated, this, &FeedWidgetModel::updated);
 
         feed = f;
         if (feed)
@@ -57,9 +62,9 @@ namespace kt
             Syndication::FeedPtr ptr = feed->feedData();
             if (ptr)
                 items = ptr->items();
-            connect(feed, SIGNAL(updated()), this, SLOT(updated()));
-            reset();
+            connect(feed, &Feed::updated, this, &FeedWidgetModel::updated);
         }
+        endResetModel();
     }
 
     int FeedWidgetModel::rowCount(const QModelIndex& parent) const
@@ -114,7 +119,7 @@ namespace kt
             }
         }
         else if (role == Qt::DecorationRole && index.column() == 0 && feed->downloaded(item))
-            return QIcon::fromTheme("go-down");
+            return QIcon::fromTheme(QStringLiteral("go-down"));
 
         return QVariant();
     }
@@ -145,10 +150,10 @@ namespace kt
 
     QString TorrentUrlFromItem(Syndication::ItemPtr item)
     {
-        QList<Syndication::EnclosurePtr> encs = item->enclosures();
-        foreach (Syndication::EnclosurePtr e, encs)
+        const QList<Syndication::EnclosurePtr> encs = item->enclosures();
+        for (Syndication::EnclosurePtr e : encs)
         {
-            if (e->type() == "application/x-bittorrent" || e->url().endsWith(".torrent"))
+            if (e->type() == QStringLiteral("application/x-bittorrent") || e->url().endsWith(QStringLiteral(".torrent")))
                 return e->url();
         }
 
@@ -158,7 +163,7 @@ namespace kt
         {
             // Note that syndication library prepends the channel link to the item link by default, so
             // we need to extract the magnet from the string.
-            int magnetStartIndex = link.indexOf("magnet:");
+            int magnetStartIndex = link.indexOf(QStringLiteral("magnet:"));
             if (magnetStartIndex >= 0)
                 return link.right(link.size() - magnetStartIndex);
         }
@@ -168,9 +173,9 @@ namespace kt
         while (itr != props.end())
         {
             const QDomElement& elem = itr.value();
-            if (elem.nodeName() == "torrent")
+            if (elem.nodeName() == QStringLiteral("torrent"))
             {
-                QDomElement uri = elem.firstChildElement("magnetURI");
+                QDomElement uri = elem.firstChildElement(QStringLiteral("magnetURI"));
                 if (!uri.isNull())
                     return uri.text();
             }
@@ -186,11 +191,11 @@ namespace kt
         if (!feed)
             return;
 
+        beginResetModel();
         items.clear();
         Syndication::FeedPtr ptr = feed->feedData();
         if (ptr)
             items = ptr->items();
-
-        reset();
+        endResetModel();
     }
 }

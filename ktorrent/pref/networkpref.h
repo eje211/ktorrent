@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTNETWORKPREF_H
 #define KTNETWORKPREF_H
 
@@ -35,11 +36,11 @@ namespace kt
         Q_OBJECT
     public:
         NetworkPref(QWidget* parent);
-        virtual ~NetworkPref();
+        ~NetworkPref();
 
-        virtual void loadSettings();
-        virtual void loadDefaults();
-        virtual void updateSettings();
+        void loadSettings() override;
+        void loadDefaults() override;
+        void updateSettings() override;
     signals:
         void calculateRecommendedSettings();
 

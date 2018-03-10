@@ -64,7 +64,7 @@ Comment[et]=Skript automaatseks taasalustamiseks mõne aja pärast, kui sisse on
 Comment[fi]=Skripti torrentin automaattiseen jatkamiseen, kun keskeytystila on käytössä
 Comment[fr]=Script pour reprendre automatiquement après un certain temps, lorsque l'état suspendu est activé
 Comment[ga]=Script a leanann ar aghaidh go huathoibríoch tar éis tréimhse éigin, nó atá an clár curtha ar fionraí
-Comment[gl]=Un script para continuar automaticamente a actividade —pausada— despois dun tempo.
+Comment[gl]=Un script para continuar automaticamente despois dun tempo, cando se activa o estado de suspensión.
 Comment[hu]=Automatikus folytatás bizonyos idő után, ha a felfüggesztett állapot engedélyezett
 Comment[is]=Skrifta sem ræsir aftur sjálfkrafa eftir einhvern tíma, þegar biðstaða er virk
 Comment[it]=Script per riprendere automaticamente gli scaricamenti dopo un certo tempo se lo stato di sospensione è attivo
@@ -97,7 +97,7 @@ Type=KTorrentScript
 Icon=kt-bandwidth-scheduler
 X-KTorrent-Script-Author=Joris Guisson
 X-KTorrent-Script-Email=joris.guisson@gmail.com
-X-KTorrent-Script-Website=http://ktorrent.org/
+X-KTorrent-Script-Website=http://kde.org/applications/internet/ktorrent/
 X-KTorrent-Script-License=GPL
 X-KTorrent-Script-File=auto_resume.py
 

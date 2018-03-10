@@ -23,8 +23,8 @@
 #include <QDateTime>
 #include <QNetworkConfigurationManager>
 
-#include <kpluginfactory.h>
-#include <klocalizedstring.h>
+#include <KPluginFactory>
+#include <KLocalizedString>
 
 #include <interfaces/coreinterface.h>
 #include <interfaces/guiinterface.h>
@@ -54,18 +54,18 @@ namespace kt
 
     BWSchedulerPlugin::BWSchedulerPlugin(QObject* parent, const QVariantList& args)
         : Plugin(parent)
-        , m_editor(0)
-        , m_pref(0)
+        , m_editor(nullptr)
+        , m_pref(nullptr)
     {
         Q_UNUSED(args);
-        connect(&m_timer, SIGNAL(timeout()), this, SLOT(timerTriggered()));
+        connect(&m_timer, &QTimer::timeout, this, &BWSchedulerPlugin::timerTriggered);
         screensaver = new org::freedesktop::ScreenSaver(QStringLiteral("org.freedesktop.ScreenSaver"),
                                                         QStringLiteral("/ScreenSaver"), QDBusConnection::sessionBus(), this);
-        connect(screensaver, SIGNAL(ActiveChanged(bool)), this, SLOT(screensaverActivated(bool)));
+        connect(screensaver, &org::freedesktop::ScreenSaver::ActiveChanged, this, &BWSchedulerPlugin::screensaverActivated);
         screensaver_on = screensaver->GetActive();
 
         QNetworkConfigurationManager* networkConfigurationManager = new QNetworkConfigurationManager(this);
-        connect(networkConfigurationManager, SIGNAL(onlineStateChanged(bool)), this, SLOT(networkStatusChanged(bool)));
+        connect(networkConfigurationManager, &QNetworkConfigurationManager::onlineStateChanged, this, &BWSchedulerPlugin::networkStatusChanged);
     }
 
 
@@ -77,8 +77,8 @@ namespace kt
     {
         LogSystemManager::instance().registerSystem(i18n("Scheduler"), SYS_SCD);
         m_schedule = new Schedule();
-        m_pref = new BWPrefPage(0);
-        connect(m_pref, SIGNAL(colorsChanged()), this, SLOT(colorsChanged()));
+        m_pref = new BWPrefPage(nullptr);
+        connect(m_pref, &BWPrefPage::colorsChanged, this, &BWSchedulerPlugin::colorsChanged);
         getGUI()->addPrefPage(m_pref);
 
         connect(getCore(), SIGNAL(settingsChanged()), this, SLOT(colorsChanged()));
@@ -94,8 +94,8 @@ namespace kt
         }
 
         m_editor = new ScheduleEditor(0);
-        connect(m_editor, SIGNAL(loaded(Schedule*)), this, SLOT(onLoaded(Schedule*)));
-        connect(m_editor, SIGNAL(scheduleChanged()), this, SLOT(timerTriggered()));
+        connect(m_editor, &ScheduleEditor::loaded, this, &BWSchedulerPlugin::onLoaded);
+        connect(m_editor, &ScheduleEditor::scheduleChanged, this, &BWSchedulerPlugin::timerTriggered);
         getGUI()->addActivity(m_editor);
         m_editor->setSchedule(m_schedule);
 
@@ -112,11 +112,11 @@ namespace kt
 
         getGUI()->removeActivity(m_editor);
         delete m_editor;
-        m_editor = 0;
+        m_editor = nullptr;
 
         getGUI()->removePrefPage(m_pref);
         delete m_pref;
-        m_pref = 0;
+        m_pref = nullptr;
 
         try
         {
@@ -128,7 +128,7 @@ namespace kt
         }
 
         delete m_schedule;
-        m_schedule = 0;
+        m_schedule = nullptr;
     }
 
     void BWSchedulerPlugin::setNormalLimits()
@@ -141,7 +141,7 @@ namespace kt
             dlim = SchedulerPluginSettings::screensaverDownloadLimit();
         }
 
-        Out(SYS_SCD | LOG_NOTICE) << QString("Changing schedule to normal values : %1 down, %2 up")
+        Out(SYS_SCD | LOG_NOTICE) << QStringLiteral("Changing schedule to normal values : %1 down, %2 up")
                                   .arg(dlim).arg(ulim) << endl;
         // set normal limits
         getCore()->setSuspendedState(false);
@@ -167,7 +167,7 @@ namespace kt
 
         if (item->suspended)
         {
-            Out(SYS_SCD | LOG_NOTICE) << QString("Changing schedule to : PAUSED") << endl;
+            Out(SYS_SCD | LOG_NOTICE) << QStringLiteral("Changing schedule to : PAUSED") << endl;
             if (!getCore()->getSuspendedState())
             {
                 getCore()->setSuspendedState(true);
@@ -187,7 +187,7 @@ namespace kt
                 dlim = item->ss_download_limit;
             }
 
-            Out(SYS_SCD | LOG_NOTICE) << QString("Changing schedule to : %1 down, %2 up")
+            Out(SYS_SCD | LOG_NOTICE) << QStringLiteral("Changing schedule to : %1 down, %2 up")
                                       .arg(dlim).arg(ulim) << endl;
             getCore()->setSuspendedState(false);
 
@@ -199,7 +199,7 @@ namespace kt
 
         if (item->set_conn_limits)
         {
-            Out(SYS_SCD | LOG_NOTICE) << QString("Setting connection limits to : %1 per torrent, %2 global")
+            Out(SYS_SCD | LOG_NOTICE) << QStringLiteral("Setting connection limits to : %1 per torrent, %2 global")
                                       .arg(item->torrent_conn_limit).arg(item->global_conn_limit) << endl;
 
             PeerManager::connectionLimits().setLimits(item->global_conn_limit, item->torrent_conn_limit);
@@ -235,7 +235,7 @@ namespace kt
 
     bool BWSchedulerPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 
     void BWSchedulerPlugin::colorsChanged()

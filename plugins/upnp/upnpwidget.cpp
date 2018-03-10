@@ -17,10 +17,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QHeaderView>
-#include <klocalizedstring.h>
-#include <ksharedconfig.h>
-#include <kmessagebox.h>
+
+#include <KLocalizedString>
+#include <KSharedConfig>
+#include <KMessageBox>
+
 #include <torrent/globals.h>
 #include <util/log.h>
 #include <util/error.h>
@@ -42,10 +45,10 @@ namespace kt
     {
         setupUi(this);
         m_devices->setRootIsDecorated(false);
-        connect(m_forward, SIGNAL(clicked()), this, SLOT(onForwardBtnClicked()));
-        connect(m_undo_forward, SIGNAL(clicked()), this, SLOT(onUndoForwardBtnClicked()));
-        connect(m_rescan, SIGNAL(clicked()), this, SLOT(onRescanClicked()));
-        connect(sock, SIGNAL(discovered(bt::UPnPRouter*)), this, SLOT(addDevice(bt::UPnPRouter*)));
+        connect(m_forward, &QPushButton::clicked, this, &UPnPWidget::onForwardBtnClicked);
+        connect(m_undo_forward, &QPushButton::clicked, this, &UPnPWidget::onUndoForwardBtnClicked);
+        connect(m_rescan, &QPushButton::clicked, this, &UPnPWidget::onRescanClicked);
+        connect(sock, &bt::UPnPMCastSocket::discovered, this, &UPnPWidget::addDevice);
 
         bt::Globals::instance().getPortList().setListener(this);
 
@@ -169,15 +172,15 @@ namespace kt
 
     void UPnPWidget::portRemoved(const net::Port& port)
     {
-        model->undoForward(port, 0);
+        model->undoForward(port, nullptr);
     }
 
     void UPnPWidget::onCurrentDeviceChanged(const QModelIndex& current, const QModelIndex& previous)
     {
         Q_UNUSED(previous);
         UPnPRouter* r = model->routerForIndex(current);
-        m_forward->setEnabled(r != 0);
-        m_undo_forward->setEnabled(r != 0 && model->rowCount(QModelIndex()) > 0);
+        m_forward->setEnabled(r != nullptr);
+        m_undo_forward->setEnabled(r != nullptr && model->rowCount(QModelIndex()) > 0);
     }
 
 }

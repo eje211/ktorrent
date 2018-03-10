@@ -21,11 +21,11 @@
 
 #include "ipfilterplugin.h"
 
-#include <knotification.h>
-#include <kmainwindow.h>
-#include <QTimer>
+#include <KNotification>
+#include <KMainWindow>
+#include <KPluginFactory>
 
-#include <kpluginfactory.h>
+#include <QTimer>
 
 #include <interfaces/coreinterface.h>
 #include <interfaces/guiinterface.h>
@@ -49,7 +49,7 @@ namespace kt
         : Plugin(parent)
     {
         Q_UNUSED(args);
-        connect(&auto_update_timer, SIGNAL(timeout()), this, SLOT(checkAutoUpdate()));
+        connect(&auto_update_timer, &QTimer::timeout, this, &IPFilterPlugin::checkAutoUpdate);
         auto_update_timer.setSingleShot(true);
     }
 
@@ -62,7 +62,7 @@ namespace kt
     {
         LogSystemManager::instance().registerSystem(i18n("IP Filter"), SYS_IPF);
         pref = new IPBlockingPrefPage(this);
-        connect(pref, SIGNAL(updateFinished()), this, SLOT(checkAutoUpdate()));
+        connect(pref, &IPBlockingPrefPage::updateFinished, this, &IPFilterPlugin::checkAutoUpdate);
         getGUI()->addPrefPage(pref);
 
         if (IPBlockingPluginSettings::useLevel1())
@@ -76,7 +76,7 @@ namespace kt
         LogSystemManager::instance().unregisterSystem(i18n("IP Filter"));
         getGUI()->removePrefPage(pref);
         delete pref;
-        pref = 0;
+        pref = nullptr;
         if (ip_filter)
         {
             AccessManager::instance().removeBlockList(ip_filter.data());
@@ -90,7 +90,7 @@ namespace kt
             return true;
 
         ip_filter.reset(new IPBlockList());
-        if (!ip_filter->load(kt::DataDir() + "level1.dat"))
+        if (!ip_filter->load(kt::DataDir() + QStringLiteral("level1.dat")))
         {
             ip_filter.reset();
             return false;
@@ -118,7 +118,7 @@ namespace kt
 
     bool IPFilterPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 
     void IPFilterPlugin::checkAutoUpdate()
@@ -162,7 +162,7 @@ namespace kt
 
     void IPFilterPlugin::notification(const QString& msg)
     {
-        KNotification::event("PluginEvent", msg, QPixmap(), getGUI()->getMainWindow());
+        KNotification::event(QStringLiteral("PluginEvent"), msg, QPixmap(), getGUI()->getMainWindow());
     }
 
 }

@@ -22,6 +22,7 @@
 #define MAGNETTEST_H
 
 #include <QObject>
+
 #include <magnet/magnetlink.h>
 #include <magnet/magnetdownloader.h>
 
@@ -34,12 +35,10 @@ namespace bt
 
 class MagnetTest : public QObject
 {
-    Q_OBJECT
 public:
     MagnetTest(const bt::MagnetLink& mlink, QObject* parent = 0);
-    virtual ~MagnetTest();
+    ~MagnetTest();
 
-public slots:
     void routerDiscovered(bt::UPnPRouter* router);
     void start();
     void update();

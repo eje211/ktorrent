@@ -18,15 +18,15 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
-
 #ifndef KT_WEBVIEW_H
 #define KT_WEBVIEW_H
 
-#include <QUrl>
 #include <KWebView>
-#include <QNetworkReply>
 
+#include <QNetworkReply>
+#include <QUrl>
+
+#include "proxy_helper.h"
 
 namespace kt
 {
@@ -53,7 +53,7 @@ namespace kt
     {
         Q_OBJECT
     public:
-        WebView(WebViewClient* client, QWidget* parentWidget = 0);
+        WebView(WebViewClient* client, ProxyHelper* proxy, QWidget* parentWidget = 0);
         virtual ~WebView();
 
         /**
@@ -89,9 +89,11 @@ namespace kt
         /// Handle magnet url
         void handleMagnetUrl(const QUrl& magnet_url);
 
+        /// Get heloper object that applies proxy settings
+        ProxyHelper* getProxy() const {return m_proxy;}
     protected:
         void loadHomePage();
-        virtual QWebView* createWindow(QWebPage::WebWindowType type);
+        QWebView* createWindow(QWebPage::WebWindowType type) override;
 
     public slots:
         /**
@@ -99,13 +101,13 @@ namespace kt
          * @param req The request
          */
         void downloadRequested(const QNetworkRequest& req);
-
     private:
         QString home_page_html;
         QString home_page_base_url;
         WebViewClient* client;
         QUrl clicked_url;
         QUrl image_url;
+        ProxyHelper* m_proxy;
     };
 
 }

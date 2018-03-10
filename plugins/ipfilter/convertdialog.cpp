@@ -17,12 +17,11 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
 ***************************************************************************/
-#include <QTimer>
+
 #include <QCloseEvent>
-#include <kurl.h>
-#include <kmessagebox.h>
-#include <kio/netaccess.h>
-#include <kmimetype.h>
+#include <QTimer>
+
+#include <KMessageBox>
 
 #include <util/log.h>
 #include <util/constants.h>
@@ -38,17 +37,14 @@ using namespace bt;
 namespace kt
 {
 
-
-
-
-    ConvertDialog::ConvertDialog(QWidget* parent) : QDialog(parent), convert_thread(0)
+    ConvertDialog::ConvertDialog(QWidget* parent) : QDialog(parent), convert_thread(nullptr)
     {
         setupUi(this);
         setModal(false);
         adjustSize();
         canceled = false;
-        connect(m_cancel, SIGNAL(clicked()), this, SLOT(btnCancelClicked()));
-        connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
+        connect(m_cancel, &QPushButton::clicked, this, &ConvertDialog::btnCancelClicked);
+        connect(&timer, &QTimer::timeout, this, &ConvertDialog::update);
 
         QTimer::singleShot(500, this, SLOT(convert()));
     }
@@ -84,7 +80,7 @@ namespace kt
             return;
 
         convert_thread = new ConvertThread(this);
-        connect(convert_thread, SIGNAL(finished()), this, SLOT(threadFinished()), Qt::QueuedConnection);
+        connect(convert_thread, &ConvertThread::finished, this, &ConvertDialog::threadFinished, Qt::QueuedConnection);
         convert_thread->start();
         timer.start(500);
     }

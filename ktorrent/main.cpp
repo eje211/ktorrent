@@ -18,9 +18,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <stdio.h>
-#include <signal.h>
-#include <stdlib.h>
+
+#include <cstdio>
+#include <csignal>
+#include <cstdlib>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -29,24 +30,20 @@
 #include <fcntl.h>
 #include <exception>
 
+#include <QApplication>
+#include <QCommandLineOption>
+#include <QCommandLineParser>
 #include <QDir>
 #include <QFile>
-#include <QApplication>
-#include <QCommandLineParser>
-#include <QCommandLineOption>
-#include <kaboutdata.h>
-#include <klocalizedstring.h>
-#include <KLocale>
-#include <kdbusservice.h>
-#include <kstartupinfo.h>
-#include <kwindowsystem.h>
-#include <KCrash>
 
-#include <util/log.h>
+#include <KAboutData>
+#include <KCrash>
+#include <KDBusService>
+#include <KLocalizedString>
+#include <KStartupInfo>
+#include <KWindowSystem>
+
 #include <torrent/globals.h>
-#include <util/functions.h>
-#include <util/error.h>
-#include <util/log.h>
 #include <interfaces/functions.h>
 #include <utp/connection.h>
 #include "gui.h"
@@ -69,18 +66,18 @@ using namespace bt;
 bool GrabPIDLock()
 {
     // open the PID file in the /tmp directory and attempt to lock it
-    QString pid_file = QString(QDir::tempPath() + "/.ktorrent_kf5_%1.lock").arg(getuid());
+    QString pid_file = QDir::tempPath() + QStringLiteral("/.ktorrent_kf5_%1.lock").arg(getuid());
 
-    int fd = open(QFile::encodeName(pid_file), O_RDWR | O_CREAT, 0640);
+    int fd = open(QFile::encodeName(pid_file).data(), O_RDWR | O_CREAT, 0640);
     if (fd < 0)
     {
-        fprintf(stderr, "Failed to open KT lock file %s : %s\n", pid_file.toAscii().constData(), strerror(errno));
+        fprintf(stderr, "Failed to open KT lock file %s : %s\n", pid_file.toLatin1().constData(), strerror(errno));
         return false;
     }
 
     if (lockf(fd, F_TLOCK, 0) < 0)
     {
-        fprintf(stderr, "Failed to get lock on %s : %s\n", pid_file.toAscii().constData(), strerror(errno));
+        fprintf(stderr, "Failed to get lock on %s : %s\n", pid_file.toLatin1().constData(), strerror(errno));
         return false;
     }
 
@@ -108,22 +105,24 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    bt::SetClientInfo("KTorrent", kt::MAJOR, kt::MINOR, kt::RELEASE, kt::VERSION_TYPE, "KT");
+    bt::SetClientInfo(QStringLiteral("KTorrent"), kt::MAJOR, kt::MINOR, kt::RELEASE, kt::VERSION_TYPE, QStringLiteral("KT"));
 
+    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     KLocalizedString::setApplicationDomain("ktorrent");
-    // Add libktorrent catalog
-    //FIXME i18n KGlobal::locale()->insertCatalog("libktorrent");
 
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon::fromTheme(QStringLiteral("ktorrent")));
     KCrash::initialize();
 
     QCommandLineParser parser;
-    KAboutData about(QStringLiteral("ktorrent"), i18nc("@title", "KTorrent"), kt::VERSION_STRING, i18n("Bittorrent client for KDE"),
+    KAboutData about(QStringLiteral("ktorrent"), i18nc("@title", "KTorrent"), QStringLiteral(KT_VERSION_MACRO), i18n("Bittorrent client by KDE"),
                      KAboutLicense::GPL, i18nc("@info:credit", "(C) 2005 - 2011 Joris Guisson and Ivan Vasic"), QString(),
-                     QStringLiteral("http://www.ktorrent.org/"));
+                     QStringLiteral("http://www.kde.org/applications/internet/ktorrent/"));
 
-    about.addAuthor(i18n("Joris Guisson"), QString(), QStringLiteral("joris.guisson@gmail.com"), QStringLiteral("http://ktorrent.org"));
+    about.setOrganizationDomain(QByteArray("kde.org"));
+    about.setDesktopFileName(QStringLiteral("org.kde.ktorrent"));
+
+    about.addAuthor(i18n("Joris Guisson"), QString(), QStringLiteral("joris.guisson@gmail.com"), QStringLiteral("http://kde.org/applications/internet/ktorrent"));
     about.addAuthor(i18n("Ivan Vasic"), QString(), QStringLiteral("ivasic@gmail.com"));
     about.addAuthor(i18n("Alan Jones"), i18n("BitFinder Plugin"), QStringLiteral("skyphyr@gmail.com"));
     about.addCredit(i18n("Diego Rosario Brogna"), i18n("Webinterface Plugin, global max share ratio patch"), QStringLiteral("dierbro@gmail.com"));
@@ -176,16 +175,12 @@ int main(int argc, char** argv)
     about.addCredit(i18n("Nick Shaforostoff"), i18n("KF5 porting"), QStringLiteral("shaforostoff@gmail.com"));
 
     KAboutData::setApplicationData(about);
-    parser.addVersionOption();
-    parser.addHelpOption();
     about.setupCommandLine(&parser);
+    parser.addOption(QCommandLineOption(QStringList() << QStringLiteral("verbose"), i18n("Enable logging to standard output")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("silent"), i18n( "Silently open torrent given on URL")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("+[URL]"), i18n( "Document to open" )));
     parser.process(app);
     about.processCommandLine(&parser);
-
-    // Ensure that this is set up before plugins call it
-    KLocale::global();
 
     const KDBusService dbusService(KDBusService::Unique);
 
@@ -208,7 +203,8 @@ int main(int argc, char** argv)
         QObject::connect(&catcher, &bt::SignalCatcher::triggered, &app, &QApplication::quit);
 #endif
 
-        bt::InitLog(kt::DataDir(kt::CreateIfNotExists) + QLatin1String("log"), true, true, true);
+        const bool logToStdout = parser.isSet(QStringLiteral("verbose"));
+        bt::InitLog(kt::DataDir(kt::CreateIfNotExists) + QLatin1String("log"), true, true, logToStdout);
 
         kt::GUI widget;
         widget.show();
@@ -227,9 +223,10 @@ int main(int argc, char** argv)
 
             bool silent = parser.isSet(QStringLiteral("silent"));
             auto loadMethod = silent ? &kt::GUI::loadSilently : &kt::GUI::load;
-            Q_FOREACH (const QString& filePath, parser.positionalArguments())
+            const auto positionalArguments = parser.positionalArguments();
+            for (const QString& filePath : positionalArguments)
             {
-                QUrl url = QFile::exists(filePath)?QUrl::fromLocalFile(filePath):QUrl(filePath);
+                QUrl url = QFile::exists(filePath) ? QUrl::fromLocalFile(filePath) : QUrl(filePath);
                 (widget.*loadMethod)(url);
             }
 

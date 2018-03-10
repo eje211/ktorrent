@@ -18,11 +18,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <kio/job.h>
-#include <util/fileops.h>
-#include <util/log.h>
+
+#include <QFileInfo>
 #include <QXmlDefaultHandler>
 #include <QXmlInputSource>
+
+#include <KIO/Job>
+
+#include <util/fileops.h>
+#include <util/log.h>
 #include "searchengine.h"
 
 using namespace bt;
@@ -36,17 +40,17 @@ namespace kt
         {
         }
 
-        virtual ~OpenSearchHandler()
+        ~OpenSearchHandler()
         {
         }
 
-        virtual bool characters(const QString& ch)
+        bool characters(const QString& ch) override
         {
             tmp += ch;
             return true;
         }
 
-        virtual bool startElement(const QString& namespaceURI, const QString& localName, const QString& qName, const QXmlAttributes& atts)
+        bool startElement(const QString& namespaceURI, const QString& localName, const QString& qName, const QXmlAttributes& atts) override
         {
             Q_UNUSED(namespaceURI);
             Q_UNUSED(qName);
@@ -60,7 +64,7 @@ namespace kt
             return true;
         }
 
-        virtual bool endElement(const QString& namespaceURI, const QString& localName, const QString& qName)
+        bool endElement(const QString& namespaceURI, const QString& localName, const QString& qName) override
         {
             Q_UNUSED(namespaceURI);
             Q_UNUSED(qName);
@@ -109,15 +113,26 @@ namespace kt
         if (!icon_url.isEmpty())
         {
             QString icon_name = QUrl(icon_url).fileName();
-            if (!bt::Exists(data_dir + icon_name))
+            QString icon_filename = data_dir + icon_name;
+            bool found = false;
+            found = bt::Exists(icon_filename);
+            if (!found) {
+                // if there is an icon in xml file folder - use it
+                // xml file folder might not be equal to data_dir
+                icon_filename = QFileInfo(fptr).absolutePath() + QLatin1Char('/') + icon_name;
+                found = bt::Exists(icon_filename);
+            }
+
+
+            if (!found)
             {
                 KJob* j = KIO::storedGet(QUrl(icon_url), KIO::Reload, KIO::HideProgressInfo);
-                connect(j, SIGNAL(result(KJob*)), this, SLOT(iconDownloadFinished(KJob*)));
+                connect(j, &KJob::result, this, &SearchEngine::iconDownloadFinished);
             }
             else
             {
                 // load the icon
-                icon = QIcon(data_dir + icon_name);
+                icon = QIcon(icon_filename);
             }
         }
 

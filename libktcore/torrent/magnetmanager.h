@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef MAGNETMANAGER_H
 #define MAGNETMANAGER_H
 
@@ -34,7 +35,7 @@ public:
     MagnetDownloader(const bt::MagnetLink& mlink, const MagnetLinkLoadOptions& options, QObject* parent)
         : bt::MagnetDownloader(mlink, parent)
         , options(options) {}
-    virtual ~MagnetDownloader() {}
+    ~MagnetDownloader() {}
 
     MagnetLinkLoadOptions options;
 };
@@ -46,8 +47,8 @@ class DownloadSlot : public QObject
 {
     Q_OBJECT
 public:
-    DownloadSlot(QObject *parent = 0);
-    virtual ~DownloadSlot();
+    DownloadSlot(QObject *parent = nullptr);
+    ~DownloadSlot();
 
     void setTimerDuration(unsigned int duration);
     void startTimer();
@@ -81,8 +82,8 @@ class KTCORE_EXPORT MagnetManager : public QObject
 {
     Q_OBJECT
 public:
-    MagnetManager(QObject* parent = 0);
-    virtual ~MagnetManager();
+    MagnetManager(QObject* parent = nullptr);
+    ~MagnetManager();
 
     /// Adds a magnet link to the queue
     /// @param mlink magnet link to be added

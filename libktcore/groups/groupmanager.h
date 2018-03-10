@@ -17,10 +17,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTGROUPMANAGER_H
 #define KTGROUPMANAGER_H
 
 #include <QString>
+
 #include <util/ptrmap.h>
 #include <ktcore_export.h>
 #include <groups/group.h>
@@ -46,7 +48,7 @@ namespace kt
         Q_OBJECT
     public:
         GroupManager();
-        virtual ~GroupManager();
+        ~GroupManager();
 
         /**
          * Update the count of all groups
@@ -64,7 +66,7 @@ namespace kt
         /**
          * Create a new user created group.
          * @param name Name of the group
-         * @return Pointer to the group or NULL, if another group already exists with the same name.
+         * @return Pointer to the group or nullptr, if another group already exists with the same name.
          */
         Group* newGroup(const QString& name);
 
@@ -137,7 +139,7 @@ namespace kt
         */
         void torrentsLoaded(QueueManager* qman);
 
-    signals:
+    Q_SIGNALS:
         void groupRenamed(Group* g);
         void groupAdded(Group* g);
         void groupRemoved(Group* g);

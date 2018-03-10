@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSYNDICATIONPLUGIN_H
 #define KTSYNDICATIONPLUGIN_H
 
@@ -35,14 +36,14 @@ namespace kt
     */
     class SyndicationPlugin : public Plugin
     {
-        Q_OBJECT
+
     public:
         SyndicationPlugin(QObject* parent, const QVariantList& args);
-        virtual ~SyndicationPlugin();
+        ~SyndicationPlugin();
 
-        virtual bool versionCheck(const QString& version) const;
-        virtual void load();
-        virtual void unload();
+        bool versionCheck(const QString& version) const override;
+        void load() override;
+        void unload() override;
 
     private:
         void setupActions();

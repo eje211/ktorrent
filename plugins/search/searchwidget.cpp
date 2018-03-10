@@ -21,24 +21,24 @@
 
 #include "searchwidget.h"
 
-#include <QLabel>
+#include <QApplication>
 #include <QClipboard>
+#include <QLabel>
+#include <QMenu>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QProgressBar>
 #include <QVBoxLayout>
-#include <QApplication>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QMenu>
 
-#include <KIconLoader>
-#include <KComboBox>
-#include <klocalizedstring.h>
-#include <knotification.h>
-#include <KStandardAction>
-#include <kio/job.h>
-#include <KMessageBox>
 #include <KActionCollection>
+#include <KComboBox>
+#include <KIconLoader>
+#include <KIO/Job>
+#include <KLocalizedString>
 #include <KMainWindow>
+#include <KMessageBox>
+#include <KNotification>
+#include <KStandardAction>
 
 #include <util/log.h>
 #include <magnet/magnetlink.h>
@@ -57,12 +57,12 @@ using namespace bt;
 namespace kt
 {
 
-    SearchWidget::SearchWidget(SearchPlugin* sp) : webview(0), sp(sp), prog(0), torrent_download(0)
+    SearchWidget::SearchWidget(SearchPlugin* sp) : webview(nullptr), sp(sp), prog(nullptr), torrent_download(nullptr)
     {
         QVBoxLayout* layout = new QVBoxLayout(this);
         layout->setSpacing(0);
         layout->setMargin(0);
-        webview = new WebView(this);
+        webview = new WebView(this, sp->getProxy());
 
         KActionCollection* ac = sp->getSearchActivity()->part()->actionCollection();
         sbar = new KToolBar(this);
@@ -74,7 +74,7 @@ namespace kt
         search_text = new QLineEdit(sbar);
         sbar->addWidget(search_text);
         sbar->addAction(ac->action(QStringLiteral("search_tab_search")));
-        sbar->addWidget(new QLabel(i18n(" Engine:")));
+        sbar->addWidget(new QLabel(i18n(" Engine: "))); // same i18n string as in SearchToolBar()
         search_engine = new KComboBox(sbar);
         search_engine->setModel(sp->getSearchEngineList());
         sbar->addWidget(search_engine);
@@ -86,14 +86,14 @@ namespace kt
 
         search_text->setClearButtonEnabled(true);
 
-        connect(webview, SIGNAL(loadStarted()), this, SLOT(loadStarted()));
-        connect(webview, SIGNAL(loadFinished(bool)), this, SLOT(loadFinished(bool)));
-        connect(webview, SIGNAL(loadProgress(int)), this, SLOT(loadProgress(int)));
+        connect(webview, &WebView::loadStarted, this, &SearchWidget::loadStarted);
+        connect(webview, &WebView::loadFinished, this, &SearchWidget::loadFinished);
+        connect(webview, &WebView::loadProgress, this, &SearchWidget::loadProgress);
         connect(webview->page(), SIGNAL(unsupportedContent(QNetworkReply*)),
                 this, SLOT(unsupportedContent(QNetworkReply*)));
-        connect(webview, SIGNAL(linkMiddleOrCtrlClicked(QUrl)), this, SIGNAL(openNewTab(QUrl)));
-        connect(webview, SIGNAL(iconChanged()), this, SLOT(iconChanged()));
-        connect(webview, SIGNAL(titleChanged(QString)), this, SLOT(titleChanged(QString)));
+        connect(webview, &WebView::linkMiddleOrCtrlClicked, this, &SearchWidget::openNewTab);
+        connect(webview, &WebView::iconChanged, this, &SearchWidget::iconChanged);
+        connect(webview, &WebView::titleChanged, this, &SearchWidget::titleChanged);
     }
 
 
@@ -113,7 +113,12 @@ namespace kt
 
     void SearchWidget::titleChanged(const QString& text)
     {
-        changeTitle(this, text);
+        if (!text.isEmpty()) {
+            changeTitle(this, text);
+        }
+        else { // no empty tab titles allowed
+            changeTitle(this, webview->url().toString());
+        }
     }
 
     QUrl SearchWidget::getCurrentUrl() const
@@ -205,16 +210,16 @@ namespace kt
         options.silently = false;
         sp->getCore()->load(bt::MagnetLink(magnet_url.toString()), options);
         QString msg = i18n("Downloading:<br/><b>%1</b>", magnet_url.toString());
-        KNotification::event("MagnetLinkDownloadStarted", msg, QPixmap(), sp->getGUI()->getMainWindow());
+        KNotification::event(QStringLiteral("MagnetLinkDownloadStarted"), msg, QPixmap(), sp->getGUI()->getMainWindow());
     }
 
     void SearchWidget::unsupportedContent(QNetworkReply* r)
     {
-        if (r->url().scheme() == QLatin1String("magnet"))
+        if (r->url().scheme() == QStringLiteral("magnet"))
         {
             magnetUrl(r->url());
         }
-        else if (r->header(QNetworkRequest::ContentTypeHeader).toString() == QLatin1String("application/x-bittorrent") ||
+        else if (r->header(QNetworkRequest::ContentTypeHeader).toString() == QStringLiteral("application/x-bittorrent") ||
                  r->url().path().endsWith(QLatin1String(".torrent")))
         {
             torrent_download = r;
@@ -246,10 +251,10 @@ namespace kt
 
                   i18n("Do you want to download or save the torrent?"),
                   i18n("Download Torrent"),
-                  KGuiItem(i18n("Download"), "ktorrent"),
+                  KGuiItem(i18n("Download"), QStringLiteral("ktorrent")),
                   KStandardGuiItem::save(),
                   KStandardGuiItem::cancel(),
-                  ":TorrentDownloadFinishedQuestion");
+                  QStringLiteral(":TorrentDownloadFinishedQuestion"));
 
         if (ret == KMessageBox::Yes)
             sp->getCore()->load(torrent_download->readAll(), torrent_download->url(), QString(), QString());

@@ -17,16 +17,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
+#include <KIO/CopyJob>
+
+#include <QDateTime>
 #include <QFile>
+#include <QFileInfo>
 #include <QStandardPaths>
-#include <kio/copyjob.h>
+
 #include <util/log.h>
 #include <util/decompressfilejob.h>
 #include <interfaces/functions.h>
 #include <util/fileops.h>
 #include "geoipmanager.h"
-#include <QFileInfo>
-#include <QDateTime>
 
 using namespace bt;
 
@@ -34,7 +37,7 @@ namespace kt
 {
     QUrl GeoIPManager::geoip_url = QUrl(QStringLiteral("http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz"));
 
-    GeoIPManager::GeoIPManager(QObject* parent): QObject(parent), geo_ip(0), decompress_thread(0)
+    GeoIPManager::GeoIPManager(QObject* parent): QObject(parent), geo_ip(nullptr), decompress_thread(nullptr)
     {
 #ifdef USE_SYSTEM_GEOIP
         geo_ip = GeoIP_open_type(GEOIP_COUNTRY_EDITION, GEOIP_STANDARD);
@@ -49,7 +52,7 @@ namespace kt
         }
         else
         {
-            geo_ip = GeoIP_open(QFile::encodeName(geoip_data_file), 0);
+            geo_ip = GeoIP_open(QFile::encodeName(geoip_data_file).data(), 0);
             if (geo_ip)
             {
                 QFileInfo fi(geoip_data_file);
@@ -83,13 +86,13 @@ namespace kt
         if (!geo_ip)
             return 0;
         else
-            return GeoIP_id_by_name(geo_ip, addr.toAscii());
+            return GeoIP_id_by_name(geo_ip, addr.toLatin1().data());
     }
 
     QString GeoIPManager::countryCode(int country_id)
     {
         if (country_id > 0 && country_id < 247)
-            return GeoIP_country_code[country_id];
+            return QString::fromLatin1(GeoIP_country_code[country_id]);
         else
             return QString();
     }
@@ -97,7 +100,7 @@ namespace kt
     QString GeoIPManager::countryName(int country_id)
     {
         if (country_id > 0 && country_id < 247)
-            return GeoIP_country_name[country_id];
+            return QString::fromUtf8(GeoIP_country_name[country_id]);
         else
             return QString();
     }
@@ -108,7 +111,7 @@ namespace kt
         Out(SYS_INW | LOG_NOTICE) << "Downloading GeoIP database: " << geoip_url << endl;
         download_destination = kt::DataDir(CreateIfNotExists) + geoip_url.fileName();
         KIO::CopyJob* job = KIO::copy(geoip_url, QUrl::fromLocalFile(download_destination), KIO::Overwrite | KIO::HideProgressInfo);
-        connect(job, SIGNAL(result(KJob*)), this, SLOT(databaseDownloadFinished(KJob*)));
+        connect(job, &KIO::CopyJob::result, this, &GeoIPManager::databaseDownloadFinished);
 #endif
     }
 
@@ -127,9 +130,9 @@ namespace kt
             if (geo_ip)
             {
                 GeoIP_delete(geo_ip);
-                geo_ip = 0;
+                geo_ip = nullptr;
             }
-            geo_ip = GeoIP_open(QFile::encodeName(geoip_data_file), 0);
+            geo_ip = GeoIP_open(QFile::encodeName(geoip_data_file).data(), 0);
             if (!geo_ip)
                 Out(SYS_INW | LOG_NOTICE) << "Failed to open GeoIP database  " << endl;
         }
@@ -138,7 +141,7 @@ namespace kt
             Out(SYS_INW | LOG_NOTICE) << "GeoIP database downloaded, decompressing ...  " << endl;
             // decompress the file
             decompress_thread = new bt::DecompressThread(download_destination, kt::DataDir() + QLatin1String("geoip.dat"));
-            connect(decompress_thread, SIGNAL(finished()), this, SLOT(decompressFinished()), Qt::QueuedConnection);
+            connect(decompress_thread, &bt::DecompressThread::finished, this, &GeoIPManager::decompressFinished, Qt::QueuedConnection);
             decompress_thread->start(QThread::IdlePriority);
         }
     }
@@ -152,16 +155,16 @@ namespace kt
             if (geo_ip)
             {
                 GeoIP_delete(geo_ip);
-                geo_ip = 0;
+                geo_ip = nullptr;
             }
-            geo_ip = GeoIP_open(QFile::encodeName(geoip_data_file), 0);
+            geo_ip = GeoIP_open(QFile::encodeName(geoip_data_file).data(), 0);
             if (!geo_ip)
                 Out(SYS_INW | LOG_NOTICE) << "Failed to open GeoIP database  " << endl;
         }
 
         decompress_thread->wait();
         delete decompress_thread;
-        decompress_thread = 0;
+        decompress_thread = nullptr;
     }
 
 

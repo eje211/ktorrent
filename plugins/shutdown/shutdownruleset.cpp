@@ -17,8 +17,10 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
+
 #include <QFile>
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+
 #include <util/log.h>
 #include <util/file.h>
 #include <util/error.h>
@@ -41,8 +43,8 @@ namespace kt
           on(false),
           all_rules_must_be_hit(false)
     {
-        connect(core, SIGNAL(torrentAdded(bt::TorrentInterface*)), this, SLOT(torrentAdded(bt::TorrentInterface*)));
-        connect(core, SIGNAL(torrentRemoved(bt::TorrentInterface*)), this, SLOT(torrentRemoved(bt::TorrentInterface*)));
+        connect(core, &CoreInterface::torrentAdded, this, &ShutdownRuleSet::torrentAdded);
+        connect(core, &CoreInterface::torrentRemoved, this, &ShutdownRuleSet::torrentRemoved);
         QueueManager* qman = core->getQueueManager();
         for (QueueManager::iterator i = qman->begin(); i != qman->end(); i++)
         {
@@ -108,7 +110,6 @@ namespace kt
             {
             case SHUTDOWN: emit shutdown(); break;
             case LOCK: emit lock(); break;
-            case STANDBY: emit standby(); break;
             case SUSPEND_TO_DISK: emit suspendToDisk(); break;
             case SUSPEND_TO_RAM: emit suspendToRAM(); break;
             }
@@ -118,9 +119,8 @@ namespace kt
 
     void ShutdownRuleSet::torrentAdded(bt::TorrentInterface* tc)
     {
-        connect(tc, SIGNAL(seedingAutoStopped(bt::TorrentInterface*, bt::AutoStopReason)),
-                this, SLOT(seedingAutoStopped(bt::TorrentInterface*, bt::AutoStopReason)));
-        connect(tc, SIGNAL(finished(bt::TorrentInterface*)), this, SLOT(torrentFinished(bt::TorrentInterface*)));
+        connect(tc, &bt::TorrentInterface::seedingAutoStopped, this, &ShutdownRuleSet::seedingAutoStopped);
+        connect(tc, &bt::TorrentInterface::finished, this, &ShutdownRuleSet::torrentFinished);
     }
 
 
@@ -144,7 +144,7 @@ namespace kt
     void ShutdownRuleSet::save(const QString& file)
     {
         File fptr;
-        if (!fptr.open(file, "wt"))
+        if (!fptr.open(file, QStringLiteral("wt")))
         {
             Out(SYS_GEN | LOG_DEBUG) << "Failed to open file " << file << " : " << fptr.errorString() << endl;
             return;
@@ -189,7 +189,7 @@ namespace kt
             clear();
             node = dec.decode();
             if (!node || node->getType() != BNode::LIST)
-                throw bt::Error("Toplevel node not a list");
+                throw bt::Error(QStringLiteral("Toplevel node not a list"));
 
             BListNode* const l = (BListNode*)node;
             Uint32 i = 0;
@@ -203,14 +203,14 @@ namespace kt
                     continue;
 
                 ShutdownRule rule;
-                rule.action = (Action)d->getInt("Action");
-                rule.target = (Target)d->getInt("Target");
-                rule.trigger = (Trigger)d->getInt("Trigger");
-                rule.hit = d->keys().contains("hit") && d->getInt("hit") == 1;
+                rule.action = (Action)d->getInt(QByteArrayLiteral("Action"));
+                rule.target = (Target)d->getInt(QByteArrayLiteral("Target"));
+                rule.trigger = (Trigger)d->getInt(QByteArrayLiteral("Trigger"));
+                rule.hit = d->keys().contains(QByteArrayLiteral("hit")) && d->getInt(QByteArrayLiteral("hit")) == 1;
                 rule.tc = 0;
-                if (d->getValue("Torrent"))
+                if (d->getValue(QByteArrayLiteral("Torrent")))
                 {
-                    const QByteArray hash = d->getByteArray("Torrent");
+                    const QByteArray hash = d->getByteArray(QByteArrayLiteral("Torrent"));
                     bt::TorrentInterface* const tc = torrentForHash(hash);
                     if (tc)
                         rule.tc = tc;
@@ -274,9 +274,6 @@ namespace kt
             case LOCK:
                 msg = i18n("Lock");
                 break;
-            case STANDBY:
-                msg = i18n("Standby");
-                break;
             case SUSPEND_TO_RAM:
                 msg = i18n("Sleep (suspend to RAM)");
                 break;
@@ -292,13 +289,13 @@ namespace kt
                 msg += i18n(" when one of the following events occur:<br/><br/> ");
 
             QStringList items;
-            foreach (const ShutdownRule& r, rules)
+            for (const ShutdownRule& r : qAsConst(rules))
             {
-                items += "- " + r.toolTip();
+                items += QStringLiteral("- ") + r.toolTip();
             }
 
 
-            msg += items.join("<br/>");
+            msg += items.join(QStringLiteral("<br/>"));
             return msg;
         }
     }

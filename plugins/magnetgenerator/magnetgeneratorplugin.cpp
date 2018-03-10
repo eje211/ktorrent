@@ -17,17 +17,19 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
+
 #include "magnetgeneratorplugin.h"
 
-#include <kpluginfactory.h>
-#include <kmainwindow.h>
-#include <kactioncollection.h>
-#include <klocalizedstring.h>
-#include <QUrl>
-#include <qclipboard.h>
-#include <qtooltip.h>
-#include <kpassivepopup.h>
+#include <KActionCollection>
+#include <KMainWindow>
+#include <KLocalizedString>
+#include <KPassivePopup>
+#include <KPluginFactory>
+
+#include <QClipboard>
 #include <QIcon>
+#include <QToolTip>
+#include <QUrl>
 
 #include <interfaces/guiinterface.h>
 #include <interfaces/torrentinterface.h>
@@ -46,9 +48,9 @@ namespace kt
     MagnetGeneratorPlugin::MagnetGeneratorPlugin(QObject* parent, const QVariantList& args) : Plugin(parent)
     {
         Q_UNUSED(args);
-        pref = 0;
+        pref = nullptr;
         generate_magnet_action = new QAction(QIcon::fromTheme(QStringLiteral("kt-magnet")), i18n("Copy Magnet URI"), this);
-        connect(generate_magnet_action, SIGNAL(triggered()), this, SLOT(generateMagnet()));
+        connect(generate_magnet_action, &QAction::triggered, this, &MagnetGeneratorPlugin::generateMagnet);
         actionCollection()->addAction(QStringLiteral("generate_magnet"), generate_magnet_action);
         setXMLFile(QStringLiteral("ktorrent_magnetgeneratorui.rc"));
 
@@ -60,7 +62,7 @@ namespace kt
 
     void MagnetGeneratorPlugin::load()
     {
-        pref = new MagnetGeneratorPrefWidget(0);
+        pref = new MagnetGeneratorPrefWidget(nullptr);
         getGUI()->addPrefPage(pref);
         TorrentActivityInterface* ta = getGUI()->getTorrentActivity();
         ta->addViewListener(this);
@@ -69,14 +71,14 @@ namespace kt
 
     bool MagnetGeneratorPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 
     void MagnetGeneratorPlugin::unload()
     {
         getGUI()->removePrefPage(pref);
         delete pref;
-        pref = 0;
+        pref = nullptr;
         TorrentActivityInterface* ta = getGUI()->getTorrentActivity();
         ta->removeViewListener(this);
     }
@@ -95,16 +97,16 @@ namespace kt
         QUrl dn(tor->getStats().torrent_name);
         SHA1Hash ih(tor->getInfoHash());
 
-        QString uri = QLatin1String("magnet:?xt=urn:btih:") + ih.toString();
+        QString uri = QStringLiteral("magnet:?xt=urn:btih:") + ih.toString();
 
         if (MagnetGeneratorPluginSettings::dn())
         {
-            uri += QLatin1String("&dn=") + QUrl::toPercentEncoding(dn.toString(), QByteArrayLiteral("{}"), NULL);
+            uri += QStringLiteral("&dn=") + QString::fromLatin1(QUrl::toPercentEncoding(dn.toString(), QByteArrayLiteral("{}"), nullptr));
         }
 
         if ((MagnetGeneratorPluginSettings::customtracker() && MagnetGeneratorPluginSettings::tr().length() > 0) && !MagnetGeneratorPluginSettings::torrenttracker())
         {
-            uri += (QLatin1String("&tr=")) + QUrl::toPercentEncoding(QUrl(MagnetGeneratorPluginSettings::tr()).toString(), QByteArrayLiteral("{}"), NULL);
+            uri += (QStringLiteral("&tr=")) + QString::fromLatin1(QUrl::toPercentEncoding(QUrl(MagnetGeneratorPluginSettings::tr()).toString(), QByteArrayLiteral("{}"), nullptr));
         }
 
         if (MagnetGeneratorPluginSettings::torrenttracker())
@@ -114,7 +116,7 @@ namespace kt
             {
                 Tracker* trk = (Tracker*)trackers.first();
 
-                uri += QLatin1String("&tr=") + QUrl::toPercentEncoding(QUrl(trk->trackerURL()).toString(), QByteArrayLiteral("{}"), NULL);
+                uri += QLatin1String("&tr=") + QString::fromLatin1(QUrl::toPercentEncoding(QUrl(trk->trackerURL()).toString(), QByteArrayLiteral("{}"), nullptr));
             }
 
         }

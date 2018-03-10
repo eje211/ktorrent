@@ -17,16 +17,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "dbussettings.h"
 #include "settings.h"
+
 #include <QDBusConnection>
+
 #include <interfaces/coreinterface.h>
 
 namespace kt
 {
     DBusSettings::DBusSettings(CoreInterface* core, QObject* parent) : QObject(parent), core(core)
     {
-        QDBusConnection::sessionBus().registerObject("/settings", this,
+        QDBusConnection::sessionBus().registerObject(QStringLiteral("/settings"), this,
                 QDBusConnection::ExportScriptableSlots | QDBusConnection::ExportScriptableSignals);
     }
 
@@ -771,6 +774,15 @@ namespace kt
     bool DBusSettings::requeueMagnets()
     {
         return Settings::requeueMagnets();
+    }
+    bool DBusSettings::showTotalSpeedInTitle()
+    {
+        return Settings::showTotalSpeedInTitle();
+    }
+
+    void DBusSettings::setShowTotalSpeedInTitle(bool val)
+    {
+        Settings::setShowTotalSpeedInTitle(val);
     }
 
     void DBusSettings::setRequeueMagnets(bool val)

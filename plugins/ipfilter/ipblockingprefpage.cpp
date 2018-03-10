@@ -18,7 +18,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ***************************************************************************/
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+
 #include <util/log.h>
 #include "ipblockingprefpage.h"
 #include "ipfilterpluginsettings.h"
@@ -32,15 +34,15 @@ namespace kt
 {
 
     IPBlockingPrefPage::IPBlockingPrefPage(IPFilterPlugin* p)
-        : PrefPageInterface(IPBlockingPluginSettings::self(), i18n("IP Filter"), "view-filter", 0), m_plugin(p)
+        : PrefPageInterface(IPBlockingPluginSettings::self(), i18n("IP Filter"), QStringLiteral("view-filter"), nullptr), m_plugin(p)
     {
         setupUi(this);
-        connect(kcfg_useLevel1, SIGNAL(toggled(bool)), this, SLOT(checkUseLevel1Toggled(bool)));
-        connect(m_download, SIGNAL(clicked()), this, SLOT(downloadClicked()));
-        connect(kcfg_autoUpdate, SIGNAL(toggled(bool)), this, SLOT(autoUpdateToggled(bool)));
-        connect(kcfg_autoUpdateInterval, SIGNAL(valueChanged(int)), this, SLOT(autoUpdateIntervalChanged(int)));
-        kcfg_autoUpdateInterval->setSuffix(ki18np(" day", " days").toString());
-        m_job = 0;
+        connect(kcfg_useLevel1, &QCheckBox::toggled, this, &IPBlockingPrefPage::checkUseLevel1Toggled);
+        connect(m_download, &QPushButton::clicked, this, &IPBlockingPrefPage::downloadClicked);
+        connect(kcfg_autoUpdate, &QCheckBox::toggled, this, &IPBlockingPrefPage::autoUpdateToggled);
+        connect(kcfg_autoUpdateInterval, static_cast<void(KPluralHandlingSpinBox::*)(int)>(&KPluralHandlingSpinBox::valueChanged), this, &IPBlockingPrefPage::autoUpdateIntervalChanged);
+        kcfg_autoUpdateInterval->setSuffix(ki18np(" day", " days"));
+        m_job = nullptr;
         m_verbose = true;
     }
 
@@ -57,7 +59,7 @@ namespace kt
         }
         else
         {
-            m_status->setText("");
+            m_status->setText(QString());
             kcfg_filterURL->setEnabled(false);
             m_download->setEnabled(false);
             m_plugin->unloadAntiP2P();
@@ -123,8 +125,8 @@ namespace kt
 
         m_plugin->unloadAntiP2P();
         m_job = new DownloadAndConvertJob(url, m_verbose ? DownloadAndConvertJob::Verbose : DownloadAndConvertJob::Quietly);
-        connect(m_job, SIGNAL(result(KJob*)), this, SLOT(downloadAndConvertFinished(KJob*)));
-        connect(m_job, SIGNAL(notification(QString)), m_plugin, SLOT(notification(QString)));
+        connect(m_job, &DownloadAndConvertJob::result, this, &IPBlockingPrefPage::downloadAndConvertFinished);
+        connect(m_job, &DownloadAndConvertJob::notification, m_plugin, &IPFilterPlugin::notification);
         m_job->start();
     }
 

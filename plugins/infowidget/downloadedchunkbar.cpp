@@ -17,8 +17,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <QToolTip>
+
 #include <QPainter>
+#include <QToolTip>
+
 #include "downloadedchunkbar.h"
 
 #include <util/bitset.h>
@@ -29,7 +31,7 @@ using namespace bt;
 namespace kt
 {
 
-    DownloadedChunkBar::DownloadedChunkBar(QWidget* parent) : ChunkBar(parent), curr_tc(NULL)
+    DownloadedChunkBar::DownloadedChunkBar(QWidget* parent) : ChunkBar(parent), curr_tc(nullptr)
     {
     }
 

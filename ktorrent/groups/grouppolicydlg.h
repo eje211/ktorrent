@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTGROUPPOLICYDLG_H
 #define KTGROUPPOLICYDLG_H
 
@@ -35,9 +36,9 @@ namespace kt
     {
     public:
         GroupPolicyDlg(Group* group, QWidget* parent);
-        virtual ~GroupPolicyDlg();
+        ~GroupPolicyDlg();
 
-        virtual void accept();
+        void accept() override;
     private:
         Group* group;
     };

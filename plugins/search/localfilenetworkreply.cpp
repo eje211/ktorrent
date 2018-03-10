@@ -18,7 +18,6 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #include "localfilenetworkreply.h"
 #include <QTimer>
 #include <util/log.h>
@@ -35,7 +34,7 @@ namespace kt
             open(ReadOnly | Unbuffered);
             setHeader(QNetworkRequest::ContentLengthHeader, QVariant(fptr->size()));
             setAttribute(QNetworkRequest::HttpStatusCodeAttribute, 200);
-            setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, "OK");
+            setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, QStringLiteral("OK"));
 
             QTimer::singleShot(0, this, SIGNAL(readyRead()));
             QTimer::singleShot(0, this, SIGNAL(finished()));
@@ -46,7 +45,7 @@ namespace kt
             delete fptr;
             fptr = 0;
             setAttribute(QNetworkRequest::HttpStatusCodeAttribute, 500);
-            setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, "Internal server error");
+            setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, QStringLiteral("Internal server error"));
             QTimer::singleShot(0, this, SIGNAL(finished()));
         }
     }

@@ -18,11 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTDBUSTORRENT_H
 #define KTDBUSTORRENT_H
 
 #include <QObject>
 #include <QStringList>
+
 #include <util/constants.h>
 #include <interfaces/torrentinterface.h>
 
@@ -31,8 +33,6 @@ namespace kt
 {
 
     class DBusTorrentFileStream;
-
-
 
     /**
         DBus object to access a torrent
@@ -43,7 +43,7 @@ namespace kt
         Q_CLASSINFO("D-Bus Interface", "org.ktorrent.torrent")
     public:
         DBusTorrent(bt::TorrentInterface* ti, QObject* parent);
-        virtual ~DBusTorrent();
+        ~DBusTorrent();
 
         /// Get a pointer to the actual torrent
         bt::TorrentInterface* torrent() {return ti;}

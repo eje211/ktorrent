@@ -17,11 +17,13 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
+
 #ifndef ITEMSELECTIONMODEL_H
 #define ITEMSELECTIONMODEL_H
 
-#include <QSet>
 #include <QItemSelectionModel>
+#include <QSet>
+
 #include <ktcore_export.h>
 
 namespace kt
@@ -34,12 +36,12 @@ namespace kt
         Q_OBJECT
     public:
         ItemSelectionModel(QAbstractItemModel* model, QObject* parent);
-        virtual ~ItemSelectionModel();
+        ~ItemSelectionModel();
 
-        virtual void select(const QModelIndex& index, QItemSelectionModel::SelectionFlags command);
-        virtual void select(const QItemSelection& sel, QItemSelectionModel::SelectionFlags command);
-        virtual void clear();
-        virtual void reset();
+        void select(const QModelIndex& index, QItemSelectionModel::SelectionFlags command) override;
+        void select(const QItemSelection& sel, QItemSelectionModel::SelectionFlags command) override;
+        void clear() override;
+        void reset() override;
 
     public slots:
         /**

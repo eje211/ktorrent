@@ -18,11 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFEEDRETRIEVER_H
 #define KTFEEDRETRIEVER_H
 
 #include <QFile>
-#include <syndication/dataretriever.h>
+#include <Syndication/DataRetriever>
 
 class KJob;
 
@@ -34,7 +35,6 @@ namespace kt
     */
     class FeedRetriever : public Syndication::DataRetriever
     {
-        Q_OBJECT
     public:
         /// Constructor, does not save a backup copy
         FeedRetriever();
@@ -42,16 +42,15 @@ namespace kt
         /// Constructor, does save a backup copy
         FeedRetriever(const QString& file_name);
 
-        virtual ~FeedRetriever();
+        ~FeedRetriever();
 
         /// Set the authentication cookie
         void setAuthenticationCookie(const QString& cookie);
 
-        virtual void abort();
-        virtual int errorCode() const;
-        virtual void retrieveData(const QUrl& url);
+        void abort() override;
+        int errorCode() const override;
+        void retrieveData(const QUrl& url) override;
 
-    private slots:
         void finished(KJob* j);
 
     private:

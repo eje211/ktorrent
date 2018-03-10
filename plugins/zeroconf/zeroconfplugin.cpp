@@ -19,8 +19,9 @@
  ***************************************************************************/
 #include "zeroconfplugin.h"
 
-#include <kpluginfactory.h>
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+#include <KPluginFactory>
+
 #include <util/log.h>
 #include <util/logsystemmanager.h>
 #include <torrent/queuemanager.h>
@@ -47,10 +48,8 @@ namespace kt
     {
         LogSystemManager::instance().registerSystem(i18n("ZeroConf"), SYS_ZCO);
         CoreInterface* core = getCore();
-        connect(core, SIGNAL(torrentAdded(bt::TorrentInterface*)),
-                this, SLOT(torrentAdded(bt::TorrentInterface*)));
-        connect(core, SIGNAL(torrentRemoved(bt::TorrentInterface*)),
-                this, SLOT(torrentRemoved(bt::TorrentInterface*)));
+        connect(core, &CoreInterface::torrentAdded, this, &ZeroConfPlugin::torrentAdded);
+        connect(core, &CoreInterface::torrentRemoved, this, &ZeroConfPlugin::torrentRemoved);
 
         // go over existing torrents and add them
         kt::QueueManager* qman = core->getQueueManager();
@@ -90,8 +89,7 @@ namespace kt
         services.insert(tc, av);
         tc->addPeerSource(av);
         Out(SYS_ZCO | LOG_NOTICE) << "ZeroConf service added for " << tc->getStats().torrent_name << endl;
-        connect(av, SIGNAL(serviceDestroyed(TorrentService*)),
-                this, SLOT(avahiServiceDestroyed(TorrentService*)));
+        connect(av, &TorrentService::serviceDestroyed, this, &ZeroConfPlugin::avahiServiceDestroyed);
     }
 
 
@@ -126,7 +124,7 @@ namespace kt
 
     bool ZeroConfPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 }
 #include "zeroconfplugin.moc"

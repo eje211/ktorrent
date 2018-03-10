@@ -18,15 +18,18 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFEED_H
 #define KTFEED_H
 
 #include <QMap>
-#include <QTimer>
 #include <QSet>
+#include <QTimer>
 #include <QUrl>
-#include <syndication/feed.h>
-#include <syndication/loader.h>
+
+#include <Syndication/Feed>
+#include <Syndication/Loader>
+
 #include <util/constants.h>
 
 namespace kt
@@ -62,7 +65,7 @@ namespace kt
         Feed(const QString& dir);
         Feed(const QString& feed_url, const QString& dir);
         Feed(const QString& feed_url, Syndication::FeedPtr feed, const QString& dir);
-        virtual ~Feed();
+        ~Feed();
 
         enum Status
         {
@@ -144,22 +147,22 @@ namespace kt
         /// Set the refresh rate of the feed
         void setRefreshRate(bt::Uint32 r);
 
-    signals:
+    Q_SIGNALS:
         /// Emitted when a link must de downloaded
         void downloadLink(const QUrl& link, const QString& group, const QString& location, const QString& move_on_completion, bool silently);
 
         /// A feed has been renamed
         void feedRenamed(Feed* f);
 
-    public slots:
+    public:
         /// Update the feed
         void refresh();
 
-    private slots:
+    private Q_SLOTS:
         void loadingComplete(Syndication::Loader* loader, Syndication::FeedPtr feed, Syndication::ErrorCode status);
         void loadingFromDiskComplete(Syndication::Loader* loader, Syndication::FeedPtr feed, Syndication::ErrorCode status);
 
-    signals:
+    Q_SIGNALS:
         void updated();
 
     private:

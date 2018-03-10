@@ -18,10 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ***************************************************************************/
+
 #ifndef ANTIP2P_H
 #define ANTIP2P_H
 
 #include <QVector>
+
 #include <util/constants.h>
 #include <interfaces/blocklistinterface.h>
 
@@ -37,7 +39,7 @@ namespace kt
         IPBlock(const IPBlock& block);
         IPBlock(const QString& start, const QString& end);
 
-        bool constains(bt::Uint32 ip) const
+        bool contains(bt::Uint32 ip) const
         {
             return ip1 <= ip && ip <= ip2;
         }
@@ -51,9 +53,9 @@ namespace kt
     {
     public:
         IPBlockList();
-        virtual ~IPBlockList();
+        ~IPBlockList();
 
-        virtual bool blocked(const net::Address& addr) const;
+        bool blocked(const net::Address& addr) const override;
 
         /**
          * Overloaded function. Uses Uint32 IP to be checked

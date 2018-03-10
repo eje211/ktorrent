@@ -18,10 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "trackermodel.h"
-#include <QList>
+
 #include <QColor>
-#include <klocalizedstring.h>
+#include <QList>
+
+#include <KLocalizedString>
 #include <interfaces/torrentinterface.h>
 #include <interfaces/trackerinterface.h>
 
@@ -29,7 +32,7 @@ namespace kt
 {
 
     TrackerModel::TrackerModel(QObject* parent)
-        : QAbstractTableModel(parent), tc(0), running(false)
+        : QAbstractTableModel(parent), tc(nullptr), running(false)
     {
     }
 
@@ -40,19 +43,19 @@ namespace kt
 
     void TrackerModel::changeTC(bt::TorrentInterface* tc)
     {
+        beginResetModel();
         qDeleteAll(trackers);
         trackers.clear();
         this->tc = tc;
         if (tc)
         {
             QList<bt::TrackerInterface*> tracker_list = tc->getTrackersList()->getTrackers();
-            foreach (bt::TrackerInterface* trk, tracker_list)
+            for (bt::TrackerInterface* trk : qAsConst(tracker_list))
             {
                 trackers.append(new Item(trk));
             }
         }
-
-        reset();
+        endResetModel();
     }
 
     void TrackerModel::update()

@@ -17,15 +17,16 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "qmpref.h"
 #include "settings.h"
 
 namespace kt
 {
-    QMPref::QMPref(QWidget* parent) : PrefPageInterface(Settings::self(), i18n("Queue Manager"), "kt-queue-manager", parent)
+    QMPref::QMPref(QWidget* parent) : PrefPageInterface(Settings::self(), i18n("Queue Manager"), QStringLiteral("kt-queue-manager"), parent)
     {
         setupUi(this);
-        connect(kcfg_manuallyControlTorrents, SIGNAL(toggled(bool)), this, SLOT(onControlTorrentsManuallyToggled(bool)));
+        connect(kcfg_manuallyControlTorrents, &QCheckBox::toggled, this, &QMPref::onControlTorrentsManuallyToggled);
         kcfg_stallTimer->setSuffix(i18n(" min"));
     }
 

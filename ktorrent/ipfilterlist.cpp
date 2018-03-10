@@ -18,9 +18,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <arpa/inet.h>
+
 #include <QStringList>
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+
+#include <arpa/inet.h>
 #include <net/address.h>
 #include <util/log.h>
 #include <util/error.h>
@@ -63,7 +65,7 @@ namespace kt
 
     bool IPFilterList::parseIPWithWildcards(const QString& str, bt::Uint32& start, bt::Uint32& end)
     {
-        QStringList ip_comps = str.split(".");
+        QStringList ip_comps = str.split(QLatin1Char('.'));
         if (ip_comps.count() != 4)
             return false;
 
@@ -71,7 +73,7 @@ namespace kt
         bt::Uint32 mask = 0;
         for (int i = 0; i < 4; i++)
         {
-            if (ip_comps[i] == "*")
+            if (ip_comps[i] == QStringLiteral("*"))
             {
                 mask |= 0xFF000000 >> (8 * i);
             }
@@ -112,7 +114,7 @@ namespace kt
 
     bool IPFilterList::addIPRange(const QString& str)
     {
-        QStringList range = str.split("-");
+        QStringList range = str.split(QLatin1Char('-'));
         if (range.count() != 2)
             return false;
 
@@ -148,7 +150,7 @@ namespace kt
     void IPFilterList::clear()
     {
         ip_list.clear();
-        reset();
+        endResetModel();
     }
 
     int IPFilterList::rowCount(const QModelIndex& parent) const
@@ -182,7 +184,7 @@ namespace kt
 
         Entry& e = ip_list[index.row()];
         QString str = value.toString();
-        QStringList range = str.split("-");
+        QStringList range = str.split(QLatin1Char('-'));
         if (range.count() != 2)
         {
             if (!parseIPWithWildcards(str, e.start, e.end))

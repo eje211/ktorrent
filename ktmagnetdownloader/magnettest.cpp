@@ -21,19 +21,20 @@
 #include "magnettest.h"
 
 #include <QApplication>
+#include <QFile>
+#include <QNetworkInterface>
+#include <QTimer>
+
 #include <dht/dhtbase.h>
 #include <magnet/magnetlink.h>
 #include <torrent/globals.h>
 #include <interfaces/functions.h>
 #include <settings.h>
 #include <upnp/upnpmcastsocket.h>
-#include <QTimer>
-#include <QNetworkInterface>
 #include <util/functions.h>
 #include <util/log.h>
 #include <util/error.h>
 #include <torrent/server.h>
-#include <QFile>
 #include <bcodec/bencoder.h>
 #include <peer/authenticationmonitor.h>
 
@@ -49,7 +50,7 @@ MagnetTest::MagnetTest(const bt::MagnetLink& mlink, QObject* parent) : QObject(p
     mdownloader = new MagnetDownloader(mlink, this);
     connect(mdownloader, &MagnetDownloader::foundMetadata, this, &MagnetTest::foundMetaData);
 
-    QTimer::singleShot(0, this, SLOT(start()));
+    QTimer::singleShot(0, this, &MagnetTest::start);
     connect(&timer, &QTimer::timeout, this, &MagnetTest::update);
 }
 
@@ -100,10 +101,10 @@ void MagnetTest::start()
     }
 
     // start DHT
-    bt::Globals::instance().getDHT().start(kt::DataDir() + "dht_table", kt::DataDir() + "dht_key", Settings::dhtPort());
+    bt::Globals::instance().getDHT().start(kt::DataDir() + QStringLiteral("dht_table"), kt::DataDir() + QStringLiteral("dht_key"), Settings::dhtPort());
 
     // Start UPnP router discovery
-    upnp->loadRouters(kt::DataDir() + "routers");
+    upnp->loadRouters(kt::DataDir() + QStringLiteral("routers"));
     upnp->discover();
 
     mdownloader->start();
@@ -129,7 +130,7 @@ void MagnetTest::foundMetaData(MagnetDownloader* md, const QByteArray& data)
     Q_UNUSED(md);
     Out(SYS_GEN | LOG_IMPORTANT) << "Saving to output.torrent" << endl;
     bt::File fptr;
-    if (fptr.open("output.torrent", "wb"))
+    if (fptr.open(QStringLiteral("output.torrent"), QStringLiteral("wb")))
     {
         BEncoder enc(&fptr);
         enc.beginDict();
@@ -142,7 +143,7 @@ void MagnetTest::foundMetaData(MagnetDownloader* md, const QByteArray& data)
             {
                 enc.write(QByteArrayLiteral("announce-list"));
                 enc.beginList();
-                foreach (const QUrl& u, trs)
+                for (const QUrl& u : qAsConst(trs))
                 {
                     enc.write(u.toEncoded());
                 }
@@ -152,7 +153,7 @@ void MagnetTest::foundMetaData(MagnetDownloader* md, const QByteArray& data)
         enc.write(QByteArrayLiteral("info"));
         fptr.write(data.data(), data.size());
         enc.end();
-        QTimer::singleShot(0, qApp, SLOT(quit()));
+        QTimer::singleShot(0, qApp, &QCoreApplication::quit);
     }
     else
     {

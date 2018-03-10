@@ -19,16 +19,17 @@
  ***************************************************************************/
 
 #include "addtrackersdialog.h"
-#include <QRegExp>
-#include <QUrl>
+
 #include <QApplication>
 #include <QClipboard>
-#include <QLineEdit>
 #include <QCompleter>
 #include <QDialogButtonBox>
+#include <QLineEdit>
+#include <QRegularExpression>
 #include <QVBoxLayout>
+#include <QUrl>
 
-#include <klocalizedstring.h>
+#include <KLocalizedString>
 
 namespace kt
 {
@@ -41,7 +42,8 @@ namespace kt
 
         // If we find any urls on the clipboard, add them
         QClipboard* clipboard = QApplication::clipboard();
-        foreach (const QString& s, clipboard->text().split(QRegExp(QLatin1String("\\s"))))
+        const QStringList urlStrings = clipboard->text().split(QRegularExpression(QLatin1String("\\s")));
+        for (const QString& s : urlStrings)
         {
             QUrl url(s);
             if (url.isValid() && (url.scheme() == QLatin1String("http")
@@ -55,8 +57,8 @@ namespace kt
         trackers->lineEdit()->setCompleter(new QCompleter(tracker_hints));
 
         QDialogButtonBox* box=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel, this);
-        connect(box,SIGNAL(accepted()),this,SLOT(accept()));
-        connect(box,SIGNAL(rejected()),this,SLOT(reject()));
+        connect(box, &QDialogButtonBox::accepted, this, &AddTrackersDialog::accept);
+        connect(box, &QDialogButtonBox::rejected, this, &AddTrackersDialog::reject);
 
         QVBoxLayout *layout = new QVBoxLayout(this);
         layout->addWidget(trackers);

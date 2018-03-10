@@ -18,14 +18,14 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #ifndef KT_SCANTHREAD_H
 #define KT_SCANTHREAD_H
 
-#include <QThread>
 #include <QMutex>
 #include <QStringList>
+#include <QThread>
 #include <QUrl>
+
 #include <util/ptrmap.h>
 #include "scanfolder.h"
 
@@ -43,7 +43,7 @@ namespace kt
         Q_OBJECT
     public:
         ScanThread();
-        virtual ~ScanThread();
+        ~ScanThread();
 
         /**
          * Set whether to scan recursively or not
@@ -70,20 +70,20 @@ namespace kt
         void setFolderList(const QStringList& folders);
 
     protected:
-        virtual void run();
+        void run() override;
 
     private:
         void scan(const QUrl& dir, bool recursive);
         bool alreadyLoaded(const QDir& d, const QString& torrent);
         void updateFolders();
-        virtual void customEvent(QEvent* ev);
+        void customEvent(QEvent* ev) override;
 
     signals:
         /**
          * Emitted when one or more torrents are found.
          * @param torrents The list of torrents
          */
-        void found(const QList<QUrl>& torrent);
+        void found(const QList<QUrl>& torrents);
 
     private:
         QMutex mutex;

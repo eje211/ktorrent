@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTMISSINGFILESDLG_H
 #define KTMISSINGFILESDLG_H
 
@@ -48,7 +49,7 @@ namespace kt
          * @param parent The parent widget
          */
         MissingFilesDlg(const QString& text, const QStringList& missing, bt::TorrentInterface* tc, QWidget* parent);
-        virtual ~MissingFilesDlg();
+        ~MissingFilesDlg();
 
         enum ReturnCode
         {

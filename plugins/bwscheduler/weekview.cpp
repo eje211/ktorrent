@@ -21,8 +21,9 @@
 
 #include "weekview.h"
 
-#include <util/log.h>
 #include <QGraphicsItem>
+
+#include <util/log.h>
 #include <boost/bind.hpp>
 #include "weekscene.h"
 #include "schedule.h"
@@ -32,20 +33,18 @@ using namespace bt;
 namespace kt
 {
 
-    WeekView::WeekView(QWidget* parent) : QGraphicsView(parent), schedule(0)
+    WeekView::WeekView(QWidget* parent) : QGraphicsView(parent), schedule(nullptr)
     {
         scene = new WeekScene(this);
         setScene(scene);
 
-        connect(scene, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
-        connect(scene, SIGNAL(itemDoubleClicked(QGraphicsItem*)), this, SLOT(onDoubleClicked(QGraphicsItem*)));
-        connect(scene, SIGNAL(itemMoved(ScheduleItem*, const QTime&, const QTime&, int, int)),
-                this, SIGNAL(itemMoved(ScheduleItem*, const QTime&, const QTime&, int, int)));
+        connect(scene, &WeekScene::selectionChanged, this, &WeekView::onSelectionChanged);
+        connect(scene, &WeekScene::itemDoubleClicked, this, &WeekView::onDoubleClicked);
+        connect(scene, static_cast<void (WeekScene::*)(ScheduleItem*, const QTime&, const QTime&, int, int)>(&WeekScene::itemMoved), this, &WeekView::itemMoved);
 
         menu = new QMenu(this);
         setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
-                this, SLOT(showContextMenu(const QPoint&)));
+        connect(this, &WeekView::customContextMenuRequested, this, &WeekView::showContextMenu);
     }
 
 
@@ -62,8 +61,8 @@ namespace kt
     {
         selection.clear();
 
-        QList<QGraphicsItem*> sel = scene->selectedItems();
-        foreach (QGraphicsItem* s, sel)
+        const QList<QGraphicsItem*> sel = scene->selectedItems();
+        for (QGraphicsItem* s : sel)
         {
             QMap<QGraphicsItem*, ScheduleItem*>::iterator i = item_map.find(s);
             if (i != item_map.end())

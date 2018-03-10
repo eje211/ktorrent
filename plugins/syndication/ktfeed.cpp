@@ -18,10 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <QFile>
+
 #include <QDomElement>
-#include <klocalizedstring.h>
-#include <syndication/enclosure.h>
+#include <QFile>
+
+#include <KLocalizedString>
+#include <Syndication/Enclosure>
+
 #include <util/log.h>
 #include <util/file.h>
 #include <util/fileops.h>
@@ -43,14 +46,14 @@ namespace kt
 
     Feed::Feed(const QString& dir) : dir(dir), status(UNLOADED), refresh_rate(DEFAULT_REFRESH_RATE)
     {
-        connect(&update_timer, SIGNAL(timeout()), this, SLOT(refresh()));
+        connect(&update_timer, &QTimer::timeout, this, &Feed::refresh);
     }
 
     Feed::Feed(const QString& feed_url, const QString& dir)
         : dir(dir), status(UNLOADED), refresh_rate(DEFAULT_REFRESH_RATE)
     {
         parseUrl(feed_url);
-        connect(&update_timer, SIGNAL(timeout()), this, SLOT(refresh()));
+        connect(&update_timer, &QTimer::timeout, this, &Feed::refresh);
         refresh();
         save();
     }
@@ -59,7 +62,7 @@ namespace kt
         : feed(feed), dir(dir), status(OK), refresh_rate(DEFAULT_REFRESH_RATE)
     {
         parseUrl(feed_url);
-        connect(&update_timer, SIGNAL(timeout()), this, SLOT(refresh()));
+        connect(&update_timer, &QTimer::timeout, this, &Feed::refresh);
         update_timer.start(refresh_rate * 60 * 1000);
     }
 
@@ -69,7 +72,7 @@ namespace kt
 
     void Feed::parseUrl(const QString& feed_url)
     {
-        QStringList sl = feed_url.split(":COOKIE:");
+        QStringList sl = feed_url.split(QStringLiteral(":COOKIE:"));
         if (sl.size() == 2)
         {
             url = QUrl(sl.first());
@@ -82,9 +85,9 @@ namespace kt
 
     void Feed::save()
     {
-        QString file = dir + "info";
+        QString file = dir + QStringLiteral("info");
         File fptr;
-        if (!fptr.open(file, "wt"))
+        if (!fptr.open(file, QStringLiteral("wt")))
         {
             Out(SYS_SYN | LOG_DEBUG) << "Failed to open " << file << " : " << fptr.errorString() << endl;
             return;
@@ -135,7 +138,7 @@ namespace kt
 
     void Feed::load(FilterList* filter_list)
     {
-        QString file = dir + "info";
+        QString file = dir + QStringLiteral("info");
         QFile fptr(file);
         if (!fptr.open(QIODevice::ReadOnly))
         {
@@ -215,7 +218,7 @@ namespace kt
         status = OK;
         delete n;
 
-        if (bt::Exists(dir + "feed.xml"))
+        if (bt::Exists(dir + QStringLiteral("feed.xml")))
             loadFromDisk();
         else
             refresh();
@@ -241,8 +244,8 @@ namespace kt
 
         // refresh cache of feed_items_ids
         feed_items_id.clear();
-        QList<Syndication::ItemPtr> feedItems = feed->items();
-        foreach (Syndication::ItemPtr item, feedItems)
+        const QList<Syndication::ItemPtr> feedItems = feed->items();
+        for (Syndication::ItemPtr item : feedItems)
             feed_items_id.insert(item->id());
 
         checkLoaded();
@@ -256,7 +259,7 @@ namespace kt
         update_error.clear();
         update_timer.stop();
         Syndication::Loader* loader = Syndication::Loader::create(this, SLOT(loadingComplete(Syndication::Loader*, Syndication::FeedPtr, Syndication::ErrorCode)));
-        FeedRetriever* retr = new FeedRetriever(dir + "feed.xml");
+        FeedRetriever* retr = new FeedRetriever(dir + QStringLiteral("feed.xml"));
         if (!cookie.isEmpty())
             retr->setAuthenticationCookie(cookie);
         loader->loadFrom(url, retr);
@@ -274,7 +277,7 @@ namespace kt
         status = DOWNLOADING;
         update_timer.stop();
         Syndication::Loader* loader = Syndication::Loader::create(this, SLOT(loadingFromDiskComplete(Syndication::Loader*, Syndication::FeedPtr, Syndication::ErrorCode)));
-        loader->loadFrom(QUrl(dir + "feed.xml"));
+        loader->loadFrom(QUrl(dir + QStringLiteral("feed.xml")));
         updated();
     }
 
@@ -289,11 +292,11 @@ namespace kt
     QString Feed::newFeedDir(const QString& base)
     {
         int cnt = 0;
-        QString dir = QString("%1feed%2/").arg(base).arg(cnt);
+        QString dir = QStringLiteral("%1feed%2/").arg(base).arg(cnt);
         while (bt::Exists(dir))
         {
             cnt++;
-            dir = QString("%1feed%2/").arg(base).arg(cnt);
+            dir = QStringLiteral("%1feed%2/").arg(base).arg(cnt);
         }
 
         bt::MakeDir(dir);
@@ -354,8 +357,8 @@ namespace kt
         foreach (Filter* f, filters)
         {
             f->startMatching();
-            QList<Syndication::ItemPtr> items = feed->items();
-            foreach (Syndication::ItemPtr item, items)
+            const QList<Syndication::ItemPtr> items = feed->items();
+            for (Syndication::ItemPtr item : items)
             {
                 // Skip already loaded items
                 if (loaded.contains(item->id()))
@@ -506,7 +509,7 @@ namespace kt
         QStringList names;
         foreach (Filter* f, filters)
             names << f->filterName();
-        return names.join(", ");
+        return names.join(QStringLiteral(", "));
     }
 
 }

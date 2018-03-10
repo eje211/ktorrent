@@ -1,6 +1,10 @@
 [Desktop Entry]
 Name=Media Player
 Name[ar]=مشغّل الوسائط
+<<<<<<< HEAD
+=======
+Name[ast]=Reproctor de medios
+>>>>>>> cbdbeeea1a92eda031ab1e4e62545ce055aed845
 Name[bg]=Медиен плеър
 Name[bs]=Izvođač medija
 Name[ca]=Reproductor multimèdia
@@ -55,6 +59,10 @@ Name[zh_CN]=媒体播放器
 Name[zh_TW]=媒體播放器
 Comment=Phonon-based media player
 Comment[ar]=مشغّل وسائط يعتمد «فنون»
+<<<<<<< HEAD
+=======
+Comment[ast]=Reproductor de medios basáu en Phonon
+>>>>>>> cbdbeeea1a92eda031ab1e4e62545ce055aed845
 Comment[bg]=Програма за преглед на мултимедия на основата на Phonon
 Comment[bs]=Medija plejer zasnovan na Fononu
 Comment[ca]=Reproductor de suports basat en el Phonon
@@ -108,7 +116,7 @@ X-KDE-Library=ktmediaplayerplugin
 X-KDE-PluginInfo-Author=Joris Guisson
 X-KDE-PluginInfo-Email=joris.guisson@gmail.com
 X-KDE-PluginInfo-Name=MediaPlayerPlugin
-X-KDE-PluginInfo-Website=http://ktorrent.org/
+X-KDE-PluginInfo-Website=http://kde.org/applications/internet/ktorrent/
 X-KDE-PluginInfo-License=GPL
 X-KDE-PluginInfo-EnabledByDefault=false
 Icon=applications-multimedia

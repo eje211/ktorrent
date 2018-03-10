@@ -21,15 +21,18 @@
 
 #include "trayicon.h"
 
+#include <algorithm>
+
 #include <QPainter>
-#include <QtAlgorithms>
 #include <QIcon>
 #include <QLocale>
 #include <QToolTip>
-#include <kpassivepopup.h>
-#include <klocalizedstring.h>
-#include <knotification.h>
-#include <kactioncollection.h>
+
+#include <KActionCollection>
+#include <KLocalizedString>
+#include <KNotification>
+#include <KPassivePopup>
+
 #include <util/functions.h>
 #include <net/socketmonitor.h>
 #include <util/log.h>
@@ -51,11 +54,11 @@ namespace kt
         , mwnd(parent)
         , previousDownloadHeight(0)
         , previousUploadHeight(0)
-        , max_upload_rate(0)
-        , max_download_rate(0)
-        , status_notifier_item(0)
+        , max_upload_rate(nullptr)
+        , max_download_rate(nullptr)
+        , status_notifier_item(nullptr)
         , queue_suspended(false)
-        , menu(0)
+        , menu(nullptr)
     {
         connect(core, &Core::openedSilently, this, &TrayIcon::torrentSilentlyOpened);
         connect(core, &Core::finished, this, &TrayIcon::finished);
@@ -83,9 +86,9 @@ namespace kt
             return;
 
         delete status_notifier_item;
-        status_notifier_item = 0;
-        menu = 0;
-        max_download_rate = max_upload_rate = 0;
+        status_notifier_item = nullptr;
+        menu = nullptr;
+        max_download_rate = max_upload_rate = nullptr;
     }
 
     void TrayIcon::show()
@@ -117,9 +120,9 @@ namespace kt
 
         ac = mwnd->actionCollection();
         menu->addAction(ac->action(QStringLiteral("paste_url")));
-        menu->addAction(ac->action(KStandardAction::name(KStandardAction::Open)));
+        menu->addAction(ac->action(QString::fromUtf8(KStandardAction::name(KStandardAction::Open))));
         menu->addSeparator();
-        menu->addAction(ac->action(KStandardAction::name(KStandardAction::Preferences)));
+        menu->addAction(ac->action(QString::fromUtf8(KStandardAction::name(KStandardAction::Preferences))));
         menu->addSeparator();
 
 
@@ -165,7 +168,7 @@ namespace kt
         if (!Settings::showPopups())
             return;
 
-        KNotification::event("CannotLoadSilently", msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("CannotLoadSilently"), msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::dhtNotEnabled(const QString& msg)
@@ -173,7 +176,7 @@ namespace kt
         if (!Settings::showPopups())
             return;
 
-        KNotification::event("DHTNotEnabled", msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("DHTNotEnabled"), msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::torrentSilentlyOpened(bt::TorrentInterface* tc)
@@ -183,7 +186,7 @@ namespace kt
 
         QString msg = i18n("<b>%1</b> was silently opened.",
                            tc->getDisplayName());
-        KNotification::event("TorrentSilentlyOpened", msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("TorrentSilentlyOpened"), msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::finished(bt::TorrentInterface* tc)
@@ -201,7 +204,7 @@ namespace kt
                            BytesPerSecToString(speed_down / tc->getRunningTimeDL()),
                            BytesPerSecToString(speed_up / tc->getRunningTimeUL()));
 
-        KNotification::event("TorrentFinished", msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("TorrentFinished"), msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::maxShareRatioReached(bt::TorrentInterface* tc)
@@ -219,7 +222,7 @@ namespace kt
                            BytesToString(s.bytes_uploaded),
                            BytesPerSecToString(speed_up / tc->getRunningTimeUL()));
 
-        KNotification::event("MaxShareRatioReached", msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("MaxShareRatioReached"), msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::maxSeedTimeReached(bt::TorrentInterface* tc)
@@ -237,7 +240,7 @@ namespace kt
                            BytesToString(s.bytes_uploaded),
                            BytesPerSecToString(speed_up / tc->getRunningTimeUL()));
 
-        KNotification::event("MaxSeedTimeReached", msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("MaxSeedTimeReached"), msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::torrentStoppedByError(bt::TorrentInterface* tc, QString msg)
@@ -248,7 +251,7 @@ namespace kt
         QString err_msg = i18n("<b>%1</b> has been stopped with the following error: <br>%2",
                                tc->getDisplayName(), msg);
 
-        KNotification::event("TorrentStoppedByError", err_msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("TorrentStoppedByError"), err_msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::corruptedData(bt::TorrentInterface* tc)
@@ -259,7 +262,7 @@ namespace kt
         QString err_msg = i18n("Corrupted data has been found in the torrent <b>%1</b>"
                                "<br>It would be a good idea to do a data integrity check on the torrent.", tc->getDisplayName());
 
-        KNotification::event("CorruptedData", err_msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("CorruptedData"), err_msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::queuingNotPossible(bt::TorrentInterface* tc)
@@ -280,7 +283,7 @@ namespace kt
                        "<br>Remove the limit manually if you want to continue seeding.",
                        tc->getDisplayName(), QLocale().toString(s.max_seed_time, 'g', 2));
 
-        KNotification::event("QueueNotPossible", msg, QPixmap(), mwnd);
+        KNotification::event(QStringLiteral("QueueNotPossible"), msg, QPixmap(), mwnd);
     }
 
     void TrayIcon::canNotStart(bt::TorrentInterface* tc, bt::TorrentStartResponse reason)
@@ -304,11 +307,11 @@ namespace kt
                              "Cannot download more than %1 torrents. <br>", Settings::maxDownloads());
             }
             msg += i18n("Go to Settings -> Configure KTorrent, if you want to change the limits.");
-            KNotification::event("CannotStart", msg, QPixmap(), mwnd);
+            KNotification::event(QStringLiteral("CannotStart"), msg, QPixmap(), mwnd);
             break;
         case bt::NOT_ENOUGH_DISKSPACE:
             msg += i18n("There is not enough diskspace available.");
-            KNotification::event("CannotStart", msg, QPixmap(), mwnd);
+            KNotification::event(QStringLiteral("CannotStart"), msg, QPixmap(), mwnd);
             break;
         default:
             break;
@@ -325,7 +328,7 @@ namespace kt
         if (stopped)
             msg.prepend(i18n("Torrent has been stopped.<br />"));
 
-        KNotification::event("LowDiskSpace", msg);
+        KNotification::event(QStringLiteral("LowDiskSpace"), msg);
     }
 
     void TrayIcon::updateMaxRateMenus()
@@ -392,8 +395,8 @@ namespace kt
             delta += (delta >= 50) ? 50 : (delta >= 20) ? 10 : 5;
         }
 
-        qSort(values);
-        foreach (int v, values)
+        std::sort(values.begin(), values.end());
+        for (int v : qAsConst(values))
         {
             if (v >= 1)
             {
@@ -416,7 +419,7 @@ namespace kt
         if (act == unlimited)
             rate = 0;
         else
-            rate = act->text().remove('&').toInt(); // remove ampersands
+            rate = act->text().remove(QLatin1Char('&')).toInt(); // remove ampersands
 
         if (type == UPLOAD)
         {

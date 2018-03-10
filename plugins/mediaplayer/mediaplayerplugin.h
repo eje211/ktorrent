@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTMEDIAPLAYERPLUGIN_H
 #define KTMEDIAPLAYERPLUGIN_H
 
@@ -39,11 +40,11 @@ namespace kt
         Q_OBJECT
     public:
         MediaPlayerPlugin(QObject* parent, const QVariantList& args);
-        virtual ~MediaPlayerPlugin();
+        ~MediaPlayerPlugin();
 
-        virtual void load();
-        virtual void unload();
-        virtual bool versionCheck(const QString& version) const;
+        void load() override;
+        void unload() override;
+        bool versionCheck(const QString& version) const override;
 
     private:
         MediaPlayerActivity* act;

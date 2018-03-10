@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Ivan Vasić                                     *
+ *   Copyright (C) 2006 by Ivan Vasić                                      *
  *   ivasic@gmail.com                                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSCANFOLDERPREFPAGE_H
 #define KTSCANFOLDERPREFPAGE_H
 
@@ -37,12 +38,12 @@ namespace kt
 
     public:
         ScanFolderPrefPage(ScanFolderPlugin* plugin, QWidget* parent);
-        virtual ~ScanFolderPrefPage();
+        ~ScanFolderPrefPage();
 
-        virtual void loadSettings();
-        virtual void loadDefaults();
-        virtual void updateSettings();
-        virtual bool customWidgetsChanged();
+        void loadSettings() override;
+        void loadDefaults() override;
+        void updateSettings() override;
+        bool customWidgetsChanged() override;
 
     private slots:
         void addPressed();

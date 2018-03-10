@@ -17,10 +17,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QHeaderView>
-#include <QSortFilterProxyModel>
 #include <QPushButton>
-#include <klocalizedstring.h>
+#include <QSortFilterProxyModel>
+
+#include <KLocalizedString>
+
 #include <util/constants.h>
 #include <util/log.h>
 #include <interfaces/functions.h>
@@ -45,7 +48,7 @@ namespace kt
         : QDialog(parent), core(core), current(current)
     {
         setupUi(this);
-        setWindowIcon(QIcon::fromTheme("kt-speed-limits"));
+        setWindowIcon(QIcon::fromTheme(QStringLiteral("kt-speed-limits")));
         setWindowTitle(i18n("Speed Limits"));
 
         model = new SpeedLimitsModel(core, this);
@@ -59,7 +62,7 @@ namespace kt
         m_speed_limits_view->setSortingEnabled(true);
         m_speed_limits_view->sortByColumn(0, Qt::AscendingOrder);
         m_speed_limits_view->header()->setSortIndicatorShown(true);
-        m_speed_limits_view->header()->setClickable(true);
+        m_speed_limits_view->header()->setSectionsClickable(true);
         m_speed_limits_view->setAlternatingRowColors(true);
 
         QPushButton* apply_btn = m_buttonBox->button(QDialogButtonBox::Apply);
@@ -71,9 +74,9 @@ namespace kt
 
         m_upload_rate->setValue(Settings::maxUploadRate());
         m_download_rate->setValue(Settings::maxDownloadRate());
-        connect(m_upload_rate, SIGNAL(valueChanged(int)), this, SLOT(spinBoxValueChanged(int)));
-        connect(m_download_rate, SIGNAL(valueChanged(int)), this, SLOT(spinBoxValueChanged(int)));
-        connect(m_filter, SIGNAL(textChanged(QString)), pm, SLOT(setFilterFixedString(QString)));
+        connect(m_upload_rate, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &SpeedLimitsDlg::spinBoxValueChanged);
+        connect(m_download_rate, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &SpeedLimitsDlg::spinBoxValueChanged);
+        connect(m_filter, &QLineEdit::textChanged, pm, &QSortFilterProxyModel::setFilterFixedString);
         loadState();
 
         // if current is specified, select it and scroll to it
@@ -121,7 +124,7 @@ namespace kt
         {
             m_speed_limits_view->header()->restoreState(s);
             m_speed_limits_view->header()->setSortIndicatorShown(true);
-            m_speed_limits_view->header()->setClickable(true);
+            m_speed_limits_view->header()->setSectionsClickable(true);
         }
 
         QSize ws = g.readEntry("size", size());

@@ -18,16 +18,18 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "ungroupedgroup.h"
 #include "groupmanager.h"
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
 
 namespace kt
 {
 
-    UngroupedGroup::UngroupedGroup(GroupManager* gman) : Group(i18n("Ungrouped Torrents"), MIXED_GROUP, "/all/ungrouped"), gman(gman)
+    UngroupedGroup::UngroupedGroup(GroupManager* gman) : Group(i18n("Ungrouped Torrents"), MIXED_GROUP, QStringLiteral("/all/ungrouped")), gman(gman)
     {
-        setIconByName("application-x-bittorrent");
+        setIconByName(QStringLiteral("application-x-bittorrent"));
     }
 
 

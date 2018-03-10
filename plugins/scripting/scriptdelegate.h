@@ -21,10 +21,11 @@
 #ifndef KT_SCRIPTDELEGATE_H
 #define KT_SCRIPTDELEGATE_H
 
+#include <QAbstractItemView>
 #include <QCheckBox>
 #include <QPushButton>
-#include <QAbstractItemView>
-#include <kwidgetitemdelegate.h>
+
+#include <KWidgetItemDelegate>
 
 namespace kt
 {
@@ -34,12 +35,12 @@ namespace kt
         Q_OBJECT
     public:
         ScriptDelegate(QAbstractItemView* parent);
-        virtual ~ScriptDelegate();
+        ~ScriptDelegate();
 
-        virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-        virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-        virtual QList<QWidget*> createItemWidgets(const QModelIndex& index) const;
-        virtual void updateItemWidgets(const QList<QWidget*> widgets, const QStyleOptionViewItem& option, const QPersistentModelIndex& index) const;
+        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        QList<QWidget*> createItemWidgets(const QModelIndex& index) const override;
+        void updateItemWidgets(const QList<QWidget*> widgets, const QStyleOptionViewItem& option, const QPersistentModelIndex& index) const override;
 
     private:
         QFont titleFont(const QFont& baseFont) const;

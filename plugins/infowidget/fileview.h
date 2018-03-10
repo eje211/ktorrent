@@ -17,13 +17,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFILEVIEW_H
 #define KTFILEVIEW_H
 
 #include <QTreeView>
+#include <KSharedConfig>
+
 #include <util/constants.h>
 #include <interfaces/torrentinterface.h>
-#include <ksharedconfig.h>
 
 class QLineEdit;
 class QMenu;
@@ -47,7 +49,7 @@ namespace kt
         Q_OBJECT
     public:
         FileView(QWidget* parent);
-        virtual ~FileView();
+        ~FileView();
 
         void changeTC(bt::TorrentInterface* tc);
         void setShowListOfFiles(bool on);

@@ -18,10 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <QVBoxLayout>
-#include <QSplitter>
-#include <ktoolbar.h>
+
 #include <QMenu>
+#include <QSplitter>
+#include <QVBoxLayout>
+
+#include <KToolBar>
+
 #include <kactioncollection.h>
 #include "syndicationtab.h"
 #include "feedlistview.h"
@@ -31,7 +34,7 @@ namespace kt
 {
 
     SyndicationTab::SyndicationTab(KActionCollection* ac, FeedList* feeds, FilterList* filters, QWidget* parent)
-        : QWidget(parent), feeds(feeds), splitter(0), filters(filters)
+        : QWidget(parent), feeds(feeds), splitter(nullptr), filters(filters)
     {
         QVBoxLayout* layout = new QVBoxLayout(this);
         layout->setSpacing(0);
@@ -46,10 +49,10 @@ namespace kt
 
         feed_tool_bar = new KToolBar(widget);
         feed_tool_bar->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        feed_tool_bar->addAction(ac->action("add_feed"));
-        feed_tool_bar->addAction(ac->action("remove_feed"));
+        feed_tool_bar->addAction(ac->action(QStringLiteral("add_feed")));
+        feed_tool_bar->addAction(ac->action(QStringLiteral("remove_feed")));
         feed_tool_bar->addSeparator();
-        feed_tool_bar->addAction(ac->action("manage_filters"));
+        feed_tool_bar->addAction(ac->action(QStringLiteral("manage_filters")));
         layout->addWidget(feed_tool_bar);
 
         feed_view = new FeedListView(feeds, widget);
@@ -63,10 +66,10 @@ namespace kt
 
         filter_tool_bar = new KToolBar(widget);
         filter_tool_bar->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        filter_tool_bar->addAction(ac->action("add_filter"));
-        filter_tool_bar->addAction(ac->action("remove_filter"));
+        filter_tool_bar->addAction(ac->action(QStringLiteral("add_filter")));
+        filter_tool_bar->addAction(ac->action(QStringLiteral("remove_filter")));
         filter_tool_bar->addSeparator();
-        filter_tool_bar->addAction(ac->action("edit_filter"));
+        filter_tool_bar->addAction(ac->action(QStringLiteral("edit_filter")));
         layout->addWidget(filter_tool_bar);
 
         filter_view = new FilterListView(filters, widget);
@@ -74,22 +77,20 @@ namespace kt
         splitter->addWidget(widget);
 
         feed_view_menu = new QMenu(this);
-        feed_view_menu->addAction(ac->action("manage_filters"));
-        feed_view_menu->addAction(ac->action("edit_feed_name"));
+        feed_view_menu->addAction(ac->action(QStringLiteral("manage_filters")));
+        feed_view_menu->addAction(ac->action(QStringLiteral("edit_feed_name")));
         feed_view_menu->addSeparator();
-        feed_view_menu->addAction(ac->action("add_feed"));
-        feed_view_menu->addAction(ac->action("remove_feed"));
-        connect(feed_view, SIGNAL(customContextMenuRequested(const QPoint&)),
-                this, SLOT(showFeedViewMenu(const QPoint&)));
+        feed_view_menu->addAction(ac->action(QStringLiteral("add_feed")));
+        feed_view_menu->addAction(ac->action(QStringLiteral("remove_feed")));
+        connect(feed_view, &FeedListView::customContextMenuRequested, this, &SyndicationTab::showFeedViewMenu);
 
 
         filter_view_menu = new QMenu(this);
-        filter_view_menu->addAction(ac->action("edit_filter"));
+        filter_view_menu->addAction(ac->action(QStringLiteral("edit_filter")));
         filter_view_menu->addSeparator();
-        filter_view_menu->addAction(ac->action("add_filter"));
-        filter_view_menu->addAction(ac->action("remove_filter"));
-        connect(filter_view, SIGNAL(customContextMenuRequested(const QPoint&)),
-                this, SLOT(showFilterViewMenu(const QPoint&)));
+        filter_view_menu->addAction(ac->action(QStringLiteral("add_filter")));
+        filter_view_menu->addAction(ac->action(QStringLiteral("remove_filter")));
+        connect(filter_view, &FilterListView::customContextMenuRequested, this, &SyndicationTab::showFilterViewMenu);
     }
 
 

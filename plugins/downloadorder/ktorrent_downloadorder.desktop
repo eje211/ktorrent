@@ -1,6 +1,10 @@
 [Desktop Entry]
 Name=Download Order
 Name[ar]=ترتيب التّنزيل
+<<<<<<< HEAD
+=======
+Name[ast]=Orde de descarga
+>>>>>>> cbdbeeea1a92eda031ab1e4e62545ce055aed845
 Name[bg]=Ред на изтегляне
 Name[bs]=Redoslijed preuzimanja
 Name[ca]=Ordre de baixada
@@ -102,7 +106,7 @@ X-KDE-Library=ktdownloadorderplugin
 X-KDE-PluginInfo-Author=Joris Guisson
 X-KDE-PluginInfo-Email=joris.guisson@gmail.com
 X-KDE-PluginInfo-Name=DownloadOrderPlugin
-X-KDE-PluginInfo-Website=http://ktorrent.org/
+X-KDE-PluginInfo-Website=http://kde.org/applications/internet/ktorrent/
 X-KDE-PluginInfo-License=GPL
 X-KDE-PluginInfo-EnabledByDefault=false
 Icon=view-sort-ascending

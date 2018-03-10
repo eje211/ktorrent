@@ -15,9 +15,8 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.           *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <kpluginfactory.h>
 
 #include <interfaces/coreinterface.h>
 #include <interfaces/guiinterface.h>
@@ -29,7 +28,8 @@
 
 #include <QDir>
 
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+#include <KPluginFactory>
 
 #include "scanfolder.h"
 #include "scanfolderplugin.h"
@@ -47,7 +47,7 @@ namespace kt
 
     ScanFolderPlugin::ScanFolderPlugin(QObject* parent, const QVariantList& args)
         : Plugin(parent),
-          tlq(0)
+          tlq(nullptr)
     {
         Q_UNUSED(args);
     }
@@ -62,8 +62,8 @@ namespace kt
         LogSystemManager::instance().registerSystem(i18nc("plugin name", "Scan Folder"), SYS_SNF);
         tlq = new TorrentLoadQueue(getCore(), this);
         scanner = new ScanThread();
-        connect(scanner, SIGNAL(found(QList<QUrl>)), tlq, SLOT(add(QList<QUrl>)), Qt::QueuedConnection);
-        pref = new ScanFolderPrefPage(this, 0);
+        connect(scanner, &ScanThread::found, tlq, static_cast<void (TorrentLoadQueue::*)(const QList<QUrl>&)>(&TorrentLoadQueue::add), Qt::QueuedConnection);
+        pref = new ScanFolderPrefPage(this, nullptr);
         getGUI()->addPrefPage(pref);
         connect(getCore(), SIGNAL(settingsChanged()), this, SLOT(updateScanFolders()));
         scanner->start(QThread::IdlePriority);
@@ -76,11 +76,11 @@ namespace kt
         getGUI()->removePrefPage(pref);
         scanner->stop();
         delete scanner;
-        scanner = 0;
+        scanner = nullptr;
         delete pref;
-        pref = 0;
+        pref = nullptr;
         delete tlq;
-        tlq = 0;
+        tlq = nullptr;
     }
 
     void ScanFolderPlugin::updateScanFolders()
@@ -107,7 +107,7 @@ namespace kt
 
     bool ScanFolderPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
 }
 

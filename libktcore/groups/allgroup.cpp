@@ -17,15 +17,16 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
 #include "allgroup.h"
 
 namespace kt
 {
 
-    AllGroup::AllGroup() : Group(i18n("All Torrents"), MIXED_GROUP, "/all")
+    AllGroup::AllGroup() : Group(i18n("All Torrents"), MIXED_GROUP, QStringLiteral("/all"))
     {
-        setIconByName("folder");
+        setIconByName(QStringLiteral("folder"));
     }
 
 

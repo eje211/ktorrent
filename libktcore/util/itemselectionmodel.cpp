@@ -17,6 +17,7 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
+
 #include <QAbstractItemModel>
 #include "itemselectionmodel.h"
 
@@ -43,7 +44,7 @@ namespace kt
         if (command & QItemSelectionModel::Clear)
             selection.clear();
 
-        foreach (const QItemSelectionRange& r, sel)
+        for (const QItemSelectionRange& r : sel)
             doRange(r, command);
 
         QItemSelectionModel::select(sel, command);

@@ -18,10 +18,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTADDPEERSDLG_H
 #define KTADDPEERSDLG_H
 
-#include <qdialog.h>
+#include <QDialog>
 #include <interfaces/peersource.h>
 #include "ui_addpeersdlg.h"
 
@@ -42,7 +43,7 @@ namespace kt
         Q_OBJECT
     public:
         AddPeersDlg(bt::TorrentInterface* tc, QWidget* parent);
-        virtual ~AddPeersDlg();
+        ~AddPeersDlg();
 
     private slots:
         void addPressed();

@@ -22,9 +22,10 @@
 #define FILESELECTDLG_H
 
 #include <QDialog>
-#include <QSet>
 #include <QSortFilterProxyModel>
-#include <ksharedconfig.h>
+
+#include <KSharedConfig>
+
 #include <util/constants.h>
 #include "ui_fileselectdlg.h"
 
@@ -52,7 +53,7 @@ namespace kt
 
     public:
         FileSelectDlg(kt::QueueManager* qman, kt::GroupManager* gman, const QString& group_hint, QWidget* parent);
-        virtual ~FileSelectDlg();
+        ~FileSelectDlg();
 
         int execute(bt::TorrentInterface* tc, bool* start, bool* skip_check, const QString& location_hint);
 
@@ -70,8 +71,8 @@ namespace kt
         void saveState(KSharedConfigPtr cfg);
 
     protected slots:
-        virtual void reject();
-        virtual void accept();
+        void reject() override;
+        void accept() override;
         void selectAll();
         void selectNone();
         void invertSelection();

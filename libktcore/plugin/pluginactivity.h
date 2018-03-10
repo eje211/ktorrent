@@ -15,12 +15,13 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTPLUGINACTIVITY_H
 #define KTPLUGINACTIVITY_H
 
-#include <qwidget.h>
+#include <QWidget>
 #include <interfaces/activity.h>
 
 class KPluginSelector;
@@ -39,7 +40,7 @@ namespace kt
         Q_OBJECT
     public:
         PluginActivity(PluginManager* pman);
-        virtual ~PluginActivity();
+        ~PluginActivity();
 
         void updatePluginList();
         void update();

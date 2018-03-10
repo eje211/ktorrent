@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFILTERLIST_H
 #define KTFILTERLIST_H
 
@@ -31,10 +32,9 @@ namespace kt
     */
     class FilterList : public FilterListModel
     {
-        Q_OBJECT
     public:
         FilterList(QObject* parent);
-        virtual ~FilterList();
+        ~FilterList();
 
         void saveFilters(const QString& file);
         void loadFilters(const QString& file);

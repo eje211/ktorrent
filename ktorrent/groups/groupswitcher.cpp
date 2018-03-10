@@ -18,17 +18,19 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
+#include <KConfigGroup>
+
+#include <QAction>
+#include <QIcon>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QToolButton>
+
 #include "groupswitcher.h"
 #include "grouppolicydlg.h"
 #include <view/view.h>
 #include <torrent/queuemanager.h>
 #include <util/log.h>
-#include <KConfigGroup>
-#include <QIcon>
-#include <QAction>
-#include <QToolButton>
-#include <QHBoxLayout>
-#include <QHeaderView>
 
 using namespace bt;
 
@@ -53,26 +55,26 @@ namespace kt
         layout->addWidget(close_tab);
         layout->setMargin(0);
 
-        new_tab->setIcon(QIcon::fromTheme("list-add"));
+        new_tab->setIcon(QIcon::fromTheme(QStringLiteral("list-add")));
         new_tab->setToolButtonStyle(Qt::ToolButtonIconOnly);
         new_tab->setToolTip(i18n("Open a new tab"));
-        connect(new_tab, SIGNAL(clicked(bool)), this, SLOT(newTab()));
+        connect(new_tab, &QToolButton::clicked, this, &GroupSwitcher::newTab);
 
-        close_tab->setIcon(QIcon::fromTheme("list-remove"));
+        close_tab->setIcon(QIcon::fromTheme(QStringLiteral("list-remove")));
         close_tab->setToolButtonStyle(Qt::ToolButtonIconOnly);
         close_tab->setToolTip(i18n("Close the current tab"));
-        connect(close_tab, SIGNAL(clicked(bool)), this, SLOT(closeTab()));
+        connect(close_tab, &QToolButton::clicked, this, static_cast<void (GroupSwitcher::*)()>(&GroupSwitcher::closeTab));
 
-        edit_group_policy->setIcon(QIcon::fromTheme("preferences-other"));
+        edit_group_policy->setIcon(QIcon::fromTheme(QStringLiteral("preferences-other")));
         edit_group_policy->setToolButtonStyle(Qt::ToolButtonIconOnly);
         edit_group_policy->setToolTip(i18n("Edit Group Policy"));
-        connect(edit_group_policy, SIGNAL(clicked(bool)), this, SLOT(editGroupPolicy()));
+        connect(edit_group_policy, &QToolButton::clicked, this, &GroupSwitcher::editGroupPolicy);
 
         tool_bar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         action_group->setExclusive(true);
-        connect(action_group, SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)));
+        connect(action_group, &QActionGroup::triggered, this, &GroupSwitcher::onActivated);
 
-        connect(gman, SIGNAL(groupRemoved(Group*)), this, SLOT(groupRemoved(Group*)));
+        connect(gman, &GroupManager::groupRemoved, this, &GroupSwitcher::groupRemoved);
     }
 
     GroupSwitcher::~GroupSwitcher()
@@ -84,7 +86,7 @@ namespace kt
         KConfigGroup g = cfg->group("GroupSwitcher");
 
         QStringList default_groups;
-        default_groups << "/all" << "/all/downloads" << "/all/uploads";
+        default_groups << QStringLiteral("/all") << QStringLiteral("/all/downloads") << QStringLiteral("/all/uploads");
 
         QStringList groups = g.readEntry("groups", default_groups);
         foreach (const QString& group, groups)
@@ -102,11 +104,11 @@ namespace kt
         int idx = 0;
         for (TabList::iterator i = tabs.begin(); i != tabs.end(); i++)
         {
-            i->view_settings = g.readEntry(QString("tab%1_settings").arg(idx++), view->defaultState());
+            i->view_settings = g.readEntry(QStringLiteral("tab%1_settings").arg(idx++), view->defaultState());
         }
 
         updateGroupCount();
-        connect(gman, SIGNAL(customGroupChanged()), this, SLOT(updateGroupCount()));
+        connect(gman, &GroupManager::customGroupChanged, this, &GroupSwitcher::updateGroupCount);
 
         current_tab = g.readEntry("current_tab", 0);
         if (current_tab >= 0 && current_tab < tabs.count())
@@ -137,7 +139,7 @@ namespace kt
             groups << i->group->groupPath();
             if (idx == current_tab)
                 i->view_settings = view->header()->saveState();
-            g.writeEntry(QString("tab%1_settings").arg(idx++), i->view_settings);
+            g.writeEntry(QStringLiteral("tab%1_settings").arg(idx++), i->view_settings);
         }
 
         g.writeEntry("groups", groups);
@@ -149,7 +151,7 @@ namespace kt
         if (!group)
             return;
 
-        QString name = group->groupName() +  QString(" %1/%2").arg(group->runningTorrents()).arg(group->totalTorrents());
+        QString name = group->groupName() +  QStringLiteral(" %1/%2").arg(group->runningTorrents()).arg(group->totalTorrents());
         QAction* action = tool_bar->addAction(group->groupIcon(), name);
         action->setCheckable(true);
         action_group->addAction(action);
@@ -185,7 +187,7 @@ namespace kt
 
     void GroupSwitcher::closeTab()
     {
-        if (tabs.size() <= 1) // Need at least one tab visiblle
+        if (tabs.size() <= 1) // Need at least one tab visible
             return;
 
         TabList::iterator i = tabs.begin();
@@ -227,7 +229,7 @@ namespace kt
             if (i->action->isChecked())
             {
                 i->group = group;
-                QString name = group->groupName() +  QString(" %1/%2").arg(group->runningTorrents()).arg(group->totalTorrents());
+                QString name = group->groupName() +  QStringLiteral(" %1/%2").arg(group->runningTorrents()).arg(group->totalTorrents());
                 i->action->setText(name);
                 i->action->setIcon(group->groupIcon());
                 edit_group_policy->setEnabled(!group->isStandardGroup());
@@ -239,7 +241,7 @@ namespace kt
     void GroupSwitcher::updateGroupCount()
     {
         for (TabList::iterator i = tabs.begin(); i != tabs.end(); i++)
-            i->action->setText(i->group->groupName() + QString(" %1/%2").arg(i->group->runningTorrents()).arg(i->group->totalTorrents()));
+            i->action->setText(i->group->groupName() + QStringLiteral(" %1/%2").arg(i->group->runningTorrents()).arg(i->group->totalTorrents()));
     }
 
     void GroupSwitcher::groupRemoved(Group* group)
@@ -256,7 +258,7 @@ namespace kt
                 {
                     i->group = gman->allGroup();
                     i->action->setIcon(i->group->groupIcon());
-                    i->action->setText(i->group->groupName() + QString(" %1/%2").arg(i->group->runningTorrents()).arg(i->group->totalTorrents()));
+                    i->action->setText(i->group->groupName() + QStringLiteral(" %1/%2").arg(i->group->runningTorrents()).arg(i->group->totalTorrents()));
                     i++;
                 }
             }

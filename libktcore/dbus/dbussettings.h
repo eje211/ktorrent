@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef __DBusSettings__
 #define __DBusSettings__
 
@@ -34,7 +35,7 @@ namespace kt
         Q_CLASSINFO("D-Bus Interface", "org.ktorrent.settings")
     public:
         DBusSettings(CoreInterface* core, QObject* parent);
-        virtual~DBusSettings();
+        ~DBusSettings();
 
     public slots:
         Q_SCRIPTABLE int maxDownloads();
@@ -187,6 +188,8 @@ namespace kt
         Q_SCRIPTABLE void setRequeueMagnets(bool val);
         Q_SCRIPTABLE int requeueMagnetsTime();
         Q_SCRIPTABLE void setRequeueMagnetsTime(int val);
+        Q_SCRIPTABLE bool showTotalSpeedInTitle();
+        Q_SCRIPTABLE void setShowTotalSpeedInTitle(bool val);
 
         Q_SCRIPTABLE void apply();
     private:

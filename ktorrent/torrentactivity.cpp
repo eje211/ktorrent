@@ -17,16 +17,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "torrentactivity.h"
 
 #include <QBoxLayout>
-#include <QToolBar>
 #include <QIcon>
-#include <KToggleAction>
+#include <QToolBar>
+
 #include <KActionCollection>
 #include <KComboBox>
 #include <KConfigGroup>
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+#include <KToggleAction>
+
 #include <util/log.h>
 #include <gui/tabbarwidget.h>
 #include <groups/groupmanager.h>
@@ -49,7 +52,7 @@ namespace kt
 
 
     TorrentActivity::TorrentActivity(Core* core, GUI* gui, QWidget* parent)
-        : TorrentActivityInterface(i18n("Torrents"), QStringLiteral("ktorrent"), parent),
+        : TorrentActivityInterface(i18n("Torrents"), QStringLiteral("torrents"), parent),
           core(core),
           gui(gui)
     {
@@ -177,7 +180,7 @@ namespace kt
         search_bar->loadState(cfg);
         group_view->loadState(cfg);
         qm->loadState(cfg);
-        tool_views->loadState(cfg, "TorrentActivityBottomTabBar");
+        tool_views->loadState(cfg, QStringLiteral("TorrentActivityBottomTabBar"));
         notifyViewListeners(view->getCurrentTorrent());
         magnet_view->loadState(cfg);
         group_switcher->loadState(cfg);
@@ -191,7 +194,7 @@ namespace kt
         group_view->saveState(cfg);
         group_switcher->saveState(cfg);
         qm->saveState(cfg);
-        tool_views->saveState(cfg, "TorrentActivityBottomTabBar");
+        tool_views->saveState(cfg, QStringLiteral("TorrentActivityBottomTabBar"));
         magnet_view->saveState(cfg);
 
         KConfigGroup g = cfg->group("TorrentActivitySplitters");

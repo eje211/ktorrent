@@ -18,17 +18,18 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "proxypref.h"
 #include "settings.h"
 
 namespace kt
 {
 
-    ProxyPref::ProxyPref(QWidget* parent) : PrefPageInterface(Settings::self(), i18n("Proxy"), "preferences-system-network", parent)
+    ProxyPref::ProxyPref(QWidget* parent) : PrefPageInterface(Settings::self(), i18n("Proxy"), QStringLiteral("preferences-system-network"), parent)
     {
         setupUi(this);
-        connect(kcfg_socksEnabled, SIGNAL(toggled(bool)), this, SLOT(socksEnabledToggled(bool)));
-        connect(kcfg_socksUsePassword, SIGNAL(toggled(bool)), this, SLOT(usernamePasswordToggled(bool)));
+        connect(kcfg_socksEnabled, &QCheckBox::toggled, this, &ProxyPref::socksEnabledToggled);
+        connect(kcfg_socksUsePassword, &QCheckBox::toggled, this, &ProxyPref::usernamePasswordToggled);
     }
 
 

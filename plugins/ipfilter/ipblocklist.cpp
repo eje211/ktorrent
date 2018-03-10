@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ***************************************************************************/
+
 #include "ipblocklist.h"
 #include <QFile>
 #include <util/log.h>
@@ -32,13 +33,13 @@ namespace kt
     static Uint32 StringToUint32(const QString& ip)
     {
         bool test;
-        Uint32 ret = ip.section('.', 0, 0).toULongLong(&test);
+        Uint32 ret = ip.section(QLatin1Char('.'), 0, 0).toULongLong(&test);
         ret <<= 8;
-        ret |= ip.section('.', 1, 1).toULong(&test);
+        ret |= ip.section(QLatin1Char('.'), 1, 1).toULong(&test);
         ret <<= 8;
-        ret |= ip.section('.', 2, 2).toULong(&test);
+        ret |= ip.section(QLatin1Char('.'), 2, 2).toULong(&test);
         ret <<= 8;
-        ret |= ip.section('.', 3, 3).toULong(&test);
+        ret |= ip.section(QLatin1Char('.'), 3, 3).toULong(&test);
 
         return ret;
     }
@@ -75,12 +76,12 @@ namespace kt
         while (true)
         {
             if (begin == end)
-                return blocks[begin].constains(ip);
+                return blocks[begin].contains(ip);
             else if (begin == end - 1)
-                return blocks[begin].constains(ip) || blocks[end].constains(ip);
+                return blocks[begin].contains(ip) || blocks[end].contains(ip);
 
             int pivot = begin + (end - begin) / 2;
-            if (blocks[pivot].constains(ip))
+            if (blocks[pivot].contains(ip))
                 return true;
             else if (ip < blocks[pivot].ip1)
                 end = pivot - 1; // continue in the range [begin, pivot - 1]

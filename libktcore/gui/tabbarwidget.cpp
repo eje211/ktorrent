@@ -17,14 +17,16 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "tabbarwidget.h"
 
-#include <kconfiggroup.h>
-#include <QVBoxLayout>
-#include <QIcon>
-#include <KToolBar>
 #include <QAction>
+#include <KConfigGroup>
+#include <KToolBar>
+
+#include <QIcon>
 #include <QTimer>
+#include <QVBoxLayout>
 
 namespace kt
 {
@@ -38,13 +40,13 @@ namespace kt
     void ActionGroup::addAction(QAction* act)
     {
         actions.append(act);
-        connect(act, SIGNAL(toggled(bool)), this, SLOT(toggled(bool)));
+        connect(act, &QAction::toggled, this, &ActionGroup::toggled);
     }
 
     void ActionGroup::removeAction(QAction* act)
     {
         actions.removeAll(act);
-        disconnect(act, SIGNAL(toggled(bool)), this, SLOT(toggled(bool)));
+        disconnect(act, &QAction::toggled, this, &ActionGroup::toggled);
     }
 
 
@@ -54,7 +56,7 @@ namespace kt
         if (!act)
             return;
 
-        foreach (QAction* a, actions)
+        for (QAction* a : qAsConst(actions))
         {
             if (a != act)
                 a->setChecked(false);
@@ -67,16 +69,16 @@ namespace kt
 
 
     TabBarWidget::TabBarWidget(QSplitter* splitter, QWidget* parent)
-        : QWidget(parent), widget_stack(0), shrunken(false)
+        : QWidget(parent), widget_stack(nullptr), shrunken(false)
     {
         QVBoxLayout* layout = new QVBoxLayout(this);
         layout->setSpacing(0);
         layout->setMargin(0);
         tab_bar = new KToolBar(this);
         tab_bar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        connect(tab_bar, SIGNAL(toolButtonStyleChanged(Qt::ToolButtonStyle)), this, SLOT(toolButtonStyleChanged(Qt::ToolButtonStyle)));
+        connect(tab_bar, &QToolBar::toolButtonStyleChanged, this, &TabBarWidget::toolButtonStyleChanged);
         action_group = new ActionGroup(this);
-        connect(action_group, SIGNAL(actionTriggered(QAction*)), this, SLOT(onActionTriggered(QAction*)));
+        connect(action_group, &ActionGroup::actionTriggered, this, &TabBarWidget::onActionTriggered);
         widget_stack = new QStackedWidget(splitter);
         splitter->addWidget(widget_stack);
         layout->addWidget(tab_bar);
@@ -102,7 +104,7 @@ namespace kt
         QAction* act = tab_bar->addAction(QIcon::fromTheme(icon), text);
         act->setCheckable(true);
         act->setToolTip(tooltip);
-        act->setChecked(widget_stack->count() == 0);
+        act->setChecked(widget_stack->count() == 0 && !shrunken);
         widget_stack->addWidget(ti);
         action_group->addAction(act);
         widget_to_action.insert(ti, act);
@@ -123,12 +125,12 @@ namespace kt
         {
             ti->hide();
             widget_stack->removeWidget(ti);
-            ti->setParent(0);
+            ti->setParent(nullptr);
         }
         else
         {
             widget_stack->removeWidget(ti);
-            ti->setParent(0);
+            ti->setParent(nullptr);
         }
 
         if (widget_stack->count() == 0)
@@ -179,7 +181,7 @@ namespace kt
 
     void TabBarWidget::onActionTriggered(QAction* act)
     {
-        QWidget* ti = 0;
+        QWidget* ti = nullptr;
         QMap<QWidget*, QAction*>::iterator i = widget_to_action.begin();
         while (i != widget_to_action.end() && !ti)
         {
@@ -223,17 +225,6 @@ namespace kt
     {
         KConfigGroup g = cfg->group(group);
 
-        QString ctab = g.readPathEntry("current_tab", QString());
-        for (QMap<QWidget*, QAction*>::iterator i = widget_to_action.begin(); i != widget_to_action.end(); i++)
-        {
-            if (i.value()->text() == ctab)
-            {
-                widget_stack->setCurrentWidget(i.key());
-                i.value()->setChecked(true);
-                break;
-            }
-        }
-
         bool tmp = g.readEntry("shrunken", true);
         if (tmp != shrunken)
         {
@@ -242,12 +233,23 @@ namespace kt
             else
                 unshrink();
         }
+
+        QString ctab = g.readPathEntry("current_tab", QString());
+        for (QMap<QWidget*, QAction*>::iterator i = widget_to_action.begin(); i != widget_to_action.end(); i++)
+        {
+            if (i.value()->text() == ctab)
+            {
+                widget_stack->setCurrentWidget(i.key());
+                i.value()->setChecked(!tmp);
+                break;
+            }
+        }
     }
 
     void TabBarWidget::toolButtonStyleChanged(Qt::ToolButtonStyle style)
     {
         if (style != Qt::ToolButtonTextBesideIcon)
-            QTimer::singleShot(0, this, SLOT(setToolButtonStyle()));
+            QTimer::singleShot(0, this, &TabBarWidget::setToolButtonStyle);
     }
 
     void TabBarWidget::setToolButtonStyle()

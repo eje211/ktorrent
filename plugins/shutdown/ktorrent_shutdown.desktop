@@ -1,6 +1,10 @@
 [Desktop Entry]
 Name=Shutdown
 Name[ar]=الإطفاء
+<<<<<<< HEAD
+=======
+Name[ast]=Apagar
+>>>>>>> cbdbeeea1a92eda031ab1e4e62545ce055aed845
 Name[bg]=Изключване
 Name[bs]=Ugasi
 Name[ca]=Aturada
@@ -55,10 +59,14 @@ Name[zh_CN]=关机
 Name[zh_TW]=關機
 Comment=Allows you to shutdown your computer when torrents finish
 Comment[ar]=تسمح لك بإطفاء الحاسوب عند انتهاء السّيول
+<<<<<<< HEAD
+=======
+Comment[ast]=Pertmítete apagar l'ordeandor cuando finen los torrents
+>>>>>>> cbdbeeea1a92eda031ab1e4e62545ce055aed845
 Comment[bg]=Позволява ви да изключите компютъра си след като приключат торентите
 Comment[bs]=Dozvoljava gašenje vašeg računara kada torenti završe
-Comment[ca]=Permet aturar l'ordinador en finalitzar els torrent
-Comment[ca@valencia]=Permet aturar l'ordinador en finalitzar els torrent
+Comment[ca]=Permet aturar l'ordinador en finalitzar els torrents
+Comment[ca@valencia]=Permet aturar l'ordinador en finalitzar els torrents
 Comment[cs]=Umožní vypnutí počítače po dokončení stahování torrentu
 Comment[da]=Lader dig lukke din computer ned når torrents er færdige
 Comment[de]=Ermöglicht es, den Rechner herunterzufahren, wenn die Torrents abgeschlossen wurden
@@ -107,7 +115,7 @@ X-KDE-Library=ktshutdownplugin
 X-KDE-PluginInfo-Author=Joris Guisson
 X-KDE-PluginInfo-Email=joris.guisson@gmail.com
 X-KDE-PluginInfo-Name=ShutdownPlugin
-X-KDE-PluginInfo-Website=http://ktorrent.org/
+X-KDE-PluginInfo-Website=http://kde.org/applications/internet/ktorrent/
 X-KDE-PluginInfo-License=GPL
 X-KDE-PluginInfo-EnabledByDefault=false
 Icon=system-shutdown

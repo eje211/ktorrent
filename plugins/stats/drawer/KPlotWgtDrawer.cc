@@ -21,7 +21,7 @@
 #include <KPlotWgtDrawer.h>
 
 #include <QFileDialog>
-#include <klocalizedstring.h>
+#include <KLocalizedString>
 
 namespace kt
 {
@@ -360,7 +360,7 @@ namespace kt
                         );
         }
 
-        return lgnd + "</ul>";
+        return lgnd + QStringLiteral("</ul>");
     }
 
     QUuid KPlotWgtDrawer::getUuid(const size_t idx) const

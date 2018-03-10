@@ -17,10 +17,12 @@
 *   Free Software Foundation, Inc.,                                       *
 *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 ***************************************************************************/
-#include <QPainter>
-#include <KIconLoader>
-#include <QPushButton>
+
 #include <QApplication>
+#include <QPainter>
+#include <QPushButton>
+#include <KIconLoader>
+
 #include "scriptdelegate.h"
 #include "scriptmodel.h"
 
@@ -112,18 +114,19 @@ namespace kt
 
     QList< QWidget* > ScriptDelegate::createItemWidgets(const QModelIndex& index) const
     {
+        Q_UNUSED(index)
         QList<QWidget*> widgets;
 
         QCheckBox* enabled_check = new QCheckBox;
-        connect(enabled_check, SIGNAL(clicked(bool)), this, SLOT(toggled(bool)));
+        connect(enabled_check, &QCheckBox::clicked, this, &ScriptDelegate::toggled);
 
         QPushButton* about_button = new QPushButton;
-        about_button->setIcon(QIcon::fromTheme("dialog-information"));
-        connect(about_button, SIGNAL(clicked(bool)), this, SLOT(aboutClicked()));
+        about_button->setIcon(QIcon::fromTheme(QStringLiteral("dialog-information")));
+        connect(about_button, &QPushButton::clicked, this, &ScriptDelegate::aboutClicked);
 
         QPushButton* configure_button = new QPushButton;
-        configure_button->setIcon(QIcon::fromTheme("configure"));
-        connect(configure_button, SIGNAL(clicked(bool)), this, SLOT(settingsClicked()));
+        configure_button->setIcon(QIcon::fromTheme(QStringLiteral("configure")));
+        connect(configure_button, &QPushButton::clicked, this, &ScriptDelegate::settingsClicked);
 
         QList<QEvent::Type> blocked;
         blocked << QEvent::MouseButtonPress << QEvent::MouseButtonRelease << QEvent::MouseButtonDblClick;

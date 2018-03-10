@@ -18,11 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef TRAYICON_H
 #define TRAYICON_H
 
 #include <QMenu>
 #include <KStatusNotifierItem>
+
 #include <util/constants.h>
 #include <interfaces/torrentinterface.h>
 
@@ -59,7 +61,7 @@ namespace kt
         Q_OBJECT
     public:
         TrayIcon(Core* tc, GUI* parent);
-        virtual ~TrayIcon();
+        ~TrayIcon();
 
         /// Update stats for system tray icon
         void updateStats(const CurrentStats& stats);
@@ -173,7 +175,7 @@ namespace kt
             UPLOAD, DOWNLOAD
         };
         SetMaxRate(Core* tc, Type t, QWidget* parent);
-        virtual ~SetMaxRate();
+        ~SetMaxRate();
 
     public slots:
         void update();

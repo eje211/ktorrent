@@ -18,12 +18,14 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
+#include <QTextCodec>
+
 #include <util/log.h>
 #include <util/sha1hash.h>
 #include <bcodec/bencoder.h>
 #include <bcodec/bnode.h>
 #include "filter.h"
-#include <qtextcodec.h>
 
 using namespace bt;
 
@@ -35,7 +37,7 @@ namespace kt
         qsrand(time(0));
         for (int i = 0; i < 20; i++)
             data[i] = qrand();
-        return QString("filter:%1").arg(SHA1Hash::generate(data, 20).toString());
+        return QStringLiteral("filter:%1").arg(SHA1Hash::generate(data, 20).toString());
     }
 
     Filter::Filter()
@@ -78,10 +80,10 @@ namespace kt
     bool Filter::getSeasonAndEpisode(const QString& title, int& season, int& episode)
     {
         QStringList se_formats;
-        se_formats << "(\\d+)x(\\d+)"
-                   << "S(\\d+)E(\\d+)"
-                   << "(\\d+)\\.(\\d+)"
-                   << "S(\\d+)\\.E(\\d+)";
+        se_formats << QStringLiteral("(\\d+)x(\\d+)")
+                   << QStringLiteral("S(\\d+)E(\\d+)")
+                   << QStringLiteral("(\\d+)\\.(\\d+)")
+                   << QStringLiteral("S(\\d+)\\.E(\\d+)");
 
         foreach (const QString& format, se_formats)
         {
@@ -230,10 +232,10 @@ namespace kt
     bool Filter::stringToRange(const QString& s, Range& r)
     {
         QString tmp = s.trimmed(); // Get rid of whitespace
-        if (tmp.contains("-"))
+        if (tmp.contains(QLatin1Char('-')))
         {
             // It's a range
-            QStringList parts = s.split("-");
+            QStringList parts = s.split(QStringLiteral("-"));
             if (parts.count() != 2)
                 return false;
 
@@ -267,8 +269,8 @@ namespace kt
     bool Filter::parseNumbersString(const QString& s, QList<Range> & numbers)
     {
         QList<Range> results;
-        QStringList parts = s.split(",");
-        foreach (const QString& p, parts)
+        const QStringList parts = s.split(QStringLiteral(","));
+        for (const QString& p : parts)
         {
             Range r = {0, 0};
             if (stringToRange(p, r))

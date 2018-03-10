@@ -18,15 +18,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
+#include <algorithm>
 #include <errno.h>
-#include <string.h>
+#include <regex>
+#include <string>
+
 #include <QFile>
 #include <QTimer>
 #include <QTextStream>
-#include <QRegExp>
-#include <QRegExpValidator>
-#include <klocalizedstring.h>
-#include <kio/job.h>
+
+#include <KLocalizedString>
+#include <KIO/Job>
+
 #include <interfaces/functions.h>
 #include <util/log.h>
 #include <util/fileops.h>
@@ -41,9 +45,9 @@ namespace kt
 
     ConvertThread::ConvertThread(ConvertDialog* dlg) : dlg(dlg), abort(false)
     {
-        txt_file = kt::DataDir() + "level1.txt";
-        dat_file = kt::DataDir() + "level1.dat";
-        tmp_file = kt::DataDir() + "level1.dat.tmp";
+        txt_file = kt::DataDir() + QStringLiteral("level1.txt");
+        dat_file = kt::DataDir() + QStringLiteral("level1.dat");
+        tmp_file = kt::DataDir() + QStringLiteral("level1.dat.tmp");
     }
 
     ConvertThread::~ConvertThread()
@@ -63,7 +67,7 @@ namespace kt
         if (!source.open(QIODevice::ReadOnly))
         {
             Out(SYS_IPF | LOG_IMPORTANT) << "Cannot find level1.txt file" << endl;
-            failure_reason = i18n("Cannot open %1: %2", txt_file, strerror(errno));
+            failure_reason = i18n("Cannot open %1: %2", txt_file, QString::fromLatin1(strerror(errno)));
             return;
         }
 
@@ -74,27 +78,25 @@ namespace kt
         QTextStream stream(&source);
 
         int i = 0;
-        QRegExp rx("([0-9]{1,3}\\.){3}[0-9]{1,3}");
+        const std::regex rx("(?:[0-9]{1,3}\\.){3}[0-9]{1,3}");
 
         while (!stream.atEnd() && !abort)
         {
-            QString line = stream.readLine();
+            std::string line = stream.readLine().toStdString();
             i += line.length() * sizeof(char);   //rough estimation of string size
             dlg->progress(i, source_size);
             ++i;
 
-            QStringList addresses;
-            int pos = 0;
-            while ((pos = rx.indexIn(line, pos)) != -1)
-            {
-                addresses << rx.cap(0);
-                pos += rx.matchedLength();
+            std::vector<std::string> addresses;
+            for(auto it = std::sregex_iterator(line.begin(), line.end(), rx);
+                it != std::sregex_iterator(); ++it) {
+                addresses.push_back(it->str());
             }
 
             // if we have found two addresses, create a block out of it
-            if (addresses.count() == 2)
+            if (addresses.size() == 2)
             {
-                input += IPBlock(addresses[0], addresses[1]);
+                input += IPBlock(QString::fromStdString(addresses[0]), QString::fromStdString(addresses[1]));
             }
         }
         source.close();
@@ -104,17 +106,15 @@ namespace kt
 
     static bool LessThan(const IPBlock& a, const IPBlock& b)
     {
-        if (a.ip2 < b.ip1) // a range is before b range
-            return true;
-        else if (b.ip2 < a.ip1) // b range is before a range
-            return false;
+        if (a.ip1 == b.ip1)
+            return a.ip2 < b.ip2;
         else
-            return a.ip1 < b.ip1;// a and b intersect
+            return a.ip1 < b.ip1;
     }
 
     void ConvertThread::sort()
     {
-        qSort(input.begin(), input.end(), LessThan);
+        std::sort(input.begin(), input.end(), LessThan);
     }
 
     void ConvertThread::merge()
@@ -157,13 +157,13 @@ namespace kt
         }
 
         sort(); // sort the block
-        merge(); // merge neigbhouring blocks
+        merge(); // merge neighbouring blocks
 
         QFile target(dat_file);
         if (!target.open(QIODevice::WriteOnly))
         {
             Out(SYS_IPF | LOG_IMPORTANT) << "Unable to open file for writing" << endl;
-            failure_reason = i18n("Cannot open %1: %2", dat_file, strerror(errno));
+            failure_reason = i18n("Cannot open %1: %2", dat_file, QString::fromLatin1(strerror(errno)));
             return;
         }
 
@@ -186,7 +186,3 @@ namespace kt
         }
     }
 }
-
-#include "convertthread.moc"
-
-

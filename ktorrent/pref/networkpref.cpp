@@ -18,9 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <klocalizedstring.h>
+
 #include <QNetworkInterface>
-#include <solid/device.h>
+
+#include <KLocalizedString>
+#include <Solid/Device>
+
 #include <util/log.h>
 #include "networkpref.h"
 #include "settings.h"
@@ -31,12 +34,12 @@ namespace kt
 {
 
     NetworkPref::NetworkPref(QWidget* parent)
-        : PrefPageInterface(Settings::self(), i18n("Network"), "preferences-system-network", parent)
+        : PrefPageInterface(Settings::self(), i18n("Network"), QStringLiteral("preferences-system-network"), parent)
     {
         setupUi(this);
-        connect(m_recommended_settings, SIGNAL(clicked()), this, SIGNAL(calculateRecommendedSettings()));
-        connect(kcfg_utpEnabled, SIGNAL(toggled(bool)), this, SLOT(utpEnabled(bool)));
-        connect(kcfg_onlyUseUtp, SIGNAL(toggled(bool)), this, SLOT(onlyUseUtpEnabled(bool)));
+        connect(m_recommended_settings, &QPushButton::clicked, this, &NetworkPref::calculateRecommendedSettings);
+        connect(kcfg_utpEnabled, &QCheckBox::toggled, this, &NetworkPref::utpEnabled);
+        connect(kcfg_onlyUseUtp, &QCheckBox::toggled, this, &NetworkPref::onlyUseUtpEnabled);
     }
 
 
@@ -53,7 +56,7 @@ namespace kt
         kcfg_maxTotalConnections->setValue(Settings::maxTotalConnections());
 
         combo_networkInterface->clear();
-        combo_networkInterface->addItem(QIcon::fromTheme("network-wired"), i18n("All interfaces"));
+        combo_networkInterface->addItem(QIcon::fromTheme(QStringLiteral("network-wired")), i18n("All interfaces"));
 
         kcfg_onlyUseUtp->setEnabled(Settings::utpEnabled());
         kcfg_primaryTransportProtocol->setEnabled(Settings::utpEnabled() && !Settings::onlyUseUtp());
@@ -61,26 +64,26 @@ namespace kt
         // get all the network devices and add them to the combo box
         QList<QNetworkInterface> iface_list = QNetworkInterface::allInterfaces();
 
-        // KF5 QList<Solid::Device> netlist = Solid::Device::listFromType(Solid::DeviceInterface::NetworkInterface);
+        // FIXME KF5 QList<Solid::Device> netlist = Solid::Device::listFromType(Solid::DeviceInterface::NetworkInterface);
 
 
-        foreach (const QNetworkInterface& iface, iface_list)
+        for (const QNetworkInterface& iface : iface_list)
         {
-            QIcon icon = QIcon::fromTheme("network-wired");
-#if 0 //KF5
+            QIcon icon = QIcon::fromTheme(QStringLiteral("network-wired"));
+#if 0 //FIXME KF5
             foreach (const Solid::Device& device, netlist)
             {
                 const Solid::NetworkInterface* netdev = device.as<Solid::NetworkInterface>();
                 if (netdev->ifaceName() == iface.name() && netdev->isWireless())
                 {
-                    icon = QIcon::fromTheme("network-wireless");
+                    icon = QIcon::fromTheme(QStringLiteral("network-wireless"));
                     break;
                 }
 
             }
 #endif
 
-            combo_networkInterface->addItem(icon, iface.name());
+            combo_networkInterface->addItem(icon, iface.humanReadableName());
         }
         QString iface = Settings::networkInterface();
         int idx = (iface.isEmpty())? 0 /*all*/: combo_networkInterface->findText(iface);

@@ -17,11 +17,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KT_TORRENTSERVICE_HH
 #define KT_TORRENTSERVICE_HH
 
-#include <dnssd/publicservice.h>
-#include <dnssd/servicebrowser.h>
+#include <DNSSD/PublicService>
+#include <DNSSD/ServiceBrowser>
+
 #include <interfaces/peersource.h>
 #include <net/addressresolver.h>
 
@@ -40,11 +42,11 @@ namespace kt
         Q_OBJECT
     public:
         TorrentService(bt::TorrentInterface* tc);
-        virtual ~TorrentService();
+        ~TorrentService();
 
-        virtual void stop(bt::WaitJob* wjob = 0);
-        virtual void start();
-        virtual void aboutToBeDestroyed();
+        void stop(bt::WaitJob* wjob = 0) override;
+        void start() override;
+        void aboutToBeDestroyed() override;
 
     signals:
         void serviceDestroyed(TorrentService* av);

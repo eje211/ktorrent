@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTFILTERLISTVIEW_H
 #define KTFILTERLISTVIEW_H
 
@@ -36,15 +37,14 @@ namespace kt
         Q_OBJECT
     public:
         FilterListView(FilterList* filters, QWidget* parent);
-        virtual ~FilterListView();
+        ~FilterListView();
 
         QModelIndexList selectedFilters();
 
-    private slots:
         void itemActivated(const QModelIndex& idx);
         void selectionChanged(const QItemSelection& sel, const QItemSelection& desel);
 
-    signals:
+    Q_SIGNALS:
         void filterActivated(Filter* filter);
         void enableRemove(bool on);
         void enableEdit(bool on);

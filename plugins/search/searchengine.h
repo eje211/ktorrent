@@ -18,12 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSEARCHENGINE_H
 #define KTSEARCHENGINE_H
 
+#include <QIcon>
 #include <QObject>
 #include <QUrl>
-#include <QIcon>
 
 class KJob;
 
@@ -42,7 +43,7 @@ namespace kt
          * @param data_dir Directory where all the information regarding the engine is stored
          */
         SearchEngine(const QString& data_dir);
-        virtual ~SearchEngine();
+        ~SearchEngine();
 
         /**
          * Load the engine from an opensearch XML file

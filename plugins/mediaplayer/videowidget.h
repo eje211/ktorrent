@@ -18,17 +18,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTVIDEOWIDGET_H
 #define KTVIDEOWIDGET_H
 
+#include <QAction>
 #include <QWidget>
 #include <Phonon/VideoWidget>
 #include <Phonon/MediaObject>
 #include <Phonon/SeekSlider>
 #include <Phonon/VolumeSlider>
-#include <QAction>
 
 class QAction;
+class QDBusInterface;
 class QLabel;
 class QStackedWidget;
 class KToolBar;
@@ -50,7 +52,7 @@ namespace kt
         Q_OBJECT
     public:
         VideoWidget(MediaPlayer* player, KActionCollection* ac, QWidget* parent);
-        virtual ~VideoWidget();
+        ~VideoWidget();
 
         /**
          * Make the widget full screen or not.
@@ -59,8 +61,8 @@ namespace kt
         void setFullScreen(bool on);
 
     protected:
-        virtual void mouseMoveEvent(QMouseEvent* event);
-        virtual bool eventFilter(QObject* dst, QEvent* event);
+        void mouseMoveEvent(QMouseEvent* event) override;
+        bool eventFilter(QObject* dst, QEvent* event) override;
 
     private slots:
         void play();
@@ -88,8 +90,8 @@ namespace kt
         Phonon::VolumeSlider* volume;
         VideoChunkBar* chunk_bar;
         bool fullscreen;
-        uint screensaver_cookie;
-        int powermanagement_cookie;
+        quint32 screensaver_cookie;
+        quint32 powermanagement_cookie;
     };
 
 }

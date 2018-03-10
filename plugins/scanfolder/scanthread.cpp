@@ -18,14 +18,16 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #include "scanthread.h"
+
+#include <QCoreApplication>
 #include <QDir>
 #include <QEvent>
-#include <QCoreApplication>
-#include <klocalizedstring.h>
-#include <util/fileops.h>
 #include <QTimer>
+
+#include <KLocalizedString>
+
+#include <util/fileops.h>
 
 
 namespace kt
@@ -39,7 +41,7 @@ namespace kt
         UpdateFolderEvent() : QEvent((QEvent::Type)UPDATE_FOLDER_EVENT)
         {}
 
-        virtual ~UpdateFolderEvent()
+        ~UpdateFolderEvent()
         {}
     };
 
@@ -49,7 +51,7 @@ namespace kt
         RecursiveScanEvent(const QUrl& url) : QEvent((QEvent::Type)RECURSIVE_SCAN_EVENT), url(url)
         {}
 
-        virtual ~RecursiveScanEvent()
+        ~RecursiveScanEvent()
         {}
 
         QUrl url;
@@ -160,7 +162,7 @@ namespace kt
 
     bool ScanThread::alreadyLoaded(const QDir& d, const QString& torrent)
     {
-        return d.exists('.' + torrent);
+        return d.exists(QLatin1Char('.') + torrent);
     }
 
 
@@ -193,7 +195,7 @@ namespace kt
             QStringList dirs = d.entryList(QDir::Readable | QDir::Dirs);
             foreach (const QString& subdir, dirs)
             {
-                if (subdir != QLatin1String(".") && subdir != QLatin1String("..") && subdir != loaded_localized)
+                if (subdir != QStringLiteral(".") && subdir != QStringLiteral("..") && subdir != loaded_localized)
                 {
                     QCoreApplication::postEvent(this, new RecursiveScanEvent(QUrl::fromLocalFile(d.absoluteFilePath(subdir))));
                 }

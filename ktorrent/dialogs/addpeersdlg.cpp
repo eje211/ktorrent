@@ -18,10 +18,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <kstandardguiitem.h>
-#include <interfaces/torrentinterface.h>
+
 #include <KGuiItem>
 #include <KStandardGuiItem>
+
+#include <interfaces/torrentinterface.h>
 #include "addpeersdlg.h"
 
 namespace kt
@@ -30,10 +31,10 @@ namespace kt
     {
     public:
         ManualPeerSource() {}
-        virtual ~ManualPeerSource() {}
+        ~ManualPeerSource() {}
 
-        virtual void start() {}
-        virtual void stop(bt::WaitJob*) {}
+        void start() override {}
+        void stop (bt::WaitJob*) override {}
 
         void add(const QString& ip, bt::Uint16 port)
         {
@@ -43,11 +44,11 @@ namespace kt
     };
 
     AddPeersDlg::AddPeersDlg(bt::TorrentInterface* tc, QWidget* parent)
-        : QDialog(parent), tc(tc), mps(0)
+        : QDialog(parent), tc(tc), mps(nullptr)
     {
         setupUi(this);
-        connect(m_close, SIGNAL(clicked()), this, SLOT(reject()));
-        connect(m_add, SIGNAL(clicked()), this, SLOT(addPressed()));
+        connect(m_close, &QPushButton::clicked, this, &AddPeersDlg::reject);
+        connect(m_add, &QPushButton::clicked, this, &AddPeersDlg::addPressed);
 
         KGuiItem::assign(m_close, KStandardGuiItem::close());
         KGuiItem::assign(m_add, KStandardGuiItem::add());

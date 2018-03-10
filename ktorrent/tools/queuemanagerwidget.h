@@ -18,11 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTQUEUEMANAGERWIDGET_H
 #define KTQUEUEMANAGERWIDGET_H
 
 #include <QWidget>
-#include <ksharedconfig.h>
+#include <KSharedConfig>
 
 class QItemSelection;
 class QModelIndex;
@@ -50,7 +51,7 @@ namespace kt
         Q_OBJECT
     public:
         QueueManagerWidget(QueueManager* qman, QWidget* parent);
-        virtual ~QueueManagerWidget();
+        ~QueueManagerWidget();
 
         /// Save the widget state
         void saveState(KSharedConfigPtr cfg);

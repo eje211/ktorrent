@@ -18,12 +18,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #ifndef KT_JOBPROGRESSWIDGET_H
 #define KT_JOBPROGRESSWIDGET_H
 
 #include <QWidget>
 #include <KJob>
+
 #include <ktcore_export.h>
 #include <torrent/job.h>
 #include <gui/extender.h>
@@ -46,7 +46,7 @@ namespace kt
         Q_OBJECT
     public:
         JobProgressWidget(bt::Job* job, QWidget* parent);
-        virtual ~JobProgressWidget();
+        ~JobProgressWidget();
 
         /// Update the description
         virtual void description(const QString& title, const QPair< QString, QString >& field1, const QPair< QString, QString >& field2) = 0;

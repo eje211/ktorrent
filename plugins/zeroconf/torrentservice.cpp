@@ -17,9 +17,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "torrentservice.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <util/log.h>
 #include <util/sha1hash.h>
 #include <torrent/globals.h>
@@ -31,13 +32,13 @@ using namespace bt;
 
 namespace kt
 {
-    TorrentService::TorrentService(TorrentInterface* tc) : tc(tc), srv(0), browser(0)
+    TorrentService::TorrentService(TorrentInterface* tc) : tc(tc), srv(nullptr), browser(nullptr)
     {
     }
 
     TorrentService::~TorrentService()
     {
-        stop(0);
+        stop(nullptr);
     }
 
     void TorrentService::onPublished(bool ok)
@@ -55,22 +56,22 @@ namespace kt
         {
             srv->stop();
             srv->deleteLater();
-            srv = 0;
+            srv = nullptr;
         }
 
         if (browser)
         {
             browser->deleteLater();
-            browser = 0;
+            browser = nullptr;
         }
     }
 
     void TorrentService::start()
     {
         bt::Uint16 port = bt::ServerInterface::getPort();
-        QString name = QString("%1__%2%3").arg(tc->getOwnPeerID().toString()).arg((rand() % 26) + 65).arg((rand() % 26) + 65);
+        QString name = QStringLiteral("%1__%2%3").arg(tc->getOwnPeerID().toString()).arg((rand() % 26) + 65).arg((rand() % 26) + 65);
         QStringList subtypes;
-        subtypes << QString('_' + tc->getInfoHash().toString() + QLatin1String("._sub._bittorrent._tcp"));
+        subtypes << QLatin1Char('_') + tc->getInfoHash().toString() + QStringLiteral("._sub._bittorrent._tcp");
 
         if (!srv)
         {
@@ -78,25 +79,25 @@ namespace kt
 
             srv->setPort(port);
             srv->setServiceName(name);
-            srv->setType("_bittorrent._tcp");
+            srv->setType(QStringLiteral("_bittorrent._tcp"));
             srv->setSubTypes(subtypes);
 
-            connect(srv, SIGNAL(published(bool)), this, SLOT(onPublished(bool)));
+            connect(srv, &KDNSSD::PublicService::published, this, &TorrentService::onPublished);
             srv->publishAsync();
         }
 
 
         if (!browser)
         {
-            browser = new KDNSSD::ServiceBrowser(QString('_' + tc->getInfoHash().toString() + QLatin1String("._sub._bittorrent._tcp")), true);
-            connect(browser, SIGNAL(serviceAdded(DNSSD::RemoteService::Ptr)), this, SLOT(onServiceAdded(DNSSD::RemoteService::Ptr)));
+            browser = new KDNSSD::ServiceBrowser(QLatin1Char('_') + tc->getInfoHash().toString() + QStringLiteral("._sub._bittorrent._tcp"), true);
+            connect(browser, &KDNSSD::ServiceBrowser::serviceAdded, this, &TorrentService::onServiceAdded);
             browser->startBrowse();
         }
     }
 
     void TorrentService::onServiceAdded(KDNSSD::RemoteService::Ptr ptr)
     {
-        // lets not connect to ourselve
+        // lets not connect to ourselves
         if (!ptr->serviceName().startsWith(tc->getOwnPeerID().toString()))
         {
             QString host = ptr->hostName();

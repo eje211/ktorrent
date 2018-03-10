@@ -18,12 +18,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ***************************************************************************/
+
 #ifndef KTQUEUEMANAGER_H
 #define KTQUEUEMANAGER_H
 
 #include <set>
+
 #include <QObject>
 #include <KSharedConfig>
+
 #include <interfaces/torrentinterface.h>
 #include <interfaces/queuemanagerinterface.h>
 #include <ktcore_export.h>
@@ -42,7 +45,7 @@ namespace kt
     {
     public:
         QueuePtrList();
-        virtual ~QueuePtrList();
+        ~QueuePtrList();
 
         /**
          * Sort based upon priority
@@ -63,7 +66,7 @@ namespace kt
 
     public:
         QueueManager();
-        virtual ~QueueManager();
+        ~QueueManager();
 
         void append(bt::TorrentInterface* tc);
         void remove(bt::TorrentInterface* tc);
@@ -232,14 +235,13 @@ namespace kt
          */
         bool checkFileConflicts(bt::TorrentInterface* tc, QStringList& conflicting) const;
 
-    public slots:
         /**
          * Places all torrents from downloads in the right order in queue.
          * Use this when torrent priorities get changed
          */
         void orderQueue();
 
-    signals:
+    Q_SIGNALS:
         /**
         * User tried to enqueue a torrent that has reached max share ratio. It's not possible.
         * Signal should be connected to SysTray slot which shows appropriate KPassivePopup info.
@@ -268,13 +270,14 @@ namespace kt
          */
         void suspendStateChanged(bool suspended);
 
-    public slots:
+    public Q_SLOTS:
         void torrentFinished(bt::TorrentInterface* tc);
         void torrentAdded(bt::TorrentInterface* tc, bool start_torrent);
         void torrentRemoved(bt::TorrentInterface* tc);
         void torrentsRemoved(QList<bt::TorrentInterface*> & tors);
         void torrentStopped(bt::TorrentInterface* tc);
         void onLowDiskSpace(bt::TorrentInterface* tc, bool toStop);
+        void onOnlineStateChanged(bool);
 
     private:
         void startSafely(bt::TorrentInterface* tc);
@@ -286,9 +289,6 @@ namespace kt
         bt::TorrentStartResponse startInternal(bt::TorrentInterface* tc);
         bool checkLimits(bt::TorrentInterface* tc, bool interactive);
         bool checkDiskSpace(bt::TorrentInterface* tc, bool interactive);
-
-    private slots:
-        void onOnlineStateChanged(bool);
 
     private:
         QueuePtrList downloads;

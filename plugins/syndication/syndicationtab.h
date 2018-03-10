@@ -18,11 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSYNDICATIONTAB_H
 #define KTSYNDICATIONTAB_H
 
 #include <QWidget>
-#include <kconfiggroup.h>
+#include <KConfigGroup>
 
 class QSplitter;
 class KToolBar;
@@ -41,17 +42,15 @@ namespace kt
     */
     class SyndicationTab : public QWidget
     {
-        Q_OBJECT
     public:
         SyndicationTab(KActionCollection* ac, FeedList* feeds, FilterList* filters, QWidget* parent);
-        virtual ~SyndicationTab();
+        ~SyndicationTab();
 
         FeedListView* feedView() {return feed_view;}
         FilterListView* filterView() {return filter_view;}
         void loadState(KConfigGroup& g);
         void saveState(KConfigGroup& g);
 
-    private slots:
         void showFeedViewMenu(const QPoint& pos);
         void showFilterViewMenu(const QPoint& pos);
 

@@ -18,13 +18,16 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTWEBSEEDSTAB_H
 #define KTWEBSEEDSTAB_H
 
-#include <QWidget>
 #include <QSortFilterProxyModel>
-#include <ksharedconfig.h>
-#include <kconfiggroup.h>
+#include <QWidget>
+
+#include <KConfigGroup>
+#include <KSharedConfig>
+
 #include <interfaces/torrentinterface.h>
 #include "ui_webseedstab.h"
 
@@ -40,7 +43,7 @@ namespace kt
         Q_OBJECT
     public:
         WebSeedsTab(QWidget* parent);
-        virtual ~WebSeedsTab();
+        ~WebSeedsTab();
 
         /**
          * Switch to a different torrent.

@@ -22,6 +22,7 @@
 #define KT_ADDTRACKERSDIALOG_H
 
 #include <QDialog>
+
 #include <KEditListWidget>
 
 
@@ -36,7 +37,7 @@ namespace kt
         Q_OBJECT
     public:
         AddTrackersDialog(QWidget* parent, const QStringList& tracker_hints);
-        virtual ~AddTrackersDialog();
+        ~AddTrackersDialog();
 
         /// Get the tracker list
         QStringList trackerList() const;

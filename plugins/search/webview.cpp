@@ -21,27 +21,27 @@
 #include "webview.h"
 
 #include <QAction>
-#include <QTextStream>
 #include <QApplication>
+#include <QFileDialog>
 #include <QNetworkReply>
+#include <QStandardPaths>
+#include <QTextStream>
+#include <QUrl>
+#include <QUrlQuery>
 #include <QWebHistoryInterface>
 #include <QWebHitTestResult>
-#include <QUrl>
-#include <QStandardPaths>
-#include <QFileDialog>
 
-#include <klocalizedstring.h>
-#include <kwebpage.h>
-#include <kiconloader.h>
+#include <KIconLoader>
+#include <KIO/AccessManager>
+#include <KIO/CopyJob>
+#include <KIO/Job>
+#include <KLocalizedString>
+#include <KMainWindow>
+#include <KWebPage>
 
 #include <util/log.h>
-#include <kio/job.h>
-#include <kio/accessmanager.h>
-#include <KMainWindow>
-#include <kio/copyjob.h>
 #include "buffernetworkreply.h"
 #include "localfilenetworkreply.h"
-
 
 using namespace bt;
 
@@ -53,32 +53,32 @@ namespace kt
     public:
         NetworkAccessManager(WebView* parent) : KIO::AccessManager(parent), webview(parent)
         {
+            webview->getProxy()->ApplyProxy(sessionMetaData());
         }
 
-        virtual ~NetworkAccessManager()
+        ~NetworkAccessManager()
         {}
 
-        virtual QNetworkReply* createRequest(Operation op, const QNetworkRequest& req, QIODevice* outgoingData)
+        QNetworkReply* createRequest(Operation op, const QNetworkRequest& req, QIODevice* outgoingData) override
         {
-            if (req.url().scheme() == QLatin1String("magnet"))
+            if (req.url().scheme() == QStringLiteral("magnet"))
             {
                 webview->handleMagnetUrl(req.url());
-                return QNetworkAccessManager::createRequest(op, req, outgoingData);
+                return KIO::AccessManager::createRequest(op, req, outgoingData);
             }
-            else if (req.url().host() == QLatin1String("ktorrent.searchplugin"))
+            else if (req.url().host() == QStringLiteral("ktorrent.searchplugin"))
             {
-                QString search_text = req.url().queryItemValue(QLatin1String("search_text"));
+                QString search_text = QUrlQuery(req.url()).queryItemValue(QStringLiteral("search_text"));
 
                 if (!search_text.isEmpty())
                 {
                     QUrl url(webview->searchUrl(search_text));
                     QNetworkRequest request(url);
-                    webview->setUrl(url);
                     return KIO::AccessManager::createRequest(op, request, outgoingData);
                 }
-                else if (req.url().path() == QLatin1String("/"))
+                else if (req.url().path() == QStringLiteral("/"))
                 {
-                    return new BufferNetworkReply(webview->homePageData().toLocal8Bit(), QLatin1String("text/html"), this);
+                    return new BufferNetworkReply(webview->homePageData().toLocal8Bit(), QStringLiteral("text/html"), this);
                 }
                 else
                 {
@@ -95,8 +95,8 @@ namespace kt
 
     //////////////////////////////////////////////////////
 
-    WebView::WebView(kt::WebViewClient* client, QWidget* parentWidget)
-        : KWebView(parentWidget), client(client)
+    WebView::WebView(kt::WebViewClient* client, ProxyHelper* proxy, QWidget* parentWidget)
+        : KWebView(parentWidget), client(client), m_proxy(proxy)
     {
         page()->setNetworkAccessManager(new NetworkAccessManager(this));
         page()->setForwardUnsupportedContent(true);
@@ -116,7 +116,7 @@ namespace kt
 
     void WebView::openUrl(const QUrl &url)
     {
-        if (url.host() == QLatin1String("ktorrent.searchplugin"))
+        if (url.host() == QStringLiteral("ktorrent.searchplugin"))
             home();
         else
             load(url);
@@ -127,7 +127,7 @@ namespace kt
         if (home_page_html.isEmpty())
             loadHomePage();
 
-        load(QUrl(QLatin1String("http://ktorrent.searchplugin/")));
+        load(QUrl(QStringLiteral("http://ktorrent.searchplugin/")));
     }
 
     QString WebView::homePageData()
@@ -141,23 +141,23 @@ namespace kt
 
     void WebView::loadHomePage()
     {
-        QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "ktorrent/search/home/home.html");
+        QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("ktorrent/search/home/home.html"));
         QFile fptr(file);
 
         if (fptr.open(QIODevice::ReadOnly))
         {
             Out(SYS_SRC | LOG_DEBUG) << "Loading home page from " << file << endl;
-            home_page_base_url = file.left(file.lastIndexOf('/') + 1);
+            home_page_base_url = file.left(file.lastIndexOf(QLatin1Char('/')) + 1);
             home_page_html = QTextStream(&fptr).readAll();
 
             // %1
-            home_page_html = home_page_html.arg(QLatin1String("ktorrent_infopage.css"));
+            home_page_html = home_page_html.arg(QStringLiteral("ktorrent_infopage.css"));
             // %2
 
             if (qApp->layoutDirection() == Qt::RightToLeft)
             {
-                QString link = "<link rel=\"stylesheet\" type=\"text/css\" href=\"%1\" />";
-                link = link.arg(QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kdeui/about/kde_infopage_rtl.css"));
+                QString link = QStringLiteral("<link rel=\"stylesheet\" type=\"text/css\" href=\"%1\" />");
+                link = link.arg(QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("kdeui/about/kde_infopage_rtl.css")));
                 home_page_html = home_page_html.arg(link);
             }
             else
@@ -173,7 +173,7 @@ namespace kt
                              .arg(i18nc("KDE 4 tag line, see http://kde.org/img/kde40.png", "Be free.")) // %5
                              .arg(i18n("Search the web for torrents.")) // %6
                              .arg(i18n("Search")) // %7
-                             .arg("search_text") // %8
+                             .arg(QStringLiteral("search_text")) // %8
                              .arg(icon_size).arg(icon_size); // %9 and %10
         }
         else
@@ -187,7 +187,8 @@ namespace kt
         if (client)
             return client->searchUrl(search_text);
         else
-            return QUrl("http://google.be");
+            // client is broken -> browse to home
+            return QUrl(QStringLiteral("http://ktorrent.searchplugin/"));
     }
 
     QWebView* WebView::createWindow(QWebPage::WebWindowType type)

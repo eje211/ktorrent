@@ -18,11 +18,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "peerviewmodel.h"
+
 #include <QIcon>
 #include <QLocale>
 #include <QStandardPaths>
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+
 #include <interfaces/torrentinterface.h>
 #include <util/functions.h>
 #include "flagdb.h"
@@ -47,10 +51,10 @@ namespace kt
             icons_loaded = true;
 
             QString path = QStandardPaths::locate(QStandardPaths::GenericDataLocation,
-                                                  "kf5/locale/countries",
+                                                  QStringLiteral("kf5/locale/countries"),
                                                   QStandardPaths::LocateDirectory);
             if (!path.isEmpty())
-                flagDB.addFlagSource(path+QStringLiteral("/%1/flag.png"));
+                flagDB.addFlagSource(path + QStringLiteral("/%1/flag.png"));
         }
 
         if (geo_ip)
@@ -166,7 +170,7 @@ namespace kt
     /////////////////////////////////////////////////////////////
 
     PeerViewModel::PeerViewModel(QObject* parent)
-        : QAbstractTableModel(parent), geo_ip(0)
+        : QAbstractTableModel(parent), geo_ip(nullptr)
     {
         geo_ip = new GeoIPManager(this);
     }
@@ -197,9 +201,10 @@ namespace kt
 
     void PeerViewModel::clear()
     {
+        beginResetModel();
         qDeleteAll(items);
         items.clear();
-        reset();
+        endResetModel();
     }
 
     void PeerViewModel::update()
@@ -339,7 +344,7 @@ namespace kt
     bt::PeerInterface* PeerViewModel::indexToPeer(const QModelIndex& index)
     {
         if (!index.isValid() || index.row() >= items.count())
-            return 0;
+            return nullptr;
         else
             return ((Item*)index.internalPointer())->peer;
     }

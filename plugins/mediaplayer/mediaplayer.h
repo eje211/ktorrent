@@ -18,11 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTAUDIOPLAYER_H
 #define KTAUDIOPLAYER_H
 
-#include <QTimer>
 #include <QStringList>
+#include <QTimer>
 #include <Phonon/MediaObject>
 #include "mediafile.h"
 #include "mediafilestream.h"
@@ -49,7 +50,7 @@ namespace kt
         Q_OBJECT
     public:
         MediaPlayer(QObject* parent);
-        virtual ~MediaPlayer();
+        ~MediaPlayer();
 
         Phonon::AudioOutput* output() {return audio;}
         Phonon::MediaObject* media0bject() {return media;}

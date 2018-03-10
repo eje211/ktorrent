@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTTORRENTGROUP_H
 #define KTTORRENTGROUP_H
 
@@ -38,25 +39,25 @@ namespace kt
         Q_OBJECT
     public:
         TorrentGroup(const QString& name);
-        virtual ~TorrentGroup();
+        ~TorrentGroup();
 
-        virtual bool isMember(TorrentInterface* tor);
-        virtual void save(bt::BEncoder* enc);
-        virtual void load(bt::BDictNode* n);
-        virtual void torrentRemoved(TorrentInterface* tor);
-        virtual void removeTorrent(TorrentInterface* tor);
-        virtual void addTorrent(TorrentInterface* tor, bool new_torrent);
-        virtual void policyChanged();
+        bool isMember(TorrentInterface* tor) override;
+        void save(bt::BEncoder* enc) override;
+        void load(bt::BDictNode* n) override;
+        void torrentRemoved(TorrentInterface* tor) override;
+        void removeTorrent(TorrentInterface* tor) override;
+        void addTorrent(TorrentInterface* tor, bool new_torrent) override;
+        void policyChanged() override;
 
         void add(TorrentInterface* tor);
         void remove(TorrentInterface* tor);
         void loadTorrents(QueueManager* qman);
 
-    signals:
+    Q_SIGNALS:
         /// Emitted when a torrent has been added
         void torrentAdded(Group* g);
 
-        /// Emittend when a torrent has been removed
+        /// Emitted when a torrent has been removed
         void torrentRemoved(Group* g);
 
     private:

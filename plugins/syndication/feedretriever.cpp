@@ -18,7 +18,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <kio/job.h>
+
+#include <KIO/Job>
+
 #include <ktversion.h>
 #include <util/log.h>
 #include "feedretriever.h"
@@ -27,11 +29,11 @@ using namespace bt;
 
 namespace kt
 {
-    FeedRetriever::FeedRetriever() : job(0), err(0)
+    FeedRetriever::FeedRetriever() : job(nullptr), err(0)
     {
     }
 
-    FeedRetriever::FeedRetriever(const QString& file_name) : backup_file(file_name), job(0), err(0)
+    FeedRetriever::FeedRetriever(const QString& file_name) : backup_file(file_name), job(nullptr), err(0)
     {
     }
 
@@ -59,14 +61,14 @@ namespace kt
     void FeedRetriever::retrieveData(const QUrl& url)
     {
         KIO::StoredTransferJob* j = KIO::storedGet(url, KIO::NoReload, KIO::HideProgressInfo);
-        j->addMetaData("UserAgent", bt::GetVersionString());
+        j->addMetaData(QStringLiteral("UserAgent"), bt::GetVersionString());
         if (!cookie.isEmpty())
         {
-            j->addMetaData("cookies", "none");
-            j->addMetaData("customHTTPHeader", QString("Cookie: %1").arg(cookie));
+            j->addMetaData(QStringLiteral("cookies"), QStringLiteral("none"));
+            j->addMetaData(QStringLiteral("customHTTPHeader"), QStringLiteral("Cookie: %1").arg(cookie));
         }
 
-        connect(j, SIGNAL(result(KJob*)), this, SLOT(finished(KJob*)));
+        connect(j, &KIO::StoredTransferJob::result, this, &FeedRetriever::finished);
         job = j;
     }
 

@@ -18,8 +18,10 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QFile>
 #include <QIcon>
+
 #include <util/log.h>
 #include <util/error.h>
 #include <bcodec/bnode.h>
@@ -56,7 +58,7 @@ namespace kt
     void FilterList::saveFilters(const QString& file)
     {
         File fptr;
-        if (!fptr.open(file, "wt"))
+        if (!fptr.open(file, QStringLiteral("wt")))
         {
             Out(SYS_SYN | LOG_DEBUG) << "Failed to open " << file << " : " << fptr.errorString() << endl;
             return;

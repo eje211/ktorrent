@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KT_BTPREF_H
 #define KT_BTPREF_H
 
@@ -31,9 +32,9 @@ namespace kt
         Q_OBJECT
     public:
         BTPref(QWidget* parent);
-        virtual ~BTPref();
+        ~BTPref();
 
-        void loadSettings();
+        void loadSettings() override;
     };
 }
 

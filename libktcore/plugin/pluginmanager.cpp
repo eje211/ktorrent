@@ -15,16 +15,18 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "pluginmanager.h"
 
 #include <QFile>
 #include <QTextStream>
-#include <klocalizedstring.h>
-#include <ksharedconfig.h>
-#include <kservicetypetrader.h>
-#include <kpluginmetadata.h>
+
+#include <KLocalizedString>
+#include <KSharedConfig>
+#include <KPluginMetaData>
+
 #include <util/log.h>
 #include <util/error.h>
 #include <util/fileops.h>
@@ -63,7 +65,7 @@ namespace kt
             pluginsMetaData = KPluginLoader::findPlugins(QStringLiteral("ktorrent"));
         }
 
-        foreach (const KPluginMetaData &module, pluginsMetaData)
+        for (const KPluginMetaData &module : pluginsMetaData)
         {
             KPluginInfo pi(module);
             pi.setConfig(KSharedConfig::openConfig()->group(pi.pluginName()));
@@ -107,6 +109,7 @@ namespace kt
 
     void PluginManager::load(const KPluginInfo& pi, int idx)
     {
+        Q_UNUSED(pi)
         KPluginLoader loader(pluginsMetaData.at(idx).fileName());
         KPluginFactory *factory = loader.factory();
         if (!factory)
@@ -116,15 +119,15 @@ namespace kt
         if (!plugin)
         {
             Out(SYS_GEN | LOG_NOTICE) <<
-                                      QString("Creating instance of plugin %1 failed !")
+                                      QStringLiteral("Creating instance of plugin %1 failed !")
                                       .arg(pluginsMetaData.at(idx).fileName()) << endl;
             return;
         }
 
-        if (!plugin->versionCheck(kt::VERSION_STRING))
+        if (!plugin->versionCheck(QString::fromLatin1(kt::VERSION_STRING)))
         {
             Out(SYS_GEN | LOG_NOTICE) <<
-                                      QString("Plugin %1 version does not match KTorrent version, unloading it.")
+                                      QStringLiteral("Plugin %1 version does not match KTorrent version, unloading it.")
                                       .arg(pluginsMetaData.at(idx).fileName()) << endl;
 
             delete plugin;
@@ -142,7 +145,7 @@ namespace kt
 
     void PluginManager::unload(const KPluginInfo& pi, int idx)
     {
-        Q_UNUSED(pi);
+        Q_UNUSED(pi)
 
         Plugin* p = loaded.find(idx);
         if (!p)

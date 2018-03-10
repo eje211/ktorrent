@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTDBUSTORRENTFILE_H
 #define KTDBUSTORRENTFILE_H
 
@@ -37,7 +38,7 @@ namespace kt
         Q_CLASSINFO("D-Bus Interface", "org.ktorrent.torrentfile")
     public:
         DBusTorrentFile(bt::TorrentFileInterface& file, QObject* parent);
-        virtual ~DBusTorrentFile();
+        ~DBusTorrentFile();
 
     public Q_SLOTS:
         Q_SCRIPTABLE QString path() const;

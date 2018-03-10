@@ -17,17 +17,19 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "logprefpage.h"
 
 #include <QHeaderView>
-#include <ksharedconfig.h>
+#include <KSharedConfig>
+
 #include "logviewerpluginsettings.h"
 #include "logflags.h"
 #include "logflagsdelegate.h"
 
 namespace kt
 {
-    LogPrefPage::LogPrefPage(LogFlags* flags, QWidget* parent) : PrefPageInterface(LogViewerPluginSettings::self(), i18n("Log Viewer"), "utilities-log-viewer", parent)
+    LogPrefPage::LogPrefPage(LogFlags* flags, QWidget* parent) : PrefPageInterface(LogViewerPluginSettings::self(), i18n("Log Viewer"), QStringLiteral("utilities-log-viewer"), parent)
     {
         setupUi(this);
         m_logging_flags->setModel(flags);

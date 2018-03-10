@@ -23,8 +23,10 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDateTime>
-#include <klocalizedstring.h>
-#include <kio/job.h>
+
+#include <KLocalizedString>
+#include <KIO/Job>
+
 #include <bcodec/bnode.h>
 #include <bcodec/bdecoder.h>
 #include <interfaces/coreinterface.h>
@@ -41,7 +43,7 @@ namespace kt
         : QObject(parent),
           core(core)
     {
-        connect(&timer, SIGNAL(timeout()), this, SLOT(loadOne()));
+        connect(&timer, &QTimer::timeout, this, &TorrentLoadQueue::loadOne);
         timer.setSingleShot(true);
     }
 
@@ -153,15 +155,15 @@ namespace kt
         {
         case DeleteAction:
             // If torrent has it's hidden complement - remove it too.
-            if (bt::Exists(dirname + '.' + name))
-                bt::Delete(dirname + '.' + name, true);
+            if (bt::Exists(dirname + QLatin1Char('.') + name))
+                bt::Delete(dirname + QLatin1Char('.') + name, true);
 
             bt::Delete(url.toLocalFile(), true);
             break;
         case MoveAction:
             // If torrent has it's hidden complement - remove it too.
-            if (bt::Exists(dirname + '.' + name))
-                bt::Delete(dirname + '.' + name, true);
+            if (bt::Exists(dirname + QLatin1Char('.') + name))
+                bt::Delete(dirname + QLatin1Char('.') + name, true);
 
             if (!bt::Exists(dirname + i18nc("folder name part", "loaded")))
                 bt::MakeDir(dirname + i18nc("folder name part", "loaded"), true);
@@ -172,7 +174,7 @@ namespace kt
                            KIO::HideProgressInfo | KIO::Overwrite);
             break;
         case DefaultAction:
-            QFile f(dirname + '.' + name);
+            QFile f(dirname + QLatin1Char('.') + name);
             f.open(QIODevice::WriteOnly);
             f.close();
             break;

@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "schedulegraphicsitem.h"
 
 #include <QPen>
@@ -27,8 +28,10 @@
 #include <QFontMetricsF>
 #include <QGraphicsTextItem>
 #include <QGraphicsSceneMouseEvent>
-#include <klocalizedstring.h>
+
 #include <KCursor>
+#include <KLocalizedString>
+
 #include <util/log.h>
 #include <util/functions.h>
 #include "schedule.h"
@@ -54,7 +57,7 @@ namespace kt
         , item(item)
         , constraints(constraints)
         , ws(ws)
-        , text_item(0)
+        , text_item(nullptr)
         , resize_edge(0)
         , ready_to_resize(false)
         , resizing(false)
@@ -94,7 +97,7 @@ namespace kt
             text = i18n("%1 Down\n%2 Up", ds, us);
         }
 
-        if (text_item == 0)
+        if (text_item == nullptr)
             text_item = scene()->addText(text);
         else
             text_item->setPlainText(text);
@@ -110,7 +113,7 @@ namespace kt
         {
             // Text is to big for rect
             delete text_item;
-            text_item = 0;
+            text_item = nullptr;
         }
     }
 

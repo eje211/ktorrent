@@ -21,13 +21,15 @@
 #ifndef PLAYLISTWIDGET_H
 #define PLAYLISTWIDGET_H
 
-#include <QLabel>
-#include <QTreeView>
-#include <QToolBar>
-#include <QComboBox>
 #include <QCheckBox>
-#include <KSharedConfig>
+#include <QComboBox>
+#include <QLabel>
 #include <QMenu>
+#include <QToolBar>
+#include <QTreeView>
+
+#include <KSharedConfig>
+
 #include "mediafile.h"
 
 class QSortFilterProxyModel;
@@ -44,7 +46,7 @@ namespace kt
         Q_OBJECT
     public:
         PlayListWidget(MediaFileCollection* collection, MediaPlayer* player, QWidget* parent);
-        virtual ~PlayListWidget();
+        ~PlayListWidget();
 
         /// Get the play list
         PlayList* playList() {return play_list;}
@@ -67,19 +69,19 @@ namespace kt
         /// Is random mode activated ?
         bool randomOrder() const {return random_mode->isChecked();}
 
-    public slots:
+    public Q_SLOTS:
         QModelIndex play();
         void addMedia();
         void clearPlayList();
 
-    private slots:
+    private Q_SLOTS:
         void onSelectionChanged(const QItemSelection& s, const QItemSelection& d);
         void doubleClicked(const QModelIndex& index);
         void showContextMenu(QPoint pos);
         void removeFiles();
         void onItemsDropped();
 
-    signals:
+    Q_SIGNALS:
         void fileSelected(const MediaFileRef& file);
         void doubleClicked(const MediaFileRef& file);
         void randomModeActivated(bool random);

@@ -18,7 +18,6 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #ifndef KT_BASICJOBPROGRESSWIDGET_H
 #define KT_BASICJOBPROGRESSWIDGET_H
 
@@ -36,17 +35,17 @@ namespace kt
         Q_OBJECT
     public:
         BasicJobProgressWidget(bt::Job* job, QWidget* parent);
-        virtual ~BasicJobProgressWidget();
+        ~BasicJobProgressWidget();
 
-        virtual void description(const QString& title, const QPair< QString, QString >& field1, const QPair< QString, QString >& field2);
-        virtual void infoMessage(const QString& plain, const QString& rich);
-        virtual void warning(const QString& plain, const QString& rich);
-        virtual void totalAmount(KJob::Unit unit, qulonglong amount);
-        virtual void processedAmount(KJob::Unit unit, qulonglong amount);
-        virtual void percent(long unsigned int percent);
-        virtual void speed(long unsigned int value);
+        void description(const QString& title, const QPair< QString, QString >& field1, const QPair< QString, QString >& field2) override;
+        void infoMessage(const QString& plain, const QString& rich) override;
+        void warning(const QString& plain, const QString& rich) override;
+        void totalAmount(KJob::Unit unit, qulonglong amount) override;
+        void processedAmount(KJob::Unit unit, qulonglong amount) override;
+        void percent(long unsigned int percent) override;
+        void speed(long unsigned int value) override;
 
-        virtual bool similar(Extender* ext) const
+        bool similar(Extender* ext) const override
         {
             Q_UNUSED(ext);
             return false;

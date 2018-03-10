@@ -18,11 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTCHUNKDOWNLOADMODEL_H
 #define KTCHUNKDOWNLOADMODEL_H
 
-#include <QVector>
 #include <QAbstractTableModel>
+#include <QVector>
 #include <interfaces/chunkdownloadinterface.h>
 #include <interfaces/torrentinterface.h>
 
@@ -38,7 +39,7 @@ namespace kt
         Q_OBJECT
     public:
         ChunkDownloadModel(QObject* parent);
-        virtual ~ChunkDownloadModel();
+        ~ChunkDownloadModel();
 
         /// A peer has been added
         void downloadAdded(bt::ChunkDownloadInterface* cd);
@@ -59,13 +60,13 @@ namespace kt
         */
         void clear();
 
-        virtual int rowCount(const QModelIndex& parent) const;
-        virtual int columnCount(const QModelIndex& parent) const;
-        virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-        virtual QVariant data(const QModelIndex& index, int role) const;
-        virtual bool removeRows(int row, int count, const QModelIndex& parent);
-        virtual bool insertRows(int row, int count, const QModelIndex& parent);
-        virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
+        int rowCount(const QModelIndex& parent) const override;
+        int columnCount(const QModelIndex& parent) const override;
+        QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+        QVariant data(const QModelIndex& index, int role) const override;
+        bool removeRows(int row, int count, const QModelIndex& parent) override;
+        bool insertRows(int row, int count, const QModelIndex& parent) override;
+        QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
 
     public:
         struct Item

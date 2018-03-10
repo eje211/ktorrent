@@ -18,7 +18,6 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-
 #ifndef KT_EXTENDER_H
 #define KT_EXTENDER_H
 
@@ -41,7 +40,7 @@ namespace kt
         Q_OBJECT
     public:
         Extender(bt::TorrentInterface* tc, QWidget* parent);
-        virtual ~Extender();
+        ~Extender();
 
         /// Get the torrent of this extender
         bt::TorrentInterface* torrent() {return tc;}

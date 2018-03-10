@@ -19,8 +19,9 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include <klocalizedstring.h>
-#include <kconfigdialogmanager.h>
+#include <KLocalizedString>
+#include <KConfigDialogManager>
+
 #include "settings.h"
 #include "prefdialog.h"
 #include "core.h"
@@ -37,9 +38,9 @@ namespace kt
 
 
 
-    PrefDialog::PrefDialog(QWidget* parent, Core* core) : KConfigDialog(parent, "settings", Settings::self())
+    PrefDialog::PrefDialog(QWidget* parent, Core* core) : KConfigDialog(parent, QStringLiteral("settings"), Settings::self())
     {
-        KConfigDialogManager::propertyMap()->insert("KUrlRequester", "url");
+        KConfigDialogManager::propertyMap()->insert(QStringLiteral("KUrlRequester"), QByteArrayLiteral("url"));
         setFaceType(KPageDialog::List);
         connect(this, SIGNAL(settingsChanged(const QString&)), core, SLOT(applySettings()));
         addPrefPage(new GeneralPref(this));
@@ -51,7 +52,7 @@ namespace kt
         addPrefPage(qm_pref);
         addPrefPage(new AdvancedPref(this));
 
-        connect(net_pref, SIGNAL(calculateRecommendedSettings()), this, SLOT(calculateRecommendedSettings()));
+        connect(net_pref, &NetworkPref::calculateRecommendedSettings, this, &PrefDialog::calculateRecommendedSettings);
     }
 
     PrefDialog::~PrefDialog()
@@ -61,7 +62,7 @@ namespace kt
     void PrefDialog::addPrefPage(PrefPageInterface* page)
     {
         PrefPageScrollArea* area = new PrefPageScrollArea(page, this);
-        connect(area->page, SIGNAL(updateButtons()), this, SLOT(updateButtons()));
+        connect(area->page, &PrefPageInterface::updateButtons, this, &PrefDialog::updateButtons);
 
         KPageWidgetItem* p = addPage(area, page->config(), page->pageName(), page->pageIcon());
         area->page_widget_item = p;
@@ -151,7 +152,7 @@ namespace kt
 
     ///////////////////////////////////////
 
-    PrefPageScrollArea::PrefPageScrollArea(kt::PrefPageInterface* page, QWidget* parent) : QScrollArea(parent), page(page), page_widget_item(0)
+    PrefPageScrollArea::PrefPageScrollArea(kt::PrefPageInterface* page, QWidget* parent) : QScrollArea(parent), page(page), page_widget_item(nullptr)
     {
         setWidget(page);
         setWidgetResizable(true);

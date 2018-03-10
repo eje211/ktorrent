@@ -19,9 +19,11 @@
  ***************************************************************************/
 
 #include "mediafile.h"
+
 #include <QFile>
-#include <QStringList>
 #include <QMimeDatabase>
+#include <QStringList>
+
 #include <interfaces/torrentinterface.h>
 #include <interfaces/torrentfileinterface.h>
 #include <util/functions.h>
@@ -54,7 +56,7 @@ namespace kt
             if (idx < tc->getNumFiles())
             {
                 QString path = tc->getTorrentFile(idx).getUserModifiedPath();
-                QVector<QStringRef> parts = path.splitRef('/');
+                QVector<QStringRef> parts = path.splitRef(QLatin1Char('/'));
                 if (parts.count() == 0)
                     return path;
                 else
@@ -191,7 +193,7 @@ namespace kt
         else
         {
             QMimeDatabase db;
-            return db.mimeTypeForFile(path()).name().startsWith("video");
+            return db.mimeTypeForFile(path()).name().startsWith(QStringLiteral("video"));
         }
     }
 

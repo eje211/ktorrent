@@ -19,16 +19,21 @@
 ***************************************************************************/
 
 #include "playlist.h"
-#include <QTime>
+
+#include <algorithm>
+
 #include <QFile>
 #include <QFileInfo>
-#include <QUrl>
+#include <QIcon>
 #include <QMimeData>
 #include <QStringList>
 #include <QTextStream>
+#include <QTime>
+#include <QUrl>
+
+#include <KLocalizedString>
+
 #include <taglib/tag.h>
-#include <klocalizedstring.h>
-#include <QIcon>
 #include <util/log.h>
 #include "mediaplayer.h"
 
@@ -42,7 +47,7 @@ namespace kt
           collection(collection),
           player(player)
     {
-        connect(player, SIGNAL(playing(MediaFileRef)), this, SLOT(onPlaying(MediaFileRef)));
+        connect(player, &MediaPlayer::playing, this, &PlayList::onPlaying);
     }
 
     PlayList::~PlayList()
@@ -81,8 +86,9 @@ namespace kt
 
     void PlayList::clear()
     {
+        beginResetModel();
         files.clear();
-        reset();
+        endResetModel();
     }
 
 
@@ -141,11 +147,11 @@ namespace kt
             {
             case 0:
             {
-                QString title = QString(tag->title().toCString(true));
+                QString title = TStringToQString(tag->title());
                 return title.isEmpty() ? QFileInfo(file.path()).fileName() : title;
             }
-            case 1: return QString(tag->artist().toCString(true));
-            case 2: return QString(tag->album().toCString(true));
+            case 1: return TStringToQString(tag->artist());
+            case 2: return TStringToQString(tag->album());
             case 3:
                 if (role == Qt::UserRole)
                 {
@@ -155,7 +161,7 @@ namespace kt
                 {
                     QTime t(0, 0);
                     t = t.addSecs(ref->audioProperties()->length());
-                    return t.toString("m:ss");
+                    return t.toString(QStringLiteral("m:ss"));
                 }
             case 4: return tag->year() == 0 ? QVariant() : tag->year();
             default: return QVariant();
@@ -165,7 +171,7 @@ namespace kt
         if (role == Qt::DecorationRole && index.column() == 0)
         {
             if (file == player->getCurrentSource())
-                return QIcon::fromTheme("arrow-right");
+                return QIcon::fromTheme(QStringLiteral("arrow-right"));
         }
 
         return QVariant();
@@ -216,7 +222,7 @@ namespace kt
     QStringList PlayList::mimeTypes() const
     {
         QStringList types;
-        types << "text/uri-list";
+        types << QStringLiteral("text/uri-list");
         return types;
     }
 
@@ -225,7 +231,7 @@ namespace kt
         dragged_rows.clear();
         QMimeData* data = new QMimeData();
         QList<QUrl> urls;
-        foreach (QModelIndex index, indexes)
+        for (QModelIndex index : indexes)
         {
             if (index.isValid() && index.column() == 0)
             {
@@ -254,9 +260,9 @@ namespace kt
             row = rowCount(QModelIndex());
 
         // Remove dragged rows if there are any
-        qSort(dragged_rows);
+        std::sort(dragged_rows.begin(), dragged_rows.end());
         int nr = 0;
-        foreach (int r, dragged_rows)
+        for (int r : qAsConst(dragged_rows))
         {
             r -= nr;
             removeRow(r);
@@ -265,7 +271,7 @@ namespace kt
 
         row -= nr;
 
-        foreach (const QUrl& url, urls)
+        for (const QUrl& url : qAsConst(urls))
         {
             PlayListItem item = qMakePair(collection->find(url.toLocalFile()), (TagLib::FileRef*)0);
             files.insert(row, item);
@@ -304,7 +310,7 @@ namespace kt
         }
 
         QTextStream out(&fptr);
-        foreach (const PlayListItem& f, files)
+        for (const PlayListItem& f : qAsConst(files))
             out << f.first.path() << endl;
     }
 
@@ -317,6 +323,7 @@ namespace kt
             return;
         }
 
+        beginResetModel();
         QTextStream in(&fptr);
         while (!in.atEnd())
         {
@@ -324,9 +331,7 @@ namespace kt
             TagLib::FileRef* ref = new TagLib::FileRef(QFile::encodeName(file).data(), true, TagLib::AudioProperties::Fast);
             files.append(qMakePair(collection->find(file), ref));
         }
-
-
-        emit reset();
+        endResetModel();
     }
 
     void PlayList::onPlaying(const kt::MediaFileRef& file)

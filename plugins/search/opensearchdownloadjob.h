@@ -18,11 +18,14 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTOPENSEARCHDOWNLOADJOB_H
 #define KTOPENSEARCHDOWNLOADJOB_H
 
-#include <kio/job.h>
+#include <KIO/Job>
 #include <QUrl>
+
+#include "proxy_helper.h"
 
 namespace kt
 {
@@ -35,11 +38,14 @@ namespace kt
     {
         Q_OBJECT
     public:
-        OpenSearchDownloadJob(const QUrl &url, const QString& dir);
-        virtual ~OpenSearchDownloadJob();
+        OpenSearchDownloadJob(const QUrl &url, const QString& dir, ProxyHelper *proxy);
+        ~OpenSearchDownloadJob();
 
         /// Start the job
         void start();
+
+        /// Start the job. Try to get file by default url
+        void startDefault();
 
         /// Get the directory
         QString directory() const {return dir;}
@@ -54,10 +60,12 @@ namespace kt
     private:
         bool checkLinkTagContent(const QString& content);
         QString htmlParam(const QString& param, const QString& content);
+        bool startXMLDownload(const QUrl& url);
 
     private:
         QUrl url;
         QString dir;
+        ProxyHelper* m_proxy;
     };
 
 }

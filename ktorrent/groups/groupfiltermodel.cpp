@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <groups/group.h>
 #include "groupfiltermodel.h"
 #include "view/viewmodel.h"
@@ -26,7 +27,7 @@ namespace kt
 {
 
     GroupFilterModel::GroupFilterModel(ViewModel* view_model, QObject* parent)
-        : QSortFilterProxyModel(parent), group(0), view_model(view_model)
+        : QSortFilterProxyModel(parent), group(nullptr), view_model(view_model)
     {
         setSourceModel(view_model);
     }

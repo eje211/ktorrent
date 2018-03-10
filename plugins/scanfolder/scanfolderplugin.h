@@ -15,8 +15,9 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.           *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSCANFOLDERPLUGIN_H
 #define KTSCANFOLDERPLUGIN_H
 
@@ -42,11 +43,11 @@ namespace kt
         Q_OBJECT
     public:
         ScanFolderPlugin(QObject* parent, const QVariantList& args);
-        virtual ~ScanFolderPlugin();
+        ~ScanFolderPlugin();
 
-        virtual void load();
-        virtual void unload();
-        virtual bool versionCheck(const QString& version) const;
+        void load() override;
+        void unload() override;
+        bool versionCheck(const QString& version) const override;
 
     public slots:
         void updateScanFolders();

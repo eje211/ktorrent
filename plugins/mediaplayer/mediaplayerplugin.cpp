@@ -18,10 +18,12 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "mediaplayerplugin.h"
 
-#include <klocalizedstring.h>
-#include <kgenericfactory.h>
+#include <KLocalizedString>
+#include <KPluginFactory>
+
 #include <util/log.h>
 #include <util/logsystemmanager.h>
 #include <interfaces/guiinterface.h>
@@ -49,9 +51,9 @@ namespace kt
     {
         LogSystemManager::instance().registerSystem(i18n("Media Player"), SYS_MPL);
         CoreInterface* core = getCore();
-        act = new MediaPlayerActivity(core, actionCollection(), 0);
+        act = new MediaPlayerActivity(core, actionCollection(), nullptr);
         getGUI()->addActivity(act);
-        setXMLFile("ktorrent_mediaplayerui.rc");
+        setXMLFile(QStringLiteral("ktorrent_mediaplayerui.rc"));
         act->enableActions(0);
         act->loadState(KSharedConfig::openConfig());
     }
@@ -63,14 +65,13 @@ namespace kt
         act->setVideoFullScreen(false);
         getGUI()->removeActivity(act);
         delete act;
-        act = 0;
+        act = nullptr;
     }
 
     bool MediaPlayerPlugin::versionCheck(const QString& version) const
     {
-        return version == KT_VERSION_MACRO;
+        return version == QStringLiteral(KT_VERSION_MACRO);
     }
-
 
 }
 

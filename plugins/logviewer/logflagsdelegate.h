@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTLOGFLAGSDELEGATE_H
 #define KTLOGFLAGSDELEGATE_H
 
@@ -34,12 +35,12 @@ namespace kt
         Q_OBJECT
     public:
         LogFlagsDelegate(QObject* parent);
-        virtual ~LogFlagsDelegate();
+        ~LogFlagsDelegate();
 
-        virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-        virtual void setEditorData(QWidget* editor, const QModelIndex& index) const;
-        virtual void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const;
-        virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+        QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+        void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     };
 
 }

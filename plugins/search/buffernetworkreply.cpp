@@ -19,8 +19,8 @@
  ***************************************************************************/
 
 #include "buffernetworkreply.h"
-#include <QTimer>
 #include <QByteArray>
+#include <QTimer>
 
 namespace kt
 {
@@ -35,7 +35,7 @@ namespace kt
         setHeader(QNetworkRequest::ContentTypeHeader, content_type);
         setHeader(QNetworkRequest::ContentLengthHeader, data.size());
         setAttribute(QNetworkRequest::HttpStatusCodeAttribute, 200);
-        setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, "OK");
+        setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, QStringLiteral("OK"));
 
         QTimer::singleShot(0, this, SIGNAL(readyRead()));
         QTimer::singleShot(0, this, SIGNAL(finished()));

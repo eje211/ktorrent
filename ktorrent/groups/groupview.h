@@ -17,11 +17,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTGROUPVIEW_H
 #define KTGROUPVIEW_H
 
 #include <QTreeWidget>
-#include <ksharedconfig.h>
+#include <KSharedConfig>
+
 #include "groupviewmodel.h"
 
 class QAction;
@@ -46,7 +48,7 @@ namespace kt
         Q_OBJECT
     public:
         GroupView(GroupManager* gman, View* view, Core* core, GUI* gui, QWidget* parent);
-        virtual ~GroupView();
+        ~GroupView();
 
         /// Save the status of the group view
         void saveState(KSharedConfigPtr cfg);
@@ -78,7 +80,7 @@ namespace kt
         void openTab(Group* g);
 
     private:
-        virtual void keyPressEvent(QKeyEvent* event);
+        void keyPressEvent(QKeyEvent* event) override;
 
     private:
         GUI* gui;

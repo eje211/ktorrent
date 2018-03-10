@@ -18,11 +18,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <kmimetype.h>
-#include <kdesktopfile.h>
-#include <kconfiggroup.h>
-#include <kross/core/manager.h>
-#include <kross/core/actioncollection.h>
+
+#include <QMimeDatabase>
+#include <QMimeType>
+
+#include <KConfigGroup>
+#include <KDesktopFile>
+#include <Kross/Core/Manager>
+#include <Kross/Core/ActionCollection>
+
 #include <util/fileops.h>
 #include <util/log.h>
 #include "script.h"
@@ -31,11 +35,11 @@ using namespace bt;
 
 namespace kt
 {
-    Script::Script(QObject* parent) : QObject(parent), action(0), executing(false), can_be_removed(true)
+    Script::Script(QObject* parent) : QObject(parent), action(nullptr), executing(false), can_be_removed(true)
     {
     }
 
-    Script::Script(const QString& file, QObject* parent) : QObject(parent), file(file), action(0), executing(false), can_be_removed(true)
+    Script::Script(const QString& file, QObject* parent) : QObject(parent), file(file), action(nullptr), executing(false), can_be_removed(true)
     {
     }
 
@@ -49,7 +53,7 @@ namespace kt
     {
         KDesktopFile df(dir + desktop_file);
         // check if everything is OK
-        if (df.readType().trimmed() != "KTorrentScript")
+        if (df.readType().trimmed() != QStringLiteral("KTorrentScript"))
             return false;
 
         info.name = df.readName();
@@ -79,18 +83,19 @@ namespace kt
         if (!bt::Exists(file) || action)
             return false;
 
-        KMimeType::Ptr mt = KMimeType::findByPath(file);
+        QMimeDatabase db;
+        QMimeType mt = db.mimeTypeForFile(file);
         QString name = QFileInfo(file).fileName();
         action = new Kross::Action(this, name);
         action->setText(name);
         action->setDescription(name);
         action->setFile(file);
-        action->setIconName(mt->iconName());
+        action->setIconName(mt.iconName());
         QString interpreter = Kross::Manager::self().interpreternameForFile(file);
         if (interpreter.isNull())
         {
             delete action;
-            action = 0;
+            action = nullptr;
             return false;
         }
         else
@@ -109,16 +114,16 @@ namespace kt
             return;
 
         // Call unload function if the script has one
-        if (action->functionNames().contains("unload"))
+        if (action->functionNames().contains(QStringLiteral("unload")))
         {
             QVariantList args;
-            action->callFunction("unload", args);
+            action->callFunction(QStringLiteral("unload"), args);
         }
 
         Kross::ActionCollection* col = Kross::Manager::self().actionCollection();
         col->removeAction(action->file());
         action->deleteLater();
-        action = 0;
+        action = nullptr;
         executing = false;
     }
 
@@ -134,12 +139,13 @@ namespace kt
 
     QString Script::iconName() const
     {
+        QMimeDatabase db;
         if (!info.icon.isEmpty())
             return info.icon;
         else if (action)
             return action->iconName();
         else
-            return KMimeType::findByPath(file)->iconName();
+            return db.mimeTypeForFile(file).iconName();
     }
 
     bool Script::hasConfigure() const
@@ -148,7 +154,7 @@ namespace kt
             return false;
 
         QStringList functions = action->functionNames();
-        return functions.contains("configure");
+        return functions.contains(QStringLiteral("configure"));
     }
 
     void Script::configure()
@@ -157,7 +163,7 @@ namespace kt
             return;
 
         QVariantList args;
-        action->callFunction("configure", args);
+        action->callFunction(QStringLiteral("configure"), args);
     }
 
 }

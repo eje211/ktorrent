@@ -20,18 +20,20 @@
 
 #include <config-ktcore.h>
 
-
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <qfile.h>
-#include <kfileitem.h>
-#include <klocalizedstring.h>
+
+#include <QFile>
+
+#include <KFileItem>
+#include <KLocalizedString>
+
 #include <util/error.h>
 #include <util/log.h>
 #include <torrent/globals.h>
@@ -40,7 +42,7 @@
 namespace bt
 {
 
-    MMapFile::MMapFile() : fptr(0), data(0), size(0), file_size(0), ptr(0), mode(QIODevice::ReadOnly)
+    MMapFile::MMapFile() : fptr(nullptr), data(0), size(0), file_size(0), ptr(0), mode(QIODevice::ReadOnly)
     {}
 
 
@@ -79,7 +81,7 @@ namespace bt
         if (!(fptr->open(mode)))
         {
             delete fptr;
-            fptr = 0;
+            fptr = nullptr;
             return false;
         }
 
@@ -115,7 +117,7 @@ namespace bt
         {
             fptr->close();
             delete fptr;
-            fptr = 0;
+            fptr = nullptr;
             return false;
         }
         ptr = 0;
@@ -274,7 +276,7 @@ namespace bt
 
     QString MMapFile::errorString() const
     {
-        return strerror(errno);
+        return QString::fromUtf8(strerror(errno));
     }
 
     Uint64 MMapFile::getSize() const
@@ -285,7 +287,7 @@ namespace bt
     Uint8* MMapFile::getData(Uint64 off)
     {
         if (off >= size)
-            return 0;
+            return nullptr;
         return &data[off];
     }
 }

@@ -19,10 +19,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 #ifndef KTTORRENTFILEMODEL_HH
+
 #define KTTORRENTFILEMODEL_HH
 
-#include <QByteArray>
 #include <QAbstractItemModel>
+#include <QByteArray>
+
 #include <util/constants.h>
 #include <ktcore_export.h>
 
@@ -132,7 +134,7 @@ namespace kt
         /// Are the file names editable
         bool fileNamesEditable() const {return file_names_editable;}
 
-        virtual Qt::ItemFlags flags(const QModelIndex& index) const;
+        Qt::ItemFlags flags(const QModelIndex& index) const override;
 
         virtual void filePercentageChanged(bt::TorrentFileInterface* file, float percentage);
         virtual void filePreviewChanged(bt::TorrentFileInterface* file, bool preview);

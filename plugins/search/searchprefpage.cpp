@@ -18,26 +18,24 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "searchprefpage.h"
 
-#include <QUrl>
-#include <QLineEdit>
-#include <QToolTip>
-#include <QFile>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QLabel>
 #include <QCheckBox>
-#include <QRadioButton>
+#include <QFile>
 #include <QInputDialog>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QToolTip>
+#include <QUrl>
 
-#include <klocalizedstring.h>
-
-#include <kiconloader.h>
-
-#include <kmessagebox.h>
-#include <kio/copyjob.h>
-#include <kio/jobuidelegate.h>
+#include <KIconLoader>
+#include <KLocalizedString>
+#include <KMessageBox>
+#include <KIO/CopyJob>
+#include <KIO/JobUiDelegate>
 
 #include <util/log.h>
 #include <util/constants.h>
@@ -60,17 +58,17 @@ namespace kt
         setupUi(this);
         m_engines->setModel(sl);
 
-        connect(m_add, SIGNAL(clicked()), this, SLOT(addClicked()));
-        connect(m_remove, SIGNAL(clicked()), this, SLOT(removeClicked()));
-        connect(m_add_default, SIGNAL(clicked()), this, SLOT(addDefaultClicked()));
-        connect(m_remove_all, SIGNAL(clicked()), this, SLOT(removeAllClicked()));
-        connect(m_clear_history, SIGNAL(clicked()), this, SLOT(clearHistory()));
+        connect(m_add, &QPushButton::clicked, this, &SearchPrefPage::addClicked);
+        connect(m_remove, &QPushButton::clicked, this, &SearchPrefPage::removeClicked);
+        connect(m_add_default, &QPushButton::clicked, this, &SearchPrefPage::addDefaultClicked);
+        connect(m_remove_all, &QPushButton::clicked, this, &SearchPrefPage::removeAllClicked);
+        connect(m_clear_history, &QPushButton::clicked, this, &SearchPrefPage::clearHistory);
         connect(m_engines->selectionModel(), SIGNAL(selectionChanged(const QItemSelection& , const QItemSelection&)),
                 this, SLOT(selectionChanged(const QItemSelection&, const QItemSelection&)));
-        connect(m_reset_default_action, SIGNAL(clicked()), this, SLOT(resetDefaultAction()));
+        connect(m_reset_default_action, &QPushButton::clicked, this, &SearchPrefPage::resetDefaultAction);
 
-        connect(kcfg_useCustomBrowser, SIGNAL(toggled(bool)), this, SLOT(customToggled(bool)));
-        connect(kcfg_openInExternal, SIGNAL(toggled(bool)), this, SLOT(openInExternalToggled(bool)));
+        connect(kcfg_useCustomBrowser, &QRadioButton::toggled, this, &SearchPrefPage::customToggled);
+        connect(kcfg_openInExternal, &QCheckBox::toggled, this, &SearchPrefPage::openInExternalToggled);
         QButtonGroup* bg = new QButtonGroup(this);
         bg->addButton(kcfg_useCustomBrowser);
         bg->addButton(kcfg_useDefaultBrowser);
@@ -117,7 +115,7 @@ namespace kt
             dir += QString::number(idx++);
         }
 
-        dir += '/';
+        dir += QLatin1Char('/');
 
         try
         {
@@ -129,8 +127,8 @@ namespace kt
             return;
         }
 
-        OpenSearchDownloadJob* j = new OpenSearchDownloadJob(url, dir);
-        connect(j, SIGNAL(result(KJob*)), this, SLOT(downloadJobFinished(KJob*)));
+        OpenSearchDownloadJob* j = new OpenSearchDownloadJob(url, dir, plugin->getProxy());
+        connect(j, &OpenSearchDownloadJob::result, this, &SearchPrefPage::downloadJobFinished);
         j->start();
     }
 
@@ -198,6 +196,7 @@ namespace kt
     void SearchPrefPage::openInExternalToggled(bool on)
     {
         kcfg_useCustomBrowser->setEnabled(on);
+        kcfg_useProxySettings->setEnabled(!on);
         kcfg_customBrowser->setEnabled(on && SearchPluginSettings::useCustomBrowser());
         kcfg_useDefaultBrowser->setEnabled(on);
     }
@@ -209,8 +208,7 @@ namespace kt
 
     void SearchPrefPage::resetDefaultAction()
     {
-        KMessageBox::enableMessage(":TorrentDownloadFinishedQuestion");
+        KMessageBox::enableMessage(QStringLiteral(":TorrentDownloadFinishedQuestion"));
     }
 
 }
-

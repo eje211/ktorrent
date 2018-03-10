@@ -17,6 +17,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTZEROCONFPLUGIN_H
 #define KTZEROCONFPLUGIN_H
 
@@ -39,11 +40,11 @@ namespace kt
         Q_OBJECT
     public:
         ZeroConfPlugin(QObject* parent, const QVariantList& args);
-        virtual ~ZeroConfPlugin();
+        ~ZeroConfPlugin();
 
-        virtual void load();
-        virtual void unload();
-        virtual bool versionCheck(const QString& version) const;
+        void load() override;
+        void unload() override;
+        bool versionCheck(const QString& version) const override;
 
     private slots:
         /**

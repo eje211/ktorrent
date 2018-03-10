@@ -18,12 +18,14 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTWEEKVIEW_H
 #define KTWEEKVIEW_H
 
-#include <QMap>
 #include <QGraphicsView>
+#include <QMap>
 #include <QMenu>
+
 #include <util/constants.h>
 
 
@@ -41,7 +43,7 @@ namespace kt
         Q_OBJECT
     public:
         WeekView(QWidget* parent);
-        virtual ~WeekView();
+        ~WeekView();
 
         /**
          * Set the current Schedule
@@ -92,12 +94,12 @@ namespace kt
          */
         void colorsChanged();
 
-    signals:
+    Q_SIGNALS:
         void selectionChanged();
         void editItem(ScheduleItem* item);
         void itemMoved(ScheduleItem* item, const QTime& start, const QTime& end, int start_day, int end_day);
 
-    private slots:
+    private Q_SLOTS:
         void onSelectionChanged();
         void showContextMenu(const QPoint& pos);
         void onDoubleClicked(QGraphicsItem* i);

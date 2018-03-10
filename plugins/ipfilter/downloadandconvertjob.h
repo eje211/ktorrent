@@ -18,10 +18,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTDOWNLOADANDCONVERTJOB_H
 #define KTDOWNLOADANDCONVERTJOB_H
 
-#include <kio/job.h>
+#include <KIO/Job>
 
 namespace kt
 {
@@ -39,23 +40,23 @@ namespace kt
             Verbose, Quietly
         };
         DownloadAndConvertJob(const QUrl& url, Mode mode);
-        virtual ~DownloadAndConvertJob();
+        ~DownloadAndConvertJob();
 
         enum ErrorCode
         {
             CANCELED = 100, DOWNLOAD_FAILED, UNZIP_FAILED, MOVE_FAILED, BACKUP_FAILED
         };
 
-        virtual void kill(KJob::KillVerbosity v);
+        void kill(KJob::KillVerbosity v);
         void start();
 
         bool isAutoUpdate() const {return mode == Quietly;}
 
-    signals:
+    Q_SIGNALS:
         /// Emitted when the job needs to show a notification
         void notification(const QString& msg);
 
-    private slots:
+    private Q_SLOTS:
         void downloadFileFinished(KJob*);
         void convert(KJob*);
         void extract(KJob*);

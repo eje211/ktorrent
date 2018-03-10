@@ -18,9 +18,11 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "chunkdownloadmodel.h"
 
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+
 #include <interfaces/torrentfileinterface.h>
 #include <interfaces/chunkdownloadinterface.h>
 #include <util/functions.h>
@@ -53,7 +55,7 @@ namespace kt
         switch (col)
         {
         case 0: return stats.chunk_index;
-        case 1: return QString("%1 / %2").arg(stats.pieces_downloaded).arg(stats.total_pieces);
+        case 1: return QStringLiteral("%1 / %2").arg(stats.pieces_downloaded).arg(stats.total_pieces);
         case 2: return stats.current_peer_id;
         case 3: return BytesPerSecToString(stats.download_speed);
         case 4: return files;
@@ -104,7 +106,7 @@ namespace kt
                 if (stats.chunk_index >= tf.getFirstChunk() && stats.chunk_index <= tf.getLastChunk())
                 {
                     if (n > 0)
-                        files += ", ";
+                        files += QStringLiteral(", ");
 
                     files += tf.getUserModifiedPath();
                     n++;
@@ -134,17 +136,19 @@ namespace kt
 
     void ChunkDownloadModel::changeTC(bt::TorrentInterface* tc)
     {
+        beginResetModel();
         qDeleteAll(items);
         items.clear();
+        endResetModel();
         this->tc = tc;
-        reset();
     }
 
     void ChunkDownloadModel::clear()
     {
+        beginResetModel();
         qDeleteAll(items);
         items.clear();
-        reset();
+        endResetModel();
     }
 
     void ChunkDownloadModel::update()

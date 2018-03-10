@@ -17,9 +17,9 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef SCANFOLDER_H
 #define SCANFOLDER_H
-
 
 #include <QObject>
 #include <QUrl>
@@ -46,7 +46,7 @@ namespace kt
          * @param dir The directory
          */
         ScanFolder(ScanThread* scanner, const QUrl &dir, bool recursive);
-        virtual ~ScanFolder();
+        ~ScanFolder();
 
         /**
          * Set if the ScanFolder needs to scan subdirectories recursively

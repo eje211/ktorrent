@@ -17,13 +17,16 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSEARCHPLUGIN_H
 #define KTSEARCHPLUGIN_H
 
 #include <QList>
+
 #include <interfaces/plugin.h>
 #include <interfaces/guiinterface.h>
 #include "searchenginelist.h"
+#include "proxy_helper.h"
 
 namespace kt
 {
@@ -38,23 +41,26 @@ namespace kt
         Q_OBJECT
     public:
         SearchPlugin(QObject* parent, const QVariantList& args);
-        virtual ~SearchPlugin();
+        ~SearchPlugin();
 
-        virtual void load();
-        virtual void unload();
-        virtual bool versionCheck(const QString& version) const;
+        void load() override;
+        void unload() override;
+        bool versionCheck(const QString& version) const override;
 
         SearchEngineList* getSearchEngineList() const {return engines;}
         SearchActivity* getSearchActivity() const {return activity;}
+        ProxyHelper* getProxy() const {return proxy;}
 
-    private slots:
         void search(const QString& text, int engine, bool external);
+
+    private Q_SLOTS:
         void preferencesUpdated();
 
     private:
         SearchActivity* activity;
         SearchPrefPage* pref;
         SearchEngineList* engines;
+        ProxyHelper* proxy;
     };
 
 }

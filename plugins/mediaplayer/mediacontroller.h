@@ -23,9 +23,10 @@
 #define KT_MEDIACONTROLLER_H
 
 #include <QLabel>
+#include <KActionCollection>
 #include <Phonon/SeekSlider>
 #include <Phonon/VolumeSlider>
-#include <KActionCollection>
+
 #include "mediafile.h"
 #include "ui_mediacontroller.h"
 
@@ -42,7 +43,7 @@ namespace kt
         Q_OBJECT
     public:
         MediaController(MediaPlayer* player, KActionCollection* ac, QWidget* parent = 0);
-        virtual ~MediaController();
+        ~MediaController();
 
 
     private slots:

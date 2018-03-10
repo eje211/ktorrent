@@ -18,13 +18,17 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include "torrentfiletreemodel.h"
 
-#include <klocalizedstring.h>
+#include <KLocalizedString>
+
 #include <QIcon>
-#include <QDebug>
-#include <QTreeView>
+#include <QMimeDatabase>
+#include <QMimeType>
 #include <QSortFilterProxyModel>
+#include <QTreeView>
+
 #include <bcodec/bdecoder.h>
 #include <bcodec/bencoder.h>
 #include <bcodec/bnode.h>
@@ -33,8 +37,6 @@
 #include <util/functions.h>
 #include <util/log.h>
 #include <util/error.h>
-#include <QMimeDatabase>
-#include <QMimeType>
 
 using namespace bt;
 
@@ -49,7 +51,7 @@ namespace kt
     }
 
     TorrentFileTreeModel::Node::Node(Node* parent, const QString& name, const bt::Uint32 total_chunks)
-        : parent(parent), file(0), name(name), size(0), chunks(total_chunks), chunks_set(false), percentage(0.0f)
+        : parent(parent), file(nullptr), name(name), size(0), chunks(total_chunks), chunks_set(false), percentage(0.0f)
     {
         chunks.setAll(false);
     }
@@ -70,7 +72,7 @@ namespace kt
         else
         {
             QString subdir = path.left(p);
-            foreach (Node* n, children)
+            for (Node* n : qAsConst(children))
             {
                 if (n->name == subdir)
                 {
@@ -101,7 +103,7 @@ namespace kt
         if (!file)
         {
             // directory
-            foreach (Node* n, children)
+            for (Node* n : qAsConst(children))
                 size += n->fileSize(tc);
         }
         else
@@ -118,7 +120,7 @@ namespace kt
 
         if (!file)
         {
-            foreach (Node* n, children)
+            for (Node* n : qAsConst(children))
             {
                 n->fillChunks();
                 chunks.orBitSet(n->chunks);
@@ -201,7 +203,7 @@ namespace kt
                 percentage = 100.0f * ((float)tmp.numOnBits() / (float)chunks.numOnBits());
             }
 
-            foreach (Node* n, children)
+            for (Node* n : qAsConst(children))
                 n->initPercentage(tc, havechunks); // update the percentage of the children
         }
     }
@@ -213,7 +215,7 @@ namespace kt
         if (!file)
         {
             // directory
-            foreach (Node* n, children)
+            for (Node* n : qAsConst(children))
                 s += n->bytesToDownload(tc);
         }
         else
@@ -231,7 +233,7 @@ namespace kt
             bool found_checked = false;
             bool found_unchecked = false;
             // directory
-            foreach (Node* n, children)
+            for (Node* n : qAsConst(children))
             {
                 Qt::CheckState s = n->checkState(tc);
                 if (s == Qt::PartiallyChecked)
@@ -262,7 +264,7 @@ namespace kt
         enc->write((Uint32)(tv->isExpanded(pm->mapFromSource(index)) ? 1 : 0));
 
         int idx = 0;
-        foreach (Node* n, children)
+        for (Node* n : qAsConst(children))
         {
             if (!n->file)
             {
@@ -289,7 +291,7 @@ namespace kt
             tv->setExpanded(pm->mapFromSource(index), v->data().toInt() == 1);
 
         int idx = 0;
-        foreach (Node* n, children)
+        for (Node* n : qAsConst(children))
         {
             if (!n->file)
             {
@@ -312,14 +314,14 @@ namespace kt
     }
 
     TorrentFileTreeModel::TorrentFileTreeModel(bt::TorrentInterface* tc, DeselectMode mode, QObject* parent)
-        : TorrentFileModel(tc, mode, parent), root(0), emit_check_state_change(true)
+        : TorrentFileModel(tc, mode, parent), root(nullptr), emit_check_state_change(true)
     {
         if (tc)
         {
             if (tc->getStats().multi_file_torrent)
                 constructTree();
             else
-                root = new Node(0, tc->getUserModifiedFileName(), tc->getStats().total_chunks);
+                root = new Node(nullptr, tc->getUserModifiedFileName(), tc->getStats().total_chunks);
         }
     }
 
@@ -334,13 +336,13 @@ namespace kt
         beginResetModel();
         this->tc = tc;
         delete root;
-        root = 0;
+        root = nullptr;
         if (tc)
         {
             if (tc->getStats().multi_file_torrent)
                 constructTree();
             else
-                root = new Node(0, tc->getUserModifiedFileName(), tc->getStats().total_chunks);
+                root = new Node(nullptr, tc->getUserModifiedFileName(), tc->getStats().total_chunks);
         }
         endResetModel();
     }
@@ -350,7 +352,7 @@ namespace kt
     {
         bt::Uint32 num_chunks = tc->getStats().total_chunks;
         if (!root)
-            root = new Node(0, tc->getUserModifiedFileName(), num_chunks);
+            root = new Node(nullptr, tc->getUserModifiedFileName(), num_chunks);
 
         for (Uint32 i = 0; i < tc->getNumFiles(); i++)
         {
@@ -363,7 +365,7 @@ namespace kt
     {
         beginResetModel();
         delete root;
-        root = 0;
+        root = nullptr;
         constructTree();
         endResetModel();
     }
@@ -380,7 +382,7 @@ namespace kt
         return n->children.count();
     }
 
-    int TorrentFileTreeModel::columnCount(const QModelIndex& parent) const
+    int TorrentFileTreeModel::columnCount(const QModelIndex&) const
     {
         return 2;
     }
@@ -603,7 +605,7 @@ namespace kt
             else
             {
                 // Check if there is a sibling with the same name
-                foreach (Node* sibling, n->parent->children)
+                for (const Node* sibling : qAsConst(n->parent->children))
                 {
                     if (sibling != n && sibling->name == name)
                         return false;
@@ -619,7 +621,7 @@ namespace kt
         else
         {
             // Check if there is a sibling with the same name
-            foreach (Node* sibling, n->parent->children)
+            for (const Node* sibling : qAsConst(n->parent->children))
             {
                 if (sibling != n && sibling->name == name)
                     return false;
@@ -776,7 +778,7 @@ namespace kt
         if (!tc)
             return;
 
-        foreach (const QModelIndex& idx, indexes)
+        for (const QModelIndex& idx : indexes)
         {
             Node* n = (Node*)idx.internalPointer();
             if (!n)
@@ -786,4 +788,3 @@ namespace kt
         }
     }
 }
-

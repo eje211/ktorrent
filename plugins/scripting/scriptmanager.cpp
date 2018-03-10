@@ -18,17 +18,22 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <QAction>
-#include <QVBoxLayout>
-#include <util/log.h>
-#include <KRun>
-#include <klocalizedstring.h>
-#include <kdialog.h>
-#include <kiconloader.h>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QMenu>
-#include <QAction>
+#include <QPushButton>
+#include <QVBoxLayout>
+
 #include <KActionCollection>
-#include <kross/core/manager.h>
+#include <KConfigGroup>
+#include <KIconLoader>
+#include <KLocalizedString>
+#include <Kross/Core/Manager>
+#include <KRun>
+
+#include <util/log.h>
 #include "scriptmanager.h"
 #include "scriptmodel.h"
 #include "script.h"
@@ -42,9 +47,9 @@ namespace kt
 {
 
     ScriptManager::ScriptManager(ScriptModel* model, QWidget* parent)
-        : Activity(i18n("Scripts"), "text-x-script", 40, parent), model(model)
+        : Activity(i18n("Scripts"), QStringLiteral("text-x-script"), 40, parent), model(model)
     {
-        setXMLGUIFile("ktscriptingpluginui.rc");
+        setXMLGUIFile(QStringLiteral("ktorrent_scriptingui.rc"));
         setupActions();
         setToolTip(i18n("Widget to start, stop and manage scripts"));
         QVBoxLayout* layout = new QVBoxLayout(this);
@@ -52,7 +57,8 @@ namespace kt
         layout->setMargin(0);
 
         view = new QListView(this);
-        view->setItemDelegate(new ScriptDelegate(view));
+        delegate = new ScriptDelegate(view);
+        view->setItemDelegate(delegate);
         view->setAlternatingRowColors(true);
         layout->addWidget(view);
 
@@ -64,11 +70,9 @@ namespace kt
         connect(view->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection)),
                 this, SLOT(onSelectionChanged(const QItemSelection&, const QItemSelection)));
 
-        connect(view, SIGNAL(customContextMenuRequested(const QPoint&)),
-                this, SLOT(showContextMenu(const QPoint&)));
+        connect(view, &QListView::customContextMenuRequested, this, &ScriptManager::showContextMenu);
 
-        connect(model, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
-                this, SLOT(dataChanged(const QModelIndex&, const QModelIndex&)));
+        connect(model, &ScriptModel::dataChanged, this, &ScriptManager::dataChanged);
 
         add_script->setEnabled(true);
         remove_script->setEnabled(false);
@@ -82,6 +86,7 @@ namespace kt
 
     ScriptManager::~ScriptManager()
     {
+        delete delegate;
     }
 
 
@@ -89,33 +94,33 @@ namespace kt
     {
         KActionCollection* ac = part()->actionCollection();
 
-        add_script = new QAction(QIcon::fromTheme("list-add"), i18n("Add Script"), this);
-        connect(add_script, SIGNAL(triggered()), this, SIGNAL(addScript()));
-        ac->addAction("add_script", add_script);
+        add_script = new QAction(QIcon::fromTheme(QStringLiteral("list-add")), i18n("Add Script"), this);
+        connect(add_script, &QAction::triggered, this, &ScriptManager::addScript);
+        ac->addAction(QStringLiteral("add_script"), add_script);
 
-        remove_script = new QAction(QIcon::fromTheme("list-remove"), i18n("Remove Script"), this);
-        connect(remove_script, SIGNAL(triggered()), this, SIGNAL(removeScript()));
-        ac->addAction("remove_script", remove_script);
+        remove_script = new QAction(QIcon::fromTheme(QStringLiteral("list-remove")), i18n("Remove Script"), this);
+        connect(remove_script, &QAction::triggered, this, &ScriptManager::removeScript);
+        ac->addAction(QStringLiteral("remove_script"), remove_script);
 
-        run_script = new QAction(QIcon::fromTheme("system-run"), i18n("Run Script"), this);
-        connect(run_script, SIGNAL(triggered()), this, SLOT(runScript()));
-        ac->addAction("run_script", run_script);
+        run_script = new QAction(QIcon::fromTheme(QStringLiteral("system-run")), i18n("Run Script"), this);
+        connect(run_script, &QAction::triggered, this, &ScriptManager::runScript);
+        ac->addAction(QStringLiteral("run_script"), run_script);
 
-        stop_script = new QAction(QIcon::fromTheme("media-playback-stop"), i18n("Stop Script"), this);
-        connect(stop_script, SIGNAL(triggered()), this, SLOT(stopScript()));
-        ac->addAction("stop_script", stop_script);
+        stop_script = new QAction(QIcon::fromTheme(QStringLiteral("media-playback-stop")), i18n("Stop Script"), this);
+        connect(stop_script, &QAction::triggered, this, &ScriptManager::stopScript);
+        ac->addAction(QStringLiteral("stop_script"), stop_script);
 
-        edit_script = new QAction(QIcon::fromTheme("document-open"), i18n("Edit Script"), this);
-        connect(edit_script, SIGNAL(triggered()), this, SLOT(editScript()));
-        ac->addAction("edit_script", edit_script);
+        edit_script = new QAction(QIcon::fromTheme(QStringLiteral("document-open")), i18n("Edit Script"), this);
+        connect(edit_script, &QAction::triggered, this, &ScriptManager::editScript);
+        ac->addAction(QStringLiteral("edit_script"), edit_script);
 
-        properties = new QAction(QIcon::fromTheme("dialog-information"), i18n("Properties"), this);
-        connect(properties, SIGNAL(triggered()), this, SLOT(showProperties()));
-        ac->addAction("script_properties", properties);
+        properties = new QAction(QIcon::fromTheme(QStringLiteral("dialog-information")), i18n("Properties"), this);
+        connect(properties, &QAction::triggered, this, static_cast<void (ScriptManager::*)()>(&ScriptManager::showProperties));
+        ac->addAction(QStringLiteral("script_properties"), properties);
 
-        configure_script = new QAction(QIcon::fromTheme("preferences-other"), i18n("Configure"), this);
-        connect(configure_script, SIGNAL(triggered()), this, SLOT(configureScript()));
-        ac->addAction("configure_script", configure_script);
+        configure_script = new QAction(QIcon::fromTheme(QStringLiteral("preferences-other")), i18n("Configure"), this);
+        connect(configure_script, &QAction::triggered, this, &ScriptManager::configureScript);
+        ac->addAction(QStringLiteral("configure_script"), configure_script);
     }
 
     void ScriptManager::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
@@ -164,7 +169,7 @@ namespace kt
 
     void ScriptManager::showContextMenu(const QPoint& p)
     {
-        QMenu* m = part()->menu("ScriptingMenu");
+        QMenu* m = part()->menu(QStringLiteral("ScriptingMenu"));
         if (m)
             m->popup(view->viewport()->mapToGlobal(p));
     }
@@ -226,10 +231,19 @@ namespace kt
     void ScriptManager::showProperties(kt::Script* s)
     {
         Ui_ScriptProperties prop;
-        KDialog* dialog = new KDialog(this);
-        dialog->setButtons(KDialog::Ok);
+        QDialog* dialog = new QDialog(this);
+        QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
+        QWidget *mainWidget = new QWidget(this);
+        QVBoxLayout *mainLayout = new QVBoxLayout;
+        dialog->setLayout(mainLayout);
+        mainLayout->addWidget(mainWidget);
+        QPushButton *okButton = buttonBox->button(QDialogButtonBox::Ok);
+        okButton->setDefault(true);
+        okButton->setShortcut(Qt::CTRL | Qt::Key_Return);
+        dialog->connect(okButton, &QPushButton::clicked, dialog, &QDialog::accept);
+        mainLayout->addWidget(buttonBox);
         dialog->setWindowTitle(i18n("Script Properties"));
-        prop.setupUi(dialog->mainWidget());
+        prop.setupUi(mainWidget);
         prop.m_icon->setPixmap(DesktopIcon(s->iconName()));
         prop.m_name->setText(s->name());
         prop.m_description->setText(s->metaInfo().comment);

@@ -20,12 +20,14 @@
  ***************************************************************************/
 #include "queuemanagermodel.h"
 
-#include <QColor>
-#include <QMimeData>
-#include <QIcon>
 #include <QApplication>
+#include <QColor>
+#include <QIcon>
 #include <QLocale>
-#include <klocalizedstring.h>
+#include <QMimeData>
+
+#include <KLocalizedString>
+
 #include <util/log.h>
 #include <util/functions.h>
 #include <torrent/queuemanager.h>
@@ -46,12 +48,11 @@ namespace kt
           show_downloads(true),
           show_not_queud(true)
     {
-        connect(qman, SIGNAL(queueOrdered()), this, SLOT(onQueueOrdered()));
+        connect(qman, &QueueManager::queueOrdered, this, &QueueManagerModel::onQueueOrdered);
         for (QueueManager::iterator i = qman->begin(); i != qman->end(); i++)
         {
             bt::TorrentInterface* tc = *i;
-            connect(tc, SIGNAL(statusChanged(bt::TorrentInterface*)),
-                    this, SLOT(onTorrentStatusChanged(bt::TorrentInterface*)));
+            connect(tc, &bt::TorrentInterface::statusChanged, this, &QueueManagerModel::onTorrentStatusChanged);
 
             if (visible(tc))
             {
@@ -129,7 +130,7 @@ namespace kt
 
     void QueueManagerModel::onTorrentAdded(bt::TorrentInterface* tc)
     {
-        connect(tc, SIGNAL(statusChanged(bt::TorrentInterface*)), this, SLOT(onTorrentStatusChanged(bt::TorrentInterface*)));
+        connect(tc, &bt::TorrentInterface::statusChanged, this, &QueueManagerModel::onTorrentStatusChanged);
     }
 
     void QueueManagerModel::onTorrentRemoved(bt::TorrentInterface* tc)
@@ -266,9 +267,9 @@ namespace kt
         else if (role == Qt::DecorationRole && index.column() == 1)
         {
             if (!tc->getStats().completed)
-                return QIcon::fromTheme("arrow-down");
+                return QIcon::fromTheme(QStringLiteral("arrow-down"));
             else
-                return QIcon::fromTheme("arrow-up");
+                return QIcon::fromTheme(QStringLiteral("arrow-up"));
         }
         else if (role == Qt::FontRole && !search_text.isEmpty())
         {
@@ -300,7 +301,7 @@ namespace kt
     QStringList QueueManagerModel::mimeTypes() const
     {
         QStringList types;
-        types << "application/vnd.text.list";
+        types << QStringLiteral("application/vnd.text.list");
         return types;
     }
 
@@ -311,13 +312,13 @@ namespace kt
 
         dragged_items.clear();
 
-        foreach (const QModelIndex& index, indexes)
+        for (const QModelIndex& index : indexes)
         {
             if (index.isValid() && !dragged_items.contains(index.row()))
                 dragged_items.append(index.row());
         }
 
-        mimeData->setData("application/vnd.text.list", "stuff");
+        mimeData->setData(QStringLiteral("application/vnd.text.list"), QByteArrayLiteral("stuff"));
         return mimeData;
     }
 
@@ -327,7 +328,7 @@ namespace kt
         if (action == Qt::IgnoreAction)
             return true;
 
-        if (!data->hasFormat("application/vnd.text.list"))
+        if (!data->hasFormat(QStringLiteral("application/vnd.text.list")))
             return false;
 
         int begin_row = row;
@@ -370,7 +371,7 @@ namespace kt
         updatePriorities();
         // reorder the queue
         qman->orderQueue();
-        reset();
+        endResetModel();
         return true;
     }
 
@@ -404,7 +405,7 @@ namespace kt
         //dumpQueue();
         // reorder the queue
         qman->orderQueue();
-        reset();
+        endResetModel();
     }
 
     void QueueManagerModel::moveDown(int row, int count)
@@ -421,7 +422,7 @@ namespace kt
         //dumpQueue();
         // reorder the queue
         qman->orderQueue();
-        reset();
+        endResetModel();
     }
 
     void QueueManagerModel::moveTop(int row, int count)
@@ -442,7 +443,7 @@ namespace kt
         //dumpQueue();
         // reorder the queue
         qman->orderQueue();
-        reset();
+        endResetModel();
     }
 
     void QueueManagerModel::moveBottom(int row, int count)
@@ -463,7 +464,7 @@ namespace kt
         //dumpQueue();
         // reorder the queue
         qman->orderQueue();
-        reset();
+        endResetModel();
     }
 
     void QueueManagerModel::dumpQueue()
@@ -522,7 +523,7 @@ namespace kt
         search_text = text;
         if (text.isEmpty())
         {
-            reset();
+            endResetModel();
             return QModelIndex();
         }
 
@@ -532,13 +533,13 @@ namespace kt
             bt::TorrentInterface* tc = i.tc;
             if (tc->getDisplayName().contains(text, Qt::CaseInsensitive))
             {
-                reset();
+                endResetModel();
                 return index(idx, 0);
             }
             idx++;
         }
 
-        reset();
+        endResetModel();
         return QModelIndex();
     }
 

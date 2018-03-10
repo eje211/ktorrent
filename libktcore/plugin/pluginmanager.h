@@ -15,18 +15,21 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTPLUGINMANAGER_H
 #define KTPLUGINMANAGER_H
 
-#include <qlist.h>
+#include <QList>
+#include <QStringList>
+
+#include <KPluginInfo>
+#include <KPluginMetaData>
+
 #include <util/ptrmap.h>
 #include <interfaces/plugin.h>
-#include <qstringlist.h>
 #include <ktcore_export.h>
-#include <kplugininfo.h>
-#include <kpluginmetadata.h>
 
 namespace kt
 {
@@ -51,7 +54,7 @@ namespace kt
 
     public:
         PluginManager(CoreInterface* core, GUIInterface* gui);
-        virtual ~PluginManager();
+        ~PluginManager();
 
 
         /**

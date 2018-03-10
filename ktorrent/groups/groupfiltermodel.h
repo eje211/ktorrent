@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTGROUPFILTERMODEL_H
 #define KTGROUPFILTERMODEL_H
 
@@ -36,10 +37,10 @@ namespace kt
         Q_OBJECT
     public:
         GroupFilterModel(ViewModel* view_model, QObject* parent);
-        virtual ~GroupFilterModel();
+        ~GroupFilterModel();
 
-        virtual bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const;
-        virtual bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
+        bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;
+        bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 
         /**
          * Set the group to filter

@@ -17,13 +17,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef KTSEARCHENGINELIST_H
 #define KTSEARCHENGINELIST_H
 
-#include <QList>
 #include <QAbstractListModel>
+#include <QList>
 #include <util/constants.h>
 #include "searchengine.h"
+#include "proxy_helper.h"
 
 namespace kt
 {
@@ -39,10 +41,11 @@ namespace kt
         QList<SearchEngine*> engines;
         QList<QUrl> default_opensearch_urls;
         QList<QUrl> default_urls;
+        ProxyHelper* m_proxy;
         QString data_dir;
     public:
-        SearchEngineList(const QString& data_dir);
-        virtual ~SearchEngineList();
+        SearchEngineList(ProxyHelper* proxy, const QString& data_dir);
+        ~SearchEngineList();
 
         /// Load all engines
         void loadEngines();
@@ -56,10 +59,10 @@ namespace kt
         /// Get the number of engines
         bt::Uint32 getNumEngines() const {return engines.count();}
 
-        virtual int rowCount(const QModelIndex& parent) const;
-        virtual QVariant data(const QModelIndex& index, int role) const;
-        virtual bool insertRows(int row, int count, const QModelIndex& parent);
-        virtual bool removeRows(int row, int count, const QModelIndex& parent);
+        int rowCount(const QModelIndex& parent) const override;
+        QVariant data(const QModelIndex& index, int role) const override;
+        bool insertRows(int row, int count, const QModelIndex& parent) override;
+        bool removeRows(int row, int count, const QModelIndex& parent) override;
 
         /**
          * Remove all engines in a list

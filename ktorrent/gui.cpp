@@ -19,32 +19,34 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
-#include <QTimer>
+#include <QAction>
 #include <QClipboard>
 #include <QDesktopWidget>
-#include <QAction>
 #include <QMenu>
 #include <QMenuBar>
 #include <QPushButton>
-#include <kconfig.h>
-#include <ktoggleaction.h>
-#include <kactioncollection.h>
-#include <kmessagebox.h>
-#include <kshortcutsdialog.h>
-#include <kedittoolbar.h>
-#include <kstandardaction.h>
-#include <kfilewidget.h>
-#include <krecentdirs.h>
-#include <kxmlguifactory.h>
+#include <QTimer>
+
+#include <KActionCollection>
+#include <KConfig>
+#include <KEditToolBar>
+#include <KFileWidget>
+#include <KIO/Job>
+#include <KIO/JobUiDelegate>
+#include <KMessageBox>
 #include <KNotifyConfigWidget>
-#include <kio/jobclasses.h>
-#include <kio/jobuidelegate.h>
-#include <kparts/partmanager.h>
+#include <KParts/PartManager>
+#include <KRecentDirs>
+#include <KShortcutsDialog>
+#include <KStandardAction>
+#include <KToggleAction>
+#include <KXMLGUIFactory>
 
 #include <interfaces/torrentinterface.h>
 #include <torrent/queuemanager.h>
 #include <torrent/torrentcontrol.h>
 #include <util/log.h>
+#include <util/functions.h>
 #include <util/timer.h>
 #include <util/error.h>
 #include <dht/dhtbase.h>
@@ -75,7 +77,7 @@
 
 namespace kt
 {
-    GUI::GUI() : core(0), pref_dlg(0)
+    GUI::GUI() : core(nullptr), pref_dlg(nullptr)
     {
         //Marker markk("GUI::GUI()");
         part_manager = new KParts::PartManager(this);
@@ -88,7 +90,7 @@ namespace kt
         central = new CentralWidget(this);
         setCentralWidget(central);
         connect(central, &CentralWidget::changeActivity, this, &GUI::setCurrentActivity);
-        torrent_activity = new TorrentActivity(core, this, 0);
+        torrent_activity = new TorrentActivity(core, this, nullptr);
 
         status_bar = new kt::StatusBar(this);
         setStatusBar(status_bar);
@@ -134,7 +136,7 @@ namespace kt
         if (e->type() == QEvent::DeferredDelete)
         {
             //HACK to prevent ktorrent from crashing on logout/shotdown (when launched e.g. via alt+f2)
-            delete core; core = 0;
+            delete core; core = nullptr;
             return true;
         }
 
@@ -152,20 +154,20 @@ namespace kt
 
     void GUI::addActivity(Activity* act)
     {
-        unplugActionList("activities_list");
+        unplugActionList(QStringLiteral("activities_list"));
         central->addActivity(act);
         if (act->part())
             part_manager->addPart(act->part(), false);
-        plugActionList("activities_list", central->activitySwitchingActions());
+        plugActionList(QStringLiteral("activities_list"), central->activitySwitchingActions());
     }
 
     void GUI::removeActivity(Activity* act)
     {
-        unplugActionList("activities_list");
+        unplugActionList(QStringLiteral("activities_list"));
         central->removeActivity(act);
         if (act->part())
             part_manager->removePart(act->part());
-        plugActionList("activities_list", central->activitySwitchingActions());
+        plugActionList(QStringLiteral("activities_list"), central->activitySwitchingActions());
     }
 
     void GUI::setCurrentActivity(Activity* act)
@@ -176,9 +178,9 @@ namespace kt
 
     void GUI::activePartChanged(KParts::Part* p)
     {
-        unplugActionList("activities_list");
+        unplugActionList(QStringLiteral("activities_list"));
         createGUI(p);
-        plugActionList("activities_list", central->activitySwitchingActions());
+        plugActionList(QStringLiteral("activities_list"), central->activitySwitchingActions());
     }
 
     void GUI::addPrefPage(PrefPageInterface* page)
@@ -205,7 +207,7 @@ namespace kt
 
     void GUI::mergePluginGui(Plugin* p)
     {
-        if (p->parentPart() == "ktorrent")
+        if (p->parentPart() == QStringLiteral("ktorrent"))
         {
             guiFactory()->addClient(p);
         }
@@ -225,7 +227,7 @@ namespace kt
 
     void GUI::removePluginGui(Plugin* p)
     {
-        if (p->parentPart() == "ktorrent")
+        if (p->parentPart() == QStringLiteral("ktorrent"))
         {
             guiFactory()->removeClient(p);
         }
@@ -253,7 +255,7 @@ namespace kt
     void GUI::errorMsg(KIO::Job* j)
     {
         if (j->error())
-            j->ui()->showErrorMessage();
+            j->uiDelegate()->showErrorMessage();
     }
 
     void GUI::infoMsg(const QString& info)
@@ -369,8 +371,8 @@ namespace kt
         dlg.exec();
 
         // Replug action list
-        unplugActionList("activities_list");
-        plugActionList("activities_list", central->activitySwitchingActions());
+        unplugActionList(QStringLiteral("activities_list"));
+        plugActionList(QStringLiteral("activities_list"), central->activitySwitchingActions());
     }
 
     void GUI::newToolBarConfig() // This is called when OK, Apply or Defaults is clicked
@@ -421,7 +423,7 @@ namespace kt
         ac->addAction(QStringLiteral("ipfilter_action"), ipfilter_action);
         ac->setDefaultShortcut(ipfilter_action, QKeySequence(Qt::CTRL + Qt::Key_I));
 
-        import_action = new QAction(QIcon::fromTheme("document-import"), i18n("Import Torrent"), this);
+        import_action = new QAction(QIcon::fromTheme(QStringLiteral("document-import")), i18n("Import Torrent"), this);
         import_action->setToolTip(i18n("Import a torrent"));
         connect(import_action, &QAction::triggered, this, &GUI::import);
         ac->addAction(QStringLiteral("import"), import_action);
@@ -443,6 +445,15 @@ namespace kt
             status_bar->updateSpeed(stats.upload_speed, stats.download_speed);
             status_bar->updateTransfer(stats.bytes_uploaded, stats.bytes_downloaded);
             status_bar->updateDHTStatus(Globals::instance().getDHT().isRunning(), Globals::instance().getDHT().getStats());
+
+            //All speed to Window status bar
+            if(Settings::showTotalSpeedInTitle())
+            {
+                QString down_up_speed = QString(i18n("D: %1 | U: %2")).arg(BytesPerSecToString((double)stats.download_speed)).arg(BytesPerSecToString((double)stats.upload_speed));
+                setCaption(down_up_speed);
+            }
+            else
+                setCaption(core->getGroupManager()->allGroup()->groupName());
 
             tray_icon->updateStats(stats);
             core->updateGuiPlugins();
@@ -469,7 +480,7 @@ namespace kt
 
     void GUI::loadState(KSharedConfigPtr cfg)
     {
-        setAutoSaveSettings("MainWindow", true);
+        setAutoSaveSettings(QStringLiteral("MainWindow"), true);
         central->loadState(cfg);
         torrent_activity->loadState(cfg);
 

@@ -18,6 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #include <statspluginsettings.h>
 #include "DisplaySettingsPage.h"
 
@@ -25,7 +26,7 @@ namespace kt
 {
 
     DisplaySettingsPage::DisplaySettingsPage(QWidget* parent)
-        : PrefPageInterface(StatsPluginSettings::self(), i18nc("@title:window", "Display"), "view-statistics", parent)
+        : PrefPageInterface(StatsPluginSettings::self(), i18nc("@title:window", "Display"), QStringLiteral("view-statistics"), parent)
     {
         setupUi(this);
     }

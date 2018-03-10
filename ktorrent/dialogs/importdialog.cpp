@@ -17,13 +17,16 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.             *
  ***************************************************************************/
+
 #include <QUrl>
-#include <klocalizedstring.h>
-#include <kmessagebox.h>
-#include <kio/job.h>
-#include <kio/jobuidelegate.h>
-#include <kio/jobclasses.h>
-#include <kstandardguiitem.h>
+
+#include <KGuiItem>
+#include <KIO/Job>
+#include <KIO/JobUiDelegate>
+#include <KLocalizedString>
+#include <KMessageBox>
+#include <KStandardGuiItem>
+
 #include <util/log.h>
 #include <util/error.h>
 #include <util/file.h>
@@ -38,10 +41,7 @@
 #include <datachecker/multidatachecker.h>
 #include <interfaces/functions.h>
 #include <settings.h>
-#include <KGuiItem>
-#include <KStandardGuiItem>
 #include "importdialog.h"
-
 
 
 using namespace bt;
@@ -49,7 +49,7 @@ using namespace bt;
 namespace kt
 {
     ImportDialog::ImportDialog(CoreInterface* core, QWidget* parent)
-        : QDialog(parent), core(core), dc(0), dc_thread(0), canceled(false)
+        : QDialog(parent), core(core), dc(nullptr), dc_thread(nullptr), canceled(false)
     {
         setAttribute(Qt::WA_DeleteOnClose);
         setupUi(this);
@@ -60,8 +60,8 @@ namespace kt
         r = m_data_url;
         r->setMode(KFile::File | KFile::Directory | KFile::LocalOnly);
 
-        connect(m_import_btn, SIGNAL(clicked()), this, SLOT(onImport()));
-        connect(m_cancel_btn, SIGNAL(clicked()), this, SLOT(cancelImport()));
+        connect(m_import_btn, &QPushButton::clicked, this, &ImportDialog::onImport);
+        connect(m_cancel_btn, &QPushButton::clicked, this, &ImportDialog::cancelImport);
         m_progress->setEnabled(false);
         m_progress->setValue(0);
         KGuiItem::assign(m_cancel_btn, KStandardGuiItem::cancel());
@@ -86,7 +86,7 @@ namespace kt
             if (!canceled)
                 KMessageBox::error(this, dc_thread->getError());
             dc_thread->deleteLater();
-            dc_thread = 0;
+            dc_thread = nullptr;
             reject();
             return;
         }
@@ -102,10 +102,10 @@ namespace kt
                 bt::MakeDir(tor_dir);
 
             // write the index file
-            writeIndex(tor_dir + QLatin1String("index"), dc->getResult());
+            writeIndex(tor_dir + QStringLiteral("index"), dc->getResult());
 
             // copy the torrent file
-            bt::CopyFile(tor_url.url(), tor_dir + QLatin1String("torrent"));
+            bt::CopyFile(tor_url.url(), tor_dir + QStringLiteral("torrent"));
 
             Uint64 imported = calcImportedBytes(dc->getResult(), tor);
 
@@ -115,7 +115,7 @@ namespace kt
                 QList<Uint32> dnd_files;
 
                 // first make tor_dir/dnd
-                QString dnd_dir = tor_dir + QLatin1String("dnd") + bt::DirSeparator();
+                QString dnd_dir = tor_dir + QStringLiteral("dnd") + bt::DirSeparator();
                 if (!bt::Exists(dnd_dir))
                     MakeDir(dnd_dir);
 
@@ -138,13 +138,13 @@ namespace kt
                 if (durl.midRef(ds + 1) == tor.getNameSuggestion())
                 {
                     durl.truncate(ds);
-                    saveStats(tor_dir + QLatin1String("stats"), durl, imported, false);
+                    saveStats(tor_dir + QStringLiteral("stats"), durl, imported, false);
                 }
                 else
                 {
-                    saveStats(tor_dir + QLatin1String("stats"), durl, imported, true);
+                    saveStats(tor_dir + QStringLiteral("stats"), durl, imported, true);
                 }
-                saveFileInfo(tor_dir + QLatin1String("file_info"), dnd_files);
+                saveFileInfo(tor_dir + QStringLiteral("file_info"), dnd_files);
             }
             else
             {
@@ -152,7 +152,7 @@ namespace kt
                 QString durl = data_dir;
                 int ds = durl.lastIndexOf(bt::DirSeparator());
                 durl.truncate(ds);
-                saveStats(tor_dir + QLatin1String("stats"), durl, imported, false);
+                saveStats(tor_dir + QStringLiteral("stats"), durl, imported, false);
                 saveFileMap(tor_dir, data_dir);
             }
 
@@ -165,13 +165,13 @@ namespace kt
             bt::Delete(tor_dir, true);
             KMessageBox::error(this, e.toString());
             dc_thread->deleteLater();
-            dc_thread = 0;
+            dc_thread = nullptr;
             reject();
             return;
         }
 
         dc_thread->deleteLater();
-        dc_thread = 0;
+        dc_thread = nullptr;
         accept();
     }
 
@@ -198,12 +198,12 @@ namespace kt
         else
             dc = new SingleDataChecker(0, tor.getNumChunks());
 
-        connect(dc, SIGNAL(progress(quint32, quint32)), this, SLOT(progress(quint32, quint32)), Qt::QueuedConnection);
+        connect(dc, &bt::DataChecker::progress, this, &ImportDialog::progress, Qt::QueuedConnection);
 
         BitSet bs(tor.getNumChunks());
         bs.setAll(false);
         dc_thread = new DataCheckerThread(dc, bs, data_url.toLocalFile(), tor, QString::null);
-        connect(dc_thread, SIGNAL(finished()), this, SLOT(finished()), Qt::QueuedConnection);
+        connect(dc_thread, &bt::DataCheckerThread::finished, this, &ImportDialog::finished, Qt::QueuedConnection);
         dc_thread->start();
     }
 
@@ -211,7 +211,7 @@ namespace kt
     {
         if (j->error())
         {
-            ((KIO::Job*)j)->ui()->showErrorMessage();
+            j->uiDelegate()->showErrorMessage();
             reject();
         }
         else
@@ -245,7 +245,7 @@ namespace kt
         {
             // download the torrent file
             KIO::StoredTransferJob* j = KIO::storedGet(tor_url);
-            connect(j, SIGNAL(result(KJob*)), this, SLOT(onTorrentGetReult(KJob*)));
+            connect(j, &KIO::StoredTransferJob::result, this, &ImportDialog::onTorrentGetReult);
         }
         else
         {
@@ -272,7 +272,7 @@ namespace kt
             dc->stop();
             dc_thread->wait();
             dc_thread->deleteLater();
-            dc_thread = 0;
+            dc_thread = nullptr;
         }
 
         reject();
@@ -283,7 +283,7 @@ namespace kt
     {
         // first try to open it
         File fptr;
-        if (!fptr.open(file, "wb"))
+        if (!fptr.open(file, QStringLiteral("wb")))
             throw Error(i18n("Cannot open %1: %2", file, fptr.errorString()));
 
         // write all chunks to the file
@@ -340,8 +340,8 @@ namespace kt
         out << "PRIORITY=0" << ::endl;
         out << "AUTOSTART=1" << ::endl;
         if (Settings::maxRatio() > 0)
-            out << QString("MAX_RATIO=%1").arg(Settings::maxRatio(), 0, 'f', 2) << ::endl;
-        out << QString("IMPORTED=%1").arg(imported) << ::endl;
+            out << QStringLiteral("MAX_RATIO=%1").arg(Settings::maxRatio(), 0, 'f', 2) << ::endl;
+        out << QStringLiteral("IMPORTED=%1").arg(imported) << ::endl;
         if (custom_output_name)
             out << "CUSTOM_OUTPUT_NAME=1" << endl;
     }
@@ -368,7 +368,7 @@ namespace kt
     {
         // saves which TorrentFile's do not need to be downloaded
         File fptr;
-        if (!fptr.open(file_info_file, "wb"))
+        if (!fptr.open(file_info_file, QStringLiteral("wb")))
         {
             Out(SYS_GEN | LOG_IMPORTANT) << "Warning : Can't save chunk_info file : " << fptr.errorString() << endl;
             return;

@@ -18,22 +18,22 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
+#include <QAction>
 #include <QHeaderView>
-#include <QVBoxLayout>
-#include <QSortFilterProxyModel>
-#include <QLineEdit>
 #include <QIcon>
-#include <klocalizedstring.h>
+#include <QLineEdit>
+#include <QSortFilterProxyModel>
+#include <QVBoxLayout>
+
+#include <KLocalizedString>
 #include <KToolBar>
+
 #include <util/log.h>
 #include "mediaview.h"
 #include "mediamodel.h"
 #include "mediaplayer.h"
 #include "mediaplayerpluginsettings.h"
-#include <QAction>
-
-
-
 
 using namespace bt;
 
@@ -98,18 +98,18 @@ namespace kt
         tool_bar = new KToolBar(this);
         hbox->addWidget(tool_bar);
 
-        show_incomplete = tool_bar->addAction(QIcon::fromTheme("task-ongoing"), i18n("Show incomplete files"));
+        show_incomplete = tool_bar->addAction(QIcon::fromTheme(QStringLiteral("task-ongoing")), i18n("Show incomplete files"));
         show_incomplete->setCheckable(true);
         show_incomplete->setChecked(false);
-        connect(show_incomplete, SIGNAL(toggled(bool)), this, SLOT(showIncompleteChanged(bool)));
+        connect(show_incomplete, &QAction::toggled, this, &MediaView::showIncompleteChanged);
 
-        refresh = tool_bar->addAction(QIcon::fromTheme("view-refresh"), i18n("Refresh"), filter, SLOT(refresh()));
+        refresh = tool_bar->addAction(QIcon::fromTheme(QStringLiteral("view-refresh")), i18n("Refresh"), filter, SLOT(refresh()));
         refresh->setToolTip(i18n("Refresh media files"));
 
         search_box = new QLineEdit(this);
         search_box->setClearButtonEnabled(true);
         search_box->setPlaceholderText(i18n("Search media files"));
-        connect(search_box, SIGNAL(textChanged(QString)), filter, SLOT(setFilterFixedString(QString)));
+        connect(search_box, &QLineEdit::textChanged, filter, &MediaViewFilter::setFilterFixedString);
         hbox->addWidget(search_box);
 
         layout->addLayout(hbox);
@@ -121,7 +121,7 @@ namespace kt
         media_tree->setAlternatingRowColors(true);
         layout->addWidget(media_tree);
 
-        connect(media_tree, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(onDoubleClicked(QModelIndex)));
+        connect(media_tree, &QListView::doubleClicked, this, &MediaView::onDoubleClicked);
     }
 
 

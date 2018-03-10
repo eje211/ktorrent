@@ -21,10 +21,11 @@
 #ifndef SEARCHACTIVITY_H
 #define SEARCHACTIVITY_H
 
-#include <QList>
-#include <QUrl>
-#include <QTabWidget>
 #include <QAction>
+#include <QList>
+#include <QTabWidget>
+#include <QUrl>
+
 #include <interfaces/activity.h>
 
 namespace kt
@@ -38,7 +39,7 @@ namespace kt
         Q_OBJECT
     public:
         SearchActivity(SearchPlugin* sp, QWidget* parent);
-        virtual ~SearchActivity();
+        ~SearchActivity();
 
         /// Add a SearchWidget
         void search(const QString& text, int engine);
@@ -55,7 +56,7 @@ namespace kt
         /// Create a new empty search tab
         SearchWidget* newTab();
 
-    public slots:
+    public Q_SLOTS:
         void home();
         void openNewTab(const QUrl &url);
         void currentTabChanged(int idx);

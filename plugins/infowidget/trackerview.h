@@ -1,8 +1,8 @@
 /***************************************************************************
  *   Copyright (C) 2006-2007 by Joris Guisson, Ivan Vasic                  *
  *   joris.guisson@gmail.com                                               *
- *   ivasic@gmail.com                                                  *
- *                                     *
+ *   ivasic@gmail.com                                                      *
+ *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
  *   the Free Software Foundation; either version 2 of the License, or     *
@@ -18,12 +18,15 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
+
 #ifndef TRACKERVIEW_H
 #define TRACKERVIEW_H
 
 #include "ui_trackerview.h"
-#include <ksharedconfig.h>
+
+#include <KSharedConfig>
 #include <QSortFilterProxyModel>
+
 #include <interfaces/torrentinterface.h>
 
 namespace kt
@@ -38,7 +41,7 @@ namespace kt
         Q_OBJECT
     public:
         TrackerView(QWidget* parent);
-        virtual ~TrackerView();
+        ~TrackerView();
 
         void update();
         void changeTC(bt::TorrentInterface* ti);
@@ -46,12 +49,12 @@ namespace kt
         void loadState(KSharedConfigPtr cfg);
 
     public slots:
-        virtual void updateClicked();
-        virtual void restoreClicked();
-        virtual void changeClicked();
-        virtual void removeClicked();
-        virtual void addClicked();
-        virtual void scrapeClicked();
+        void updateClicked();
+        void restoreClicked();
+        void changeClicked();
+        void removeClicked();
+        void addClicked();
+        void scrapeClicked();
         void currentChanged(const QModelIndex& current, const QModelIndex& previous);
 
     private:

@@ -18,7 +18,13 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
-#include <klocalizedstring.h>
+
+#include <KLocalizedString>
+#include <KConfigGroup>
+
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
+
 #include "managefiltersdlg.h"
 #include "filterlistmodel.h"
 #include "filterlist.h"
@@ -28,19 +34,30 @@
 namespace kt
 {
 
-    ManageFiltersDlg::ManageFiltersDlg(Feed* feed, FilterList* filters, SyndicationActivity* act, QWidget* parent) : KDialog(parent), feed(feed), filters(filters), act(act)
+    ManageFiltersDlg::ManageFiltersDlg(Feed* feed, FilterList* filters, SyndicationActivity* act, QWidget* parent) : QDialog(parent), feed(feed), filters(filters), act(act)
     {
         setWindowTitle(i18n("Add/Remove Filters"));
-        setupUi(mainWidget());
+        QWidget *mainWidget = new QWidget(this);
+        QVBoxLayout *mainLayout = new QVBoxLayout;
+        setLayout(mainLayout);
+        mainLayout->addWidget(mainWidget);
+        setupUi(mainWidget);
+        QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+        auto okButton = buttonBox->button(QDialogButtonBox::Ok);
+        okButton->setDefault(true);
+        okButton->setShortcut(Qt::CTRL | Qt::Key_Return);
+        connect(buttonBox, &QDialogButtonBox::accepted, this, &ManageFiltersDlg::accept);
+        connect(buttonBox, &QDialogButtonBox::rejected, this, &ManageFiltersDlg::reject);
+        mainLayout->addWidget(buttonBox);
         m_feed_text->setText(i18n("Feed: <b>%1</b>", feed->title()));
-        m_add->setIcon(QIcon::fromTheme("go-previous"));
+        m_add->setIcon(QIcon::fromTheme(QStringLiteral("go-previous")));
         m_add->setText(QString());
-        m_remove->setIcon(QIcon::fromTheme("go-next"));
+        m_remove->setIcon(QIcon::fromTheme(QStringLiteral("go-next")));
         m_remove->setText(QString());
-        connect(m_add, SIGNAL(clicked()), this, SLOT(add()));
-        connect(m_remove, SIGNAL(clicked()), this, SLOT(remove()));
-        connect(m_remove_all, SIGNAL(clicked()), this, SLOT(removeAll()));
-        connect(m_new_filter, SIGNAL(clicked()), this, SLOT(newFilter()));
+        connect(m_add, &QPushButton::clicked, this, &ManageFiltersDlg::add);
+        connect(m_remove, &QPushButton::clicked, this, &ManageFiltersDlg::remove);
+        connect(m_remove_all, &QPushButton::clicked, this, &ManageFiltersDlg::removeAll);
+        connect(m_new_filter, &QPushButton::clicked, this, &ManageFiltersDlg::newFilter);
 
         active = new FilterListModel(this);
         available = new FilterListModel(this);
@@ -61,11 +78,9 @@ namespace kt
         }
 
         m_add->setEnabled(false);
-        connect(m_available_filters->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
-                this, SLOT(availableSelectionChanged(const QItemSelection&, const QItemSelection&)));
+        connect(m_available_filters->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ManageFiltersDlg::availableSelectionChanged);
         m_remove->setEnabled(false);
-        connect(m_active_filters->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
-                this, SLOT(activeSelectionChanged(const QItemSelection&, const QItemSelection&)));
+        connect(m_active_filters->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ManageFiltersDlg::activeSelectionChanged);
 
         m_remove_all->setEnabled(active->rowCount(QModelIndex()) > 0);
     }
