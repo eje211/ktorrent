@@ -47,6 +47,10 @@ namespace kt
         struct mg_mgr mgr;
         CoreInterface * core;
         static TorrentListGenerator * listGenerator;
+        static QString sessionToken;
+        const char * makeCookie();
+        static const char * cookie;
+        static bool checkForToken(http_message *);
     };
 }
 

@@ -121,8 +121,8 @@ namespace kt
                 ti->start();
             }
         }
-        if (action == QString::fromLatin1("pause")) {
-            ti->pause();
+        if (action == QString::fromLatin1("stop")) {
+            core->stop(ti);
         }
         if (action == QString::fromLatin1("remove")) {
             core->remove(ti, false);

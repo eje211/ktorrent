@@ -28,6 +28,7 @@ using namespace std;
 #include <QString>
 #include <QRegExp>
 #include <QStringList>
+#include <QUuid>
 
 using namespace std;
 
@@ -42,10 +43,20 @@ namespace kt {
     }
 
     TorrentListGenerator * WebServer::listGenerator;
-    
+
+    QString WebServer::sessionToken;
+
+    const char * WebServer::cookie;
+
     void WebServer::process()
     {
+
+        cout << "\n\n\n\n\n\n\n\nStart! \n\n\n\n\n\n\n\n\n" << endl;
         listGenerator = new TorrentListGenerator(core);
+        sessionToken = QUuid::createUuid().toString();
+        cookie = makeCookie();
+
+        cout << "\n\n\n\n\n\n\n\nCookie set! \n\n\n\n\n\n\n\n\n" << endl;
         struct mg_connection *c;
 
         mg_mgr_init(&mgr, NULL);
@@ -66,15 +77,8 @@ namespace kt {
                       
             struct http_message * message = (struct http_message *) ev_data;
 
-            char * method = new char[message->method.len + 1];
-            strncpy(method, message->method.p, message->method.len);
-            method[message->method.len] = '\0';
-
-            char * uri = new char[message->uri.len + 1];
-            strncpy(uri, message->uri.p, message->uri.len);
-            uri[message->uri.len] = '\0';
-
-            if (strcmp(uri, "/ktorrentdata") == 0 && strcmp(method, "GET") == 0)
+            if (strncmp("/ktorrentdata", message->uri.p, message->uri.len) == 0
+                && strncmp(message->method.p, "GET", message->method.len) == 0)
             {
                 char * json = NULL;
                 int size;
@@ -83,13 +87,13 @@ namespace kt {
                 mg_printf(c, "%s", json);
                 return;
             }
-            if (strcmp(uri, "/ktorrentaction") == 0)
+            if (strncmp("/ktorrentaction", message->uri.p, message->uri.len) == 0)
             {
                 char * body = new char[message->body.len + 1];
                 strncpy(body, message->body.p, message->body.len);
                 body[message->body.len] = '\0';
 
-                if (strcmp(method, "POST") == 0) {
+                if (strncmp(message->method.p, "POST", message->method.len) == 0) {
                     listGenerator->post(body);
                 }
                 const char * validation = "{\"status\":\"Request received.\"}";
@@ -98,7 +102,27 @@ namespace kt {
                 mg_printf(c, "%s", validation);
                 return;
             }
-            mg_serve_http(c, (struct http_message *) ev_data, opts);
+            opts.extra_headers = cookie;
+            mg_serve_http(c, message, opts);
         }
+    }
+    
+    const char * WebServer::makeCookie() {
+        QString tempString = QString::fromLatin1("Set-Cookie:token=") + sessionToken;
+        return tempString.toLatin1().data();
+    }
+    
+    bool WebServer::checkForToken(http_message * message) {
+        for (int i = 0; i < MG_MAX_HTTP_HEADERS; i++) {
+            if (message->header_names[i].len == 0) {
+                return false;
+            }
+            if (strncmp(message->header_names[i].p, "Session-Token", message->header_names[i].len) == 0) {
+                if (strncmp(message->header_values[i].p, sessionToken.toLatin1().data(), message->header_values[i].len) == 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
