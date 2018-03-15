@@ -22,6 +22,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  ***************************************************************************/
 
+#include <QChar>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -33,6 +34,7 @@
 #include "torrentlistgenerator.h"
 #include <util/sha1hash.h>
 #include <torrent/queuemanager.h>
+#include <torrent/magnetmanager.h>
 #include <interfaces/coreinterface.h>
 
 using namespace bt;
@@ -51,132 +53,159 @@ namespace kt
     }
 
 
-    void TorrentListGenerator::get(char ** str_p, int * size)
+    QByteArray TorrentListGenerator::get()
     {
         kt::QueueManager* qman = core->getQueueManager();
         kt::QueueManager::iterator i = qman->begin();
-        QJsonArray array = QJsonArray();
+        QJsonArray array;
         while (i != qman->end())
         {
             bt::TorrentInterface* ti = *i;
             const bt::TorrentStats& s = ti->getStats();
 
-            QJsonObject json = QJsonObject() ;
-            json.insert(QString::fromLocal8Bit("name"), ti->getDisplayName());
-            json.insert(QString::fromLocal8Bit("infoHash"), ti->getInfoHash().toString());
-            json.insert(QString::fromLocal8Bit("status"), s.status);
-            json.insert(QString::fromLocal8Bit("timeAdded"), s.time_added.toMSecsSinceEpoch());            
-            json.insert(QString::fromLocal8Bit("bytesDownloaded"), (double) s.bytes_downloaded);
-            json.insert(QString::fromLocal8Bit("bytesUploaded"), (double) s.bytes_uploaded);
-            json.insert(QString::fromLocal8Bit("totalBytes"), (double) s.total_bytes);
-            json.insert(QString::fromLocal8Bit("totalBytesToDownload"), (double) s.total_bytes_to_download);
-            json.insert(QString::fromLocal8Bit("downloadRate"), (double) s.download_rate);
-            json.insert(QString::fromLocal8Bit("uploadRate"), (double) s.upload_rate);
-            json.insert(QString::fromLocal8Bit("numPeers"), (double) s.num_peers);
-            json.insert(QString::fromLocal8Bit("seeders"), (double) s.seeders_connected_to);
-            json.insert(QString::fromLocal8Bit("seedersTotal"), (double) s.seeders_total);
-            json.insert(QString::fromLocal8Bit("leechers"), (double) s.leechers_connected_to);
-            json.insert(QString::fromLocal8Bit("leechersTotal"), (double) s.leechers_total);
-            json.insert(QString::fromLocal8Bit("running"), s.running);
-            json.insert(QString::fromLocal8Bit("numFiles"), (double) ti->getNumFiles());
+            QJsonObject json;
+            json.insert(QString::fromLatin1("name"), ti->getDisplayName());
+            json.insert(QString::fromLatin1("infoHash"), ti->getInfoHash().toString());
+            json.insert(QString::fromLatin1("status"), s.status);
+            json.insert(QString::fromLatin1("timeAdded"), s.time_added.toMSecsSinceEpoch());            
+            json.insert(QString::fromLatin1("bytesDownloaded"), (double) s.bytes_downloaded);
+            json.insert(QString::fromLatin1("bytesUploaded"), (double) s.bytes_uploaded);
+            json.insert(QString::fromLatin1("totalBytes"), (double) s.total_bytes);
+            json.insert(QString::fromLatin1("totalBytesToDownload"), (double) s.total_bytes_to_download);
+            json.insert(QString::fromLatin1("downloadRate"), (double) s.download_rate);
+            json.insert(QString::fromLatin1("uploadRate"), (double) s.upload_rate);
+            json.insert(QString::fromLatin1("numPeers"), (double) s.num_peers);
+            json.insert(QString::fromLatin1("seeders"), (double) s.seeders_connected_to);
+            json.insert(QString::fromLatin1("seedersTotal"), (double) s.seeders_total);
+            json.insert(QString::fromLatin1("leechers"), (double) s.leechers_connected_to);
+            json.insert(QString::fromLatin1("leechersTotal"), (double) s.leechers_total);
+            json.insert(QString::fromLatin1("running"), s.running);
+            json.insert(QString::fromLatin1("numFiles"), (double) ti->getNumFiles());
             array.append(json);
             i++;
         }
-        QJsonObject message = QJsonObject();
-        message.insert(QString::fromLocal8Bit("torrents"), array);
-        QJsonDocument doc = QJsonDocument(message);
-        *str_p = doc.toJson().data();
-        *size = doc.toJson().size();
+        QJsonObject message;
+        message.insert(QString::fromLatin1("torrents"), array);
+        return QJsonDocument(message).toJson();
     }
 
-    void TorrentListGenerator::post(char * json) {
+    void TorrentListGenerator::post(const char * json)
+    {
         QJsonDocument doc = QJsonDocument::fromJson(QByteArray((const char *) json));
         QMap<QString, QVariant> qJson = doc.toVariant().toMap();
         
         QString action = qJson[QString::fromLatin1("type")].toString();
 
-        if (action.isEmpty() || action.isNull()) {
+        if (action.isEmpty())
+        {
             return;
         }
         
-        if (action == QString::fromLatin1("magnet")) {
+        if (action == QString::fromLatin1("magnet"))
+        {
             QString magnet = qJson[QString::fromLatin1("magnet")].toString();
-            if (magnet.isEmpty() || magnet.isNull()) {
+            if (magnet.isEmpty())
+            {
                 return;
             }
-            core->loadSilently(QUrl(magnet), QString());
+            QUrl url = QUrl(magnet);
+            if (!url.isValid())
+            {
+                return;
+            }
+            core->loadSilently(url, QString());
             return;
         }
         
         QString hash = qJson[QString::fromLatin1("hash")].toString();
-        if (hash.isEmpty() || hash.isNull()) {
+        if (hash.isEmpty())
+        {
             return;
         }
 
         TorrentInterface * ti = getTorrentFromHash(hash);
-        if (action == QString::fromLatin1("start")) {
-            if (ti->getStats().paused) {
+        if (action == QString::fromLatin1("start"))
+        {
+            if (ti->getStats().paused)
+            {
                 ti->unpause();
-            } else {
+            }
+            else
+            {
                 ti->start();
             }
         }
-        if (action == QString::fromLatin1("stop")) {
+        else if (action == QString::fromLatin1("stop"))
+        {
             core->stop(ti);
         }
-        if (action == QString::fromLatin1("remove")) {
+        else if (action == QString::fromLatin1("remove"))
+        {
             core->remove(ti, false);
         }
     }
     
-    const SHA1Hash * TorrentListGenerator::QStringToSHA1Hash(QString qString) {
-        Uint8 hashNum[20] = {};
-        hex2bin((const char *) qString.toLatin1().data(), hashNum);
-        const SHA1Hash * hash = new SHA1Hash(hashNum);
-        return hash;
+    /**
+     * From: https://github.com/KDE/libktorrent/blob/master/src/dht/tests/keytest.cpp
+     */
+    static Uint8 HexCharToUint8(char c)
+    {
+        if (c >= 'a' && c <= 'f')
+            return 10 + (c - 'a');
+        else if (c >= 'A' && c <= 'F')
+            return 10 + (c - 'A');
+        else if (c >= '0' && c <= '9')
+            return c - '0';
+        else
+            return 0;
+    }
+
+    /**
+     * Based on: https://github.com/KDE/libktorrent/blob/master/src/dht/tests/keytest.cpp
+     */
+    static Uint8 * HashFromHexString(QString & str)
+    {
+        bt::Uint8 * result = new Uint8[20];
+        std::fill(result, result + 20, 0);
+        
+        QString s = str.toLower();
+        if (s.size() % 2 != 0)
+        {
+            s.prepend(QChar::fromLatin1('0'));
+        }
+        
+        int j = 19;
+        
+        for (int i = s.size() - 1; i >= 0; i -= 2)
+        {
+            char left = s[i - 1].toLatin1();
+            char right = s[i].toLatin1();
+            result[j--] = (HexCharToUint8(left) << 4) | HexCharToUint8(right);
+        }
+        return result;
     }
     
-    TorrentInterface * TorrentListGenerator::getTorrentFromHash(QString qHash) {
+    static const SHA1Hash * QStringToSHA1Hash(QString qString) {
+        Uint8 * hashNum = HashFromHexString(qString);
+        const SHA1Hash * hash = new SHA1Hash(hashNum);
+        delete hashNum;
+        return hash;
+    }
+        
+    TorrentInterface * TorrentListGenerator::getTorrentFromHash(QString qHash)
+    {
         const SHA1Hash * hash = QStringToSHA1Hash(qHash);
         kt::QueueManager* qman = core->getQueueManager();
         kt::QueueManager::iterator i = qman->begin();
         while (i != qman->end())
         {
             bt::TorrentInterface* ti = *i;
-            const bt::TorrentStats& s = ti->getStats();
-            if (ti->getInfoHash() == *hash) {
+            if (ti->getInfoHash() == *hash)
+            {
                 return ti;
             }
             i++;
         }
         return NULL;
-    }
-    
-    /**
-     * Shameless ripped from: https://stackoverflow.com/a/17261928/313273
-     */
-    Uint8 TorrentListGenerator::char2int(char input)
-    {
-        if(input >= '0' && input <= '9')
-            return (Uint8) input - '0';
-        if(input >= 'A' && input <= 'F')
-            return (Uint8) input - 'A' + 10;
-        if(input >= 'a' && input <= 'f')
-            return (Uint8) input - 'a' + 10;
-        throw std::invalid_argument("Invalid input string");
-    }
-
-    /**
-     * Shamelessly ripped from: https://stackoverflow.com/a/17261928/313273
-     * This function assumes src to be a zero terminated sanitized string with
-     * an even number of [0-9a-f] characters, and target to be sufficiently large.
-     */
-    void TorrentListGenerator::hex2bin(const char * src, Uint8 * target)
-    {
-        while(*src && src[1])
-        {
-            *(target++) = char2int(*src) * 16 + char2int(src[1]);
-            src += 2;
-        }
     }
 }

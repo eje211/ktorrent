@@ -50,13 +50,10 @@ namespace kt {
 
     void WebServer::process()
     {
-
-        cout << "\n\n\n\n\n\n\n\nStart! \n\n\n\n\n\n\n\n\n" << endl;
         listGenerator = new TorrentListGenerator(core);
         sessionToken = QUuid::createUuid().toString();
         cookie = makeCookie();
 
-        cout << "\n\n\n\n\n\n\n\nCookie set! \n\n\n\n\n\n\n\n\n" << endl;
         struct mg_connection *c;
 
         mg_mgr_init(&mgr, NULL);
@@ -76,18 +73,20 @@ namespace kt {
             opts.document_root = "/usr/share/ktorrent/html/";
                       
             struct http_message * message = (struct http_message *) ev_data;
+            
+            char * uri = new char[message->uri.len + 1];
+            strncpy(uri, message->uri.p, message->uri.len);
+            uri[message->uri.len] = '\0';
 
-            if (strncmp("/ktorrentdata", message->uri.p, message->uri.len) == 0
-                && strncmp(message->method.p, "GET", message->method.len) == 0)
+            if (strcmp("/ktorrentdata", uri) == 0
+                && strncmp("GET", message->method.p, message->method.len) == 0)
             {
-                char * json = NULL;
-                int size;
-                listGenerator->get(&json, &size);
-                mg_send_head(c, 200, size, "Content-Type: application/json\nAccess-Control-Allow-Origin: *");
-                mg_printf(c, "%s", json);
+                QByteArray json = listGenerator->get();
+                mg_send_head(c, 200, json.size(), "Content-Type: application/json\nAccess-Control-Allow-Origin: *");
+                mg_printf(c, "%s", json.data());
                 return;
             }
-            if (strncmp("/ktorrentaction", message->uri.p, message->uri.len) == 0)
+            if (strcmp("/ktorrentaction", uri) == 0)
             {
                 char * body = new char[message->body.len + 1];
                 strncpy(body, message->body.p, message->body.len);
@@ -117,8 +116,14 @@ namespace kt {
             if (message->header_names[i].len == 0) {
                 return false;
             }
-            if (strncmp(message->header_names[i].p, "Session-Token", message->header_names[i].len) == 0) {
-                if (strncmp(message->header_values[i].p, sessionToken.toLatin1().data(), message->header_values[i].len) == 0) {
+            char * header_name = new char[message->header_names[i].len + 1];
+            strncpy(header_name, message->header_names[i].p, message->header_names[i].len);
+            header_name[message->header_names[i].len] = '\n';
+            if (strcmp(header_name, "Session-Token") == 0) {
+                char * token = new char[message->header_values[i].len + 1];
+                strncpy(token, message->header_values[i].p, message->header_values[i].len);
+                token[message->header_values[i].len] = '\n';
+                if (strcmp(token, sessionToken.toLatin1().data()) == 0) {
                     return true;
                 }
             }

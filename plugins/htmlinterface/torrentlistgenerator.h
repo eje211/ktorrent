@@ -45,17 +45,14 @@ namespace kt
         TorrentListGenerator(CoreInterface* core);
         virtual ~TorrentListGenerator();
 
-        void get(char ** str_p, int * size);
-        virtual void post(char * json);
+        QByteArray get();
+        virtual void post(const char * json);
         // virtual void post(HttpClientHandler* hdlr, const QHttpRequestHeader& hdr, const QByteArray& data);
 
 
     private:
         CoreInterface* core;        
         TorrentInterface * getTorrentFromHash(QString hash);
-        const static SHA1Hash * QStringToSHA1Hash(QString qString);
-        Uint8 static char2int(char input);
-        void static hex2bin(const char * src, Uint8 * target);
 
     };
 
