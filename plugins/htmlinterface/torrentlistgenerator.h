@@ -46,9 +46,7 @@ namespace kt
         virtual ~TorrentListGenerator();
 
         QByteArray get();
-        virtual void post(const char * json);
-        // virtual void post(HttpClientHandler* hdlr, const QHttpRequestHeader& hdr, const QByteArray& data);
-
+        virtual void post(QString json);
 
     private:
         CoreInterface* core;        

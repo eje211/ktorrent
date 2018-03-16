@@ -10,6 +10,7 @@ kcoreaddons_desktop_to_json(ktorrent_htmlinterface  ktorrent_htmlinterface.deskt
 
 target_link_libraries(
     ktorrent_htmlinterface
+    microhttpd
     ktcore
     KF5::Torrent
     KF5::ConfigCore

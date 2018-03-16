@@ -74,89 +74,28 @@ namespace kt
     void HtmlInterfacePlugin::load()
     {
         qInfo("I've been loaded");
-        HtmlInterfacePlugin::instance = this;
-        thread = new QThread;
-        worker = new WebServer(getCore());
-        worker->moveToThread(thread);
-//         connect(worker, SIGNAL (error(QString)), this, SLOT (errorString(QString)));
-        connect(thread, SIGNAL (started()), worker, SLOT (process()));
-        connect(worker, SIGNAL (finished()), thread, SLOT (quit()));
-        connect(worker, SIGNAL (finished()), worker, SLOT (deleteLater()));
-        connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
-        thread->start();
-//         TorrentActivityInterface* ta = getGUI()->getTorrentActivity();
-//         ta->addViewListener(this);
-//         connect(getCore(), SIGNAL(torrentAdded(bt::TorrentInterface*)), this, SLOT(torrentAdded(bt::TorrentInterface*)));
-//         connect(getCore(), SIGNAL(torrentRemoved(bt::TorrentInterface*)), this, SLOT(torrentRemoved(bt::TorrentInterface*)));
-//         currentTorrentChanged(ta->getCurrentTorrent());
-// 
-//         kt::QueueManager* qman = getCore()->getQueueManager();
-//         for (kt::QueueManager::iterator i = qman->begin(); i != qman->end(); i++)
-//             torrentAdded(*i);
+        WebServer * ws = new WebServer(getCore());
+        ws->process();
+//         HtmlInterfacePlugin::instance = this;
+//         thread = new QThread;
+//         worker = new WebServer(getCore());
+//         worker->moveToThread(thread);
+// //         connect(worker, SIGNAL (error(QString)), this, SLOT (errorString(QString)));
+//         connect(thread, SIGNAL (started()), worker, SLOT (process()));
+//         connect(worker, SIGNAL (finished()), thread, SLOT (quit()));
+//         connect(worker, SIGNAL (finished()), worker, SLOT (deleteLater()));
+//         connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+//         thread->start();
     }
 
     void HtmlInterfacePlugin::unload()
     {
-//         TorrentActivityInterface* ta = getGUI()->getTorrentActivity();
-//         ta->removeViewListener(this);
-//         disconnect(getCore(), SIGNAL(torrentAdded(bt::TorrentInterface*)), this, SLOT(torrentAdded(bt::TorrentInterface*)));
-//         disconnect(getCore(), SIGNAL(torrentRemoved(bt::TorrentInterface*)), this, SLOT(torrentRemoved(bt::TorrentInterface*)));
-//         managers.clear();
     }
-
-//     void HtmlInterfacePlugin::showHtmlInterfaceDialog()
-//     {
-//         bt::TorrentInterface* tor = getGUI()->getTorrentActivity()->getCurrentTorrent();
-//         if (!tor || !tor->getStats().multi_file_torrent)
-//             return;
-// 
-//         HtmlInterfaceDialog dlg(this, tor, getGUI()->getMainWindow());
-//         dlg.exec();
-//     }
-// 
+ 
     void HtmlInterfacePlugin::currentTorrentChanged(bt::TorrentInterface* tc)
     {
-//         download_order_action->setEnabled(tc && tc->getStats().multi_file_torrent);
     }
-// 
-//     HtmlInterfaceManager* HtmlInterfacePlugin::manager(bt::TorrentInterface* tc)
-//     {
-//         return managers.find(tc);Aumyenne
 
-//     }
-// 
-//     HtmlInterfaceManager* HtmlInterfacePlugin::createManager(bt::TorrentInterface* tc)
-//     {
-//         HtmlInterfaceManager* m = manager(tc);
-//         if (m)
-//             return m;
-// 
-//         m = new HtmlInterfaceManager(tc);
-//         managers.insert(tc, m);
-//         return m;
-//     }
-// 
-//     void HtmlInterfacePlugin::destroyManager(bt::TorrentInterface* tc)
-//     {
-//         managers.erase(tc);
-//     }
-// 
-//     void HtmlInterfacePlugin::torrentAdded(bt::TorrentInterface* tc)
-//     {
-//         if (bt::Exists(tc->getTorDir() + QStringLiteral("download_order")))
-//         {
-//             HtmlInterfaceManager* m = createManager(tc);
-//             m->load();
-//             m->update();
-//             connect(tc, SIGNAL(chunkDownloaded(bt::TorrentInterface*, bt::Uint32)),
-//                     m, SLOT(chunkDownloaded(bt::TorrentInterface*, bt::Uint32)));
-//         }
-//     }
-// 
-//     void HtmlInterfacePlugin::torrentRemoved(bt::TorrentInterface* tc)
-//     {
-//         managers.erase(tc);
-//     }
 }
 
 

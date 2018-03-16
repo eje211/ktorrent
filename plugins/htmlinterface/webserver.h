@@ -25,9 +25,8 @@
 #include <QObject>
 
 #include <interfaces/coreinterface.h>
+#include <microhttpd.h>
 #include "torrentlistgenerator.h"
-
-#include "mongoose.h"
 
 namespace kt
 {
@@ -39,18 +38,21 @@ namespace kt
         ~WebServer();
     public slots:
         void process();
-        static void httpeventhandler(struct mg_connection * c, int ev, void * ev_data);
     signals:
         void finished();
         void error(QString err);
     private:
-        struct mg_mgr mgr;
+        static int answer_to_connection(void *cls, struct MHD_Connection *connection,
+                    const char *url, const char *method,
+                    const char *version, const char *upload_data,
+                    size_t *upload_data_size, void **con_cls);
+        struct MHD_Daemon *daemon;
         CoreInterface * core;
         static TorrentListGenerator * listGenerator;
         static QString sessionToken;
-        const char * makeCookie();
+        static const char * makeCookie();
         static const char * cookie;
-        static bool checkForToken(http_message *);
+        static bool checkForToken(MHD_Connection * connection);
     };
 }
 

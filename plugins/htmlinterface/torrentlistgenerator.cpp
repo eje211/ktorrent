@@ -89,9 +89,9 @@ namespace kt
         return QJsonDocument(message).toJson();
     }
 
-    void TorrentListGenerator::post(const char * json)
+    void TorrentListGenerator::post(QString json)
     {
-        QJsonDocument doc = QJsonDocument::fromJson(QByteArray((const char *) json));
+        QJsonDocument doc = QJsonDocument::fromJson(json.toLatin1());
         QMap<QString, QVariant> qJson = doc.toVariant().toMap();
         
         QString action = qJson[QString::fromLatin1("type")].toString();
