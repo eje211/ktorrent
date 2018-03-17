@@ -29,15 +29,9 @@
 #include <QThread>
 
 #include "htmlinterfaceplugin.h"
-// #include <util/fileops.h>
-// #include <interfaces/guiinterface.h>
 #include <interfaces/coreinterface.h>
 #include <interfaces/torrentinterface.h>
-// #include <interfaces/torrentfileinterface.h>
 #include <torrent/queuemanager.h>
-#include "mongoose.h"
-// #include "htmlinterfacemanager.h"
-// #include "htmlinterfacedialog.h"
 #include "webserver.h"
 
 

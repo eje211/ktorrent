@@ -1,4 +1,4 @@
-set(kthtmlinterfaceplugin_SRC htmlinterfaceplugin.cpp mongoose.c webserver.cpp torrentlistgenerator.cpp)
+set(kthtmlinterfaceplugin_SRC htmlinterfaceplugin.cpp webserver.cpp torrentlistgenerator.cpp)
 
 ki18n_wrap_ui(kthtmlinterfaceplugin_SRC htmlinterfacewidget.ui)
 
