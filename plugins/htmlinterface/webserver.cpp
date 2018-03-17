@@ -28,6 +28,7 @@
 #include <QString>
 #include <QRegExp>
 #include <QStringList>
+#include <QMimeDatabase>
 #include <QUuid>
 #define GET             0
 #define POST            1
@@ -45,6 +46,8 @@ namespace kt {
     {
         MHD_stop_daemon (daemon);
     }
+
+    static QMimeDatabase mimeDatabase;
 
     static QString BASE_DIRECTORY = QString::fromLatin1("/usr/share/ktorrent/html/");
 
@@ -66,23 +69,6 @@ namespace kt {
         MHD_add_response_header (response, MHD_HTTP_HEADER_CONTENT_ENCODING, "text/html");
         MHD_destroy_response (response);
         return ret;
-    }
-
-    const char * getMimeType(QString url)
-    {
-        if (url.endsWith(QString::fromLatin1(".html")))
-        {
-            return "text/html";
-        }
-        else if (url.endsWith(QString::fromLatin1(".css")))
-        {
-            return "text/css";
-        }
-        else if (url.endsWith(QString::fromLatin1(".js")))
-        {
-            return "text/javascript"; // It's "application/javascript" but this is more compatible.
-        }
-        return "text/plain";
     }
 
     static int respond500(MHD_Connection * connection)
@@ -172,7 +158,8 @@ namespace kt {
             return respond404(connection);
         }
         response = MHD_create_response_from_fd_at_offset64(sbuf.st_size, fd, 0);
-        MHD_add_response_header(response, "Content-Type", getMimeType(qUrl));
+        const char * mimeType = mimeDatabase.mimeTypeForFile(qUrl).name().toLatin1().data();
+        MHD_add_response_header(response, "Content-Type", mimeType);
         MHD_add_response_header(response, "Set-Cookie", makeCookie());
         ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
         MHD_destroy_response (response);
