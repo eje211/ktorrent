@@ -47,27 +47,10 @@ namespace kt
         void currentTorrentChanged(bt::TorrentInterface* tc) override;
         
         HtmlInterfacePlugin * instance;
-//         QString parentPart() const override {return QStringLiteral("torrentactivity");}
-// 
-//         /// Get the download order manager for a torrent (returns 0 if none exists)
-//         HtmlInterfaceManager* manager(bt::TorrentInterface* tc);
-// 
-//         /// Create a manager for a torrent
-//         HtmlInterfaceManager* createManager(bt::TorrentInterface* tc);
-// 
-//         /// Destroy a manager
-//         void destroyManager(bt::TorrentInterface* tc);
-// 
-//     private slots:
-//         void showHtmlInterfaceDialog();
-//         void torrentAdded(bt::TorrentInterface* tc);
-//         void torrentRemoved(bt::TorrentInterface* tc);
-// 
+
     private:
         QThread* thread;
-        WebServer * worker;
-//         QAction * download_order_action;
-//         bt::PtrMap<bt::TorrentInterface*, HtmlInterfaceManager> managers;
+        WebServer * ws;
      };
 
 }

@@ -47,11 +47,6 @@ namespace kt
     {
         Q_UNUSED(args);
         qInfo("I've still been constructed!");
-//         download_order_action = new QAction(QIcon::fromTheme(QStringLiteral("view-sort-ascending")), i18n("File Download Order"), this);
-//         connect(download_order_action, &QAction::triggered, this, &HtmlInterfacePlugin::showHtmlInterfaceDialog);
-//         actionCollection()->addAction(QStringLiteral("download_order"), download_order_action);
-//         setXMLFile(QStringLiteral("ktorrent_htmlinterfaceui.rc"));
-//         managers.setAutoDelete(true);
     }
 
 
@@ -68,22 +63,13 @@ namespace kt
     void HtmlInterfacePlugin::load()
     {
         qInfo("I've been loaded");
-        WebServer * ws = new WebServer(getCore());
+        ws = new WebServer(getCore());
         ws->process();
-//         HtmlInterfacePlugin::instance = this;
-//         thread = new QThread;
-//         worker = new WebServer(getCore());
-//         worker->moveToThread(thread);
-// //         connect(worker, SIGNAL (error(QString)), this, SLOT (errorString(QString)));
-//         connect(thread, SIGNAL (started()), worker, SLOT (process()));
-//         connect(worker, SIGNAL (finished()), thread, SLOT (quit()));
-//         connect(worker, SIGNAL (finished()), worker, SLOT (deleteLater()));
-//         connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
-//         thread->start();
     }
 
     void HtmlInterfacePlugin::unload()
     {
+        delete ws;
     }
  
     void HtmlInterfacePlugin::currentTorrentChanged(bt::TorrentInterface* tc)

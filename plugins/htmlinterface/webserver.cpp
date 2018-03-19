@@ -45,6 +45,7 @@ namespace kt {
     WebServer::~WebServer()
     {
         MHD_stop_daemon (daemon);
+        delete listGenerator;
     }
 
     static QMimeDatabase mimeDatabase;

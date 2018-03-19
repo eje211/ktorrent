@@ -202,10 +202,12 @@ namespace kt
             bt::TorrentInterface* ti = *i;
             if (ti->getInfoHash() == *hash)
             {
+                delete hash;
                 return ti;
             }
             i++;
         }
+        delete hash;
         return NULL;
     }
 }
